@@ -4,3 +4,4 @@ ntoo.2021/cudnn64_7.dll filter=lfs diff=lfs merge=lfs -text
 ntoo.2021/dnn_model_2_0.onnx filter=lfs diff=lfs merge=lfs -text
 ntoo.2021/library/artifacts/38/386fc19290384666b06d02efb4238ea3 filter=lfs diff=lfs merge=lfs -text
 ntoo.2021/library/artifacts/4c/4c9c7510ef67343e95c27c81e314e66f filter=lfs diff=lfs merge=lfs -text
+ntoo.2021/library/artifacts/4f/4f3ebcbfb7fad96c37441d255f487f00 filter=lfs diff=lfs merge=lfs -text
