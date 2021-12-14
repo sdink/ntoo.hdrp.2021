@@ -1,0 +1,4 @@
+idle-eyecontact.anim filter=lfs diff=lfs merge=lfs -text
+idle-lookingaway.anim filter=lfs diff=lfs merge=lfs -text
+idle.anim filter=lfs diff=lfs merge=lfs -text
+idle-long.anim filter=lfs diff=lfs merge=lfs -text
