@@ -47,7 +47,7 @@
   <PropertyGroup>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <UnityProjectGenerator>Package</UnityProjectGenerator>
-    <UnityProjectGeneratorVersion>2.0.9</UnityProjectGeneratorVersion>
+    <UnityProjectGeneratorVersion>2.0.16</UnityProjectGeneratorVersion>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>2020.3.13f1</UnityVersion>
@@ -94,8 +94,18 @@
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_disdain.cs" />
     <Compile Include="Assets\Scripts\SimpleCameraController.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_fear.cs" />
+    <Compile Include="Assets\Faceware\Scripts\SimpleJSON.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveCharacterSetup.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveBase.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveUnityInterface.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveHelpers.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveConnection.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveClient.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveCharacterSetupFile.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveClientAdv.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Faceware\Documentation\README.txt" />
     <None Include="Assets\Crazy Minnow Studio\Amplitude\ReadMe.txt" />
     <None Include="Assets\Resources\midRenderEffect.shader" />
     <None Include="Assets\Crazy Minnow Studio\Addons\SalsaTextSync\ReadMe.txt" />

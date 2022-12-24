@@ -1,0 +1,229 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dbc506b8e220c648b1e82e196c46182, type: 3}
+  m_Name: BaseFacewareExpressions
+  m_EditorClassIdentifier: 
+  BaseExpressions:
+  - Name: Neutral
+    Desc: baseline.
+    Attr: neutral
+    InUse: 0
+    Values: []
+  - Name: Eye Direction - LEFT
+    Desc: Rotate the eyes so that the character is looking to their left.
+    Attr: eyes_lookLeft
+    InUse: 0
+    Values: []
+  - Name: Eye Direction - RIGHT
+    Desc: Rotate the eyes so that the character is looking to their right.
+    Attr: eyes_lookRight
+    InUse: 0
+    Values: []
+  - Name: Eye Direction - UP
+    Desc: Rotate the eyes so that the character is looking up.
+    Attr: eyes_lookUp
+    InUse: 0
+    Values: []
+  - Name: Eye Direction - DOWN
+    Desc: Rotate the eyes so that the character is looking to down.
+    Attr: eyes_lookDown
+    InUse: 0
+    Values: []
+  - Name: Eye Blink - LEFT
+    Desc: Blink the character\u0027s left eye.
+    Attr: eyes_leftEye_blink
+    InUse: 0
+    Values: []
+  - Name: Eye Blink - RIGHT
+    Desc: Blink the character\u0027s right eye.
+    Attr: eyes_rightEye_blink
+    InUse: 0
+    Values: []
+  - Name: Eye Wide - LEFT
+    Desc: Open the character\u0027s left eye wide.
+    Attr: left_eye_wide
+    InUse: 0
+    Values: []
+  - Name: Eye Wide - RIGHT
+    Desc: Open the character\u0027s right eye wide.
+    Attr: right_eye_wide
+    InUse: 0
+    Values: []
+  - Name: Eyebrow Up - LEFT
+    Desc: Pose the character\u0027s left eyebrow in the \u0027up\u0027 position.
+    Attr: brows_leftBrow_up
+    InUse: 0
+    Values: []
+  - Name: Eyebrow Up - RIGHT
+    Desc: Pose the character\u0027s right eyebrow in the \u0027up\u0027 position.
+    Attr: brows_rightBrow_up
+    InUse: 0
+    Values: []
+  - Name: Eyebrow Down - LEFT
+    Desc: Pose the character\u0027s left eyebrow in the \u0027down\u0027 position.
+    Attr: brows_leftBrow_down
+    InUse: 0
+    Values: []
+  - Name: Eyebrow Down - RIGHT
+    Desc: Pose the character\u0027s right eyebrow in the \u0027down\u0027 position.
+    Attr: brows_rightBrow_down
+    InUse: 0
+    Values: []
+  - Name: Eyebrow Up - CENTER
+    Desc: Pose the character\u0027s mid eyebrows in the \u0027up\u0027 position.
+    Attr: brows_midBrows_up
+    InUse: 0
+    Values: []
+  - Name: Eyebrow Down - CENTER
+    Desc: Pose the character\u0027s mid eyebrows in the \u0027up\u0027 position.
+    Attr: brows_midBrows_down
+    InUse: 0
+    Values: []
+  - Name: Jaw - OPEN
+    Desc: Open the character\u0027s mouth/jaw as wide as it goes.
+    Attr: jaw_open
+    InUse: 0
+    Values: []
+  - Name: Jaw - LEFT
+    Desc: Rotate the character\u0027s jaw to the left side.
+    Attr: jaw_left
+    InUse: 0
+    Values: []
+  - Name: Jaw - RIGHT
+    Desc: Rotate the character\u0027s jaw to the left side.
+    Attr: jaw_right
+    InUse: 0
+    Values: []
+  - Name: Upper Lip Up - LEFT
+    Desc: Pose the upper lip\u0027s left side in the \u0027up\u0027 position.
+    Attr: mouth_upperLip_left_up
+    InUse: 0
+    Values: []
+  - Name: Upper Lip Up - RIGHT
+    Desc: Pose the upper lip\u0027s right side in the \u0027up\u0027 position.
+    Attr: mouth_upperLip_right_up
+    InUse: 0
+    Values: []
+  - Name: Lower Lip Down - LEFT
+    Desc: Pose the lower lip\u0027s left side in the \u0027down\u0027 position.
+    Attr: mouth_lowerLip_left_down
+    InUse: 0
+    Values: []
+  - Name: Lower Lip Down - RIGHT
+    Desc: Pose the lower lip\u0027s right side in the \u0027down\u0027 position.
+    Attr: mouth_lowerLip_right_down
+    InUse: 0
+    Values: []
+  - Name: Mouth Stretch - LEFT
+    Desc: Pose the mouth so it\u0027s stretched on the \u0027left\u0027 side.
+    Attr: mouth_left_stretch
+    InUse: 0
+    Values: []
+  - Name: Mouth Stretch - RIGHT
+    Desc: Pose the mouth so it\u0027s stretched on the \u0027right\u0027 side.
+    Attr: mouth_right_stretch
+    InUse: 0
+    Values: []
+  - Name: Mouth Narrow - LEFT
+    Desc: Pose the mouth so it\u0027s narrowed on the \u0027left\u0027 side.
+    Attr: mouth_left_narrow
+    InUse: 0
+    Values: []
+  - Name: Mouth Narrow - RIGHT
+    Desc: Pose the mouth so it\u0027s narrowed on the \u0027right\u0027 side.
+    Attr: mouth_right_narrow
+    InUse: 0
+    Values: []
+  - Name: Smile - LEFT
+    Desc: Pose the mouth so it\u0027s in a smile on the \u0027left\u0027 side.
+    Attr: mouth_leftMouth_smile
+    InUse: 0
+    Values: []
+  - Name: Smile - RIGHT
+    Desc: Pose the mouth so it\u0027s in a smile on the \u0027right\u0027 side.
+    Attr: mouth_rightMouth_smile
+    InUse: 0
+    Values: []
+  - Name: Frown - LEFT
+    Desc: Pose the mouth so it\u0027s in a frown on the \u0027left\u0027 side.
+    Attr: mouth_leftMouth_frown
+    InUse: 0
+    Values: []
+  - Name: Frown - RIGHT
+    Desc: Pose the mouth so it\u0027s in a frown on the \u0027right\u0027 side.
+    Attr: mouth_rightMouth_frown
+    InUse: 0
+    Values: []
+  - Name: Mouth Scrunch - LEFT
+    Desc: Pose the mouth so it\u0027s scrunched on the \u0027left\u0027 side.
+    Attr: mouth_left
+    InUse: 0
+    Values: []
+  - Name: Mouth Scrunch - RIGHT
+    Desc: Pose the mouth so it\u0027s scrunched on the \u0027right\u0027 side.
+    Attr: mouth_right
+    InUse: 0
+    Values: []
+  - Name: Phoneme - OO
+    Desc: Pose the mouth in an \u0027OO\u0027 phoneme shape.
+    Attr: mouth_phoneme_oo
+    InUse: 0
+    Values: []
+  - Name: Phoneme - CH
+    Desc: Pose the mouth in an \u0027CH\u0027 phoneme shape.
+    Attr: mouth_phoneme_ch
+    InUse: 0
+    Values: []
+  - Name: Phoneme - MBP
+    Desc: Pose the mouth in an \u0027MBP\u0027 phoneme shape (pressed).
+    Attr: mouth_phoneme_mbp
+    InUse: 0
+    Values: []
+  - Name: Mouth Up
+    Desc: Move the character\u0027s entire mouth \u0027up\u0027.
+    Attr: mouth_up
+    InUse: 0
+    Values: []
+  - Name: Mouth Down
+    Desc: Move the character\u0027s entire mouth \u0027down\u0027.
+    Attr: mouth_down
+    InUse: 0
+    Values: []
+  - Name: Head Down
+    Desc: Rotate the character\u0027s head \u0027down\u0027.
+    Attr: head_Down
+    InUse: 0
+    Values: []
+  - Name: Head Up
+    Desc: Rotate the character\u0027s head \u0027up\u0027.
+    Attr: head_Up
+    InUse: 0
+    Values: []
+  - Name: Head Left
+    Desc: Turn the character\u0027s head \u0027left\u0027.
+    Attr: head_Left
+    InUse: 0
+    Values: []
+  - Name: Head Right
+    Desc: Turn the character\u0027s head \u0027right\u0027.
+    Attr: head_Right
+    InUse: 0
+    Values: []
+  - Name: Head Tilt Right
+    Desc: Tilt the character\u0027s head \u0027right\u0027.
+    Attr: head_RightTilt
+    InUse: 0
+    Values: []
+  - Name: Head Tilt Left
+    Desc: Tilt the character\u0027s head \u0027left\u0027.
+    Attr: head_LeftTilt
+    InUse: 0
+    Values: []

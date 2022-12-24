@@ -47,7 +47,7 @@
   <PropertyGroup>
     <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <UnityProjectGenerator>Package</UnityProjectGenerator>
-    <UnityProjectGeneratorVersion>2.0.9</UnityProjectGeneratorVersion>
+    <UnityProjectGeneratorVersion>2.0.16</UnityProjectGeneratorVersion>
     <UnityProjectType>Editor:5</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>2020.3.13f1</UnityVersion>
@@ -56,6 +56,11 @@
     <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Plugins\Editor\AmplitudeEditor.cs" />
     <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Addons\AmplitudeSALSA\Editor\AmplitudeSALSAEditor.cs" />
     <Compile Include="Assets\Crazy Minnow Studio\Addons\SalsaTextSync\Editor\SalsaTextSyncEditor.cs" />
+    <Compile Include="Assets\Faceware\Scripts\Editor\LiveClientEditor.cs" />
+    <Compile Include="Assets\Faceware\Scripts\Editor\BaseFacewareExpressions.cs" />
+    <Compile Include="Assets\Faceware\Scripts\Editor\LiveClientAdvEditor.cs" />
+    <Compile Include="Assets\Faceware\Scripts\Editor\LiveCharacterSetupEditor.cs" />
+    <Compile Include="Assets\Faceware\Scripts\Editor\LiveCharacterSetupFileEditor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

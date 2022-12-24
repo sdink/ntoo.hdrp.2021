@@ -14,15 +14,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SimpleSelectedItems:
     m_Keys:
-    - Assets/Resources/post processing Profile.asset
+    - .collabignore
     - Assets/Scenes/ntoo.live.bust.unity
-    - Assets/ntoo.live.bust/prefabs/ntooeyelashes.fbm.meta
-    - Assets/ntoo.live.bust/prefabs/ntooeyelashes.fbm/G8FBaseEyelashes_1006.jpg
-    - Assets/ntoo.live.bust/prefabs/ntooeyelashes.fbm/G8FBaseEyelashes_1006.jpg.meta
-    - Assets/ntoo.live.bust/prefabs/ntoostrayhair.fbx
-    - Assets/ntoo.live.bust/prefabs/ntoostrayhair.fbx.meta
+    - Assets/Scenes/ntoo.live.bust.unity.meta
+    - Assets/ntoo.live.bust/animations/lag/lag1.anim
+    - Assets/ntoo.live.bust/animations/lag/lag1.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag2.anim
+    - Assets/ntoo.live.bust/animations/lag/lag2.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag4.anim
+    - Assets/ntoo.live.bust/animations/lag/lag4.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag5.anim
+    - Assets/ntoo.live.bust/animations/lag/lag5.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag6.anim
+    - Assets/ntoo.live.bust/animations/lag/lag6.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag7.anim
+    - Assets/ntoo.live.bust/animations/lag/lag7.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag8.anim
+    - Assets/ntoo.live.bust/animations/lag/lag8.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/thinking1.anim
+    - Assets/ntoo.live.bust/animations/lag/thinking1.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/thinkingtest.anim
+    - Assets/ntoo.live.bust/animations/lag/thinkingtest.anim.meta
+    - Assets/ntoo.live.bust/faceware character setup/ntoobust2022.asset
+    - Assets/ntoo.live.bust/faceware character setup/ntoobust2022.asset.meta
+    - Assets/ntoo.live.bust/ntoobust07.controller
+    - Assets/ntoo.live.bust/ntoobust07.controller.meta
+    - Packages/manifest.json
+    - Packages/packages-lock.json
+    - ProjectSettings/ProjectVersion.txt
     - 
-    m_Values: 0000000000000000
+    m_Values: 0000000000000000000000000000000000000000000000000000000000
   RevisionSummary: 
   ChangesSearchValue: 
   SelectedHistoryRevision: 
