@@ -6,7 +6,7 @@ using UnityEngine;
 public class randomanim_idle : StateMachineBehaviour
 {
     public string m_parameterName = "idleanim1";
-    public int[] m_stateIDArray = { 0, 1, 2, 3, 4 };
+    public int[] m_stateIDArray = { 0, 1, 2, 3, 4, 5 };
 
     // OnStateEnter is called before OnStateEnter is called on any state inside this state machine
     //override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

@@ -54,6 +54,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sadedisgust.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveClientAdv.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_anxiety.cs" />
     <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SalsaTextSync_ExampleTextSyncTester.cs" />
     <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Plugins\Amplitude.cs" />
@@ -61,6 +62,8 @@
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_giggle.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_erlenesmile.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_disgust.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveConnection.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveCharacterSetup.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_stern.cs" />
     <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Examples\Scripts\AmplitudeSamplesUI.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sly.cs" />
@@ -72,6 +75,8 @@
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_melancholy.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_lipsmack.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_alert.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveHelpers.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveCharacterSetupFile.cs" />
     <Compile Include="Assets\Resources\midRenderEffect.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_shock.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sadness.cs" />
@@ -80,29 +85,24 @@
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_anger.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\randomanim_idle.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\blackpixel_postprocessing.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveBase.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_surprise.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveUnityInterface.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller.cs" />
     <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SalsaTextSync_ExampleBasicGUI.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_grief.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_frown.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_scoff.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sarcastic.cs" />
+    <Compile Include="Assets\Faceware\Scripts\LiveClient.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_halfsmile.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_laughter.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sadesad.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_smile.cs" />
+    <Compile Include="Assets\Faceware\Scripts\SimpleJSON.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_disdain.cs" />
     <Compile Include="Assets\Scripts\SimpleCameraController.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_fear.cs" />
-    <Compile Include="Assets\Faceware\Scripts\SimpleJSON.cs" />
-    <Compile Include="Assets\Faceware\Scripts\LiveCharacterSetup.cs" />
-    <Compile Include="Assets\Faceware\Scripts\LiveBase.cs" />
-    <Compile Include="Assets\Faceware\Scripts\LiveUnityInterface.cs" />
-    <Compile Include="Assets\Faceware\Scripts\LiveHelpers.cs" />
-    <Compile Include="Assets\Faceware\Scripts\LiveConnection.cs" />
-    <Compile Include="Assets\Faceware\Scripts\LiveClient.cs" />
-    <Compile Include="Assets\Faceware\Scripts\LiveCharacterSetupFile.cs" />
-    <Compile Include="Assets\Faceware\Scripts\LiveClientAdv.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Faceware\Documentation\README.txt" />
@@ -699,9 +699,6 @@
     <Reference Include="System.Xml.Serialization">
       <HintPath>C:\Program Files\unity\2020.3.13f1\Editor\Data\NetStandard\compat\2.0.0\shims\netfx\System.Xml.Serialization.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.ShaderGraph.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.VisualEffectGraph.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualEffectGraph.Editor.dll</HintPath>
     </Reference>
@@ -717,12 +714,6 @@
     <Reference Include="Unity.VisualEffectGraph.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.VisualEffectGraph.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Timeline.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Timeline.Editor.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.Timeline">
       <HintPath>Library\ScriptAssemblies\Unity.Timeline.dll</HintPath>
     </Reference>
@@ -734,9 +725,6 @@
     </Reference>
     <Reference Include="Unity.Searcher.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.RenderPipelines.HighDefinition.Config.Runtime">
-      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.HighDefinition.Config.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
@@ -758,6 +746,18 @@
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.ShaderGraph.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Timeline.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Timeline.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.HighDefinition.Config.Runtime">
+      <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.HighDefinition.Config.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>

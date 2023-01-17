@@ -43425,7 +43425,6 @@ GameObject:
   - component: {fileID: 8296172668962532970}
   - component: {fileID: 8296172668962532969}
   - component: {fileID: 8296172668962532968}
-  - component: {fileID: 8296172668962532967}
   m_Layer: 10
   m_Name: ntoobust07
   m_TagString: Untagged
@@ -43433,44 +43432,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &8296172668962532967
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8296172668962532966}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -1489447753, guid: 21fe281538940584e84b6d5eedb3525e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  emoterName: Emoter
-  queueProcessor: {fileID: 8296172668962532971}
-  lipsyncEmphasisChance: 1
-  lipsyncEmphasisEmotes: []
-  repeaterEmotes: []
-  randomEmotes: []
-  emotes: []
-  useRandomEmotes: 0
-  isChancePerEmote: 1
-  numRandomEmotesPerCycle: 0
-  numRandomEmphasizersPerCycle: 0
-  randomEmoteMinTimer: 1
-  randomEmoteMaxTimer: 2
-  randomChance: 0.5
-  useRandomFrac: 0
-  randomFracBias: 0.5
-  useRandomHoldDuration: 0
-  randomHoldDurationMin: 0.1
-  randomHoldDurationMax: 0.5
-  configReady: 0
-  warnOnNullRefs: 1
-  inspSalsaLinked: 0
-  inspStateFoldoutProcessing: 0
-  inspStateFoldoutSettings: 0
-  inspStateFoldoutEmotes: 1
-  inspCollectionDisplayMode: 0
 --- !u!114 &8296172668962532968
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44088,7 +44049,7 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8296172668962532966}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: e165ec915c6605446bf2e8cf26c4c5b7, type: 3}
@@ -44184,7 +44145,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8296172668962532966}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -1091098677, guid: 21fe281538940584e84b6d5eedb3525e, type: 3}
   m_Name: 
@@ -44194,7 +44155,7 @@ MonoBehaviour:
   useExternalAnalysis: 0
   audioSourceWaitTarget: {fileID: 0}
   queueProcessor: {fileID: 8296172668962532971}
-  emoter: {fileID: 8296172668962532967}
+  emoter: {fileID: 0}
   emphasizerTrigger: 0.365
   analysisValue: 0
   sampleSize: 1024
@@ -45423,8 +45384,8 @@ MonoBehaviour:
   isDebug: 0
   useAudioAnalysis: 1
   needAudioSource: 1
-  inspStateFoldoutProcessing: 1
-  inspStateFoldoutSettings: 1
+  inspStateFoldoutProcessing: 0
+  inspStateFoldoutSettings: 0
   inspStateFoldoutVisemes: 0
   inspCollectionDisplayMode: 0
   inspAnalysisDisplay: 0
@@ -45439,7 +45400,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8296172668962532966}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 2069102741, guid: 21fe281538940584e84b6d5eedb3525e, type: 3}
   m_Name: 
