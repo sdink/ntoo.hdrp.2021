@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 61
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffe70aba2e7074048aca5de573b64a59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SimpleSelectedItems:
+    m_Keys:
+    - .collabignore
+    - Assets/Scenes/ntoo.live.bust.unity
+    - Assets/Scenes/ntoo.live.bust.unity.meta
+    - Assets/ntoo.live.bust/animations/lag/lag1.anim
+    - Assets/ntoo.live.bust/animations/lag/lag1.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag2.anim
+    - Assets/ntoo.live.bust/animations/lag/lag2.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag4.anim
+    - Assets/ntoo.live.bust/animations/lag/lag4.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag5.anim
+    - Assets/ntoo.live.bust/animations/lag/lag5.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag6.anim
+    - Assets/ntoo.live.bust/animations/lag/lag6.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag7.anim
+    - Assets/ntoo.live.bust/animations/lag/lag7.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/lag8.anim
+    - Assets/ntoo.live.bust/animations/lag/lag8.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/thinking1.anim
+    - Assets/ntoo.live.bust/animations/lag/thinking1.anim.meta
+    - Assets/ntoo.live.bust/animations/lag/thinkingtest.anim
+    - Assets/ntoo.live.bust/animations/lag/thinkingtest.anim.meta
+    - Assets/ntoo.live.bust/faceware character setup/ntoobust2022.asset
+    - Assets/ntoo.live.bust/faceware character setup/ntoobust2022.asset.meta
+    - Assets/ntoo.live.bust/ntoobust07.controller
+    - Assets/ntoo.live.bust/ntoobust07.controller.meta
+    - Packages/manifest.json
+    - Packages/packages-lock.json
+    - ProjectSettings/ProjectVersion.txt
+    - 
+    m_Values: 0000000000000000000000000000000000000000000000000000000000
+  RevisionSummary: 
+  ChangesSearchValue: 
+  SelectedHistoryRevision: 
+  HistoryPageNumber: 0
+  TabIndex: 0
