@@ -62,4 +62,4 @@ Assets/Plugins/ThirdPartyPlugins.asset.meta
 Assets/Plugins/ThirdPartyPlugins.asset
 
 # Nuget Packages Managed by NugetForUnity
-Assets/Packages
+# Assets/Packages
