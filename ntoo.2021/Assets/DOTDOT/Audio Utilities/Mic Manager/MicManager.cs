@@ -1,92 +1,585 @@
 using System;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Events;
 
-[RequireComponent(typeof(AudioSource))]
-
 public class MicManager : MonoBehaviour
 {
-    // UI Events
-    [Serializable] private class UIEvent : UnityEvent { }
-    [Header("UI Events")]
-    [SerializeField] private UIEvent UINoMicrophoneDetected;
-    [SerializeField] private UIEvent UIStartedRecording;
-    [SerializeField] private UIEvent UIStoppedRecording;
 
-    // Client Events
-    [Serializable] private class ClientEvent : UnityEvent<AudioClip> { }
-    [Header("Client Events")]
-    [SerializeField] private ClientEvent ClientStreamingAudio;
+  public enum MicState { Idle, Monitoring, Listening }
 
-    // The maximum and minimum available recording frequencies.
-    private int minFreq;
-    private int maxFreq;
+  [Serializable]
+  public struct MicConfig
+  {
+    public float threshold;
+    public float deadZone;
+    public float levelSmoothing;
+    public int loopDuration;
+    public float silenceDuration;
+    public float maxListeningDuration;
+    public bool useRms;
+  }
 
-    // The selected mic index.
-    private int selectedMic;
+  [Header("Configuration")]
+  [SerializeField]
+  private string configFile = "MicConfig.json";
+
+  [Header("Volume Controls")]
+  [Tooltip("Threshold for noise before NTOO starts listening")][SerializeField][Range(0, 1f)] private float micVolumeThreshold = 0.0001f;
+  [Tooltip("Deadzone between noise threshold on and off")][SerializeField][Range(0, 0.000004f)] private float micVolumeDeadzone = 0.000002f;
+  [Tooltip("Smoothing factor for threshold detection - lower values increase smoothing and latency.")][SerializeField][Range(0.001f, 1f)] private float micLevelSmoothing = 0.05f;
+  [SerializeField]
+  private bool useRms = false;
+
+  [Header("Durations")]
+  [Tooltip("Duration of main Mic loop, keep this short but longer than latency from smoothing factor")][SerializeField][Range(0, 5)] private int micLoopDuration = 1; // seconds
+  [Tooltip("Duration of silence before NTOO starts talking")][SerializeField][Range(0, 10)] private float silenceMaxDuration = 2; // seconds
+  [Tooltip("Duration NTOO's active listening, used for understanding the bulk of the user's intended communication")][SerializeField][Range(0, 60)] private float activeListeningMaxDuration = 30; // seconds
   
-    // A handle to the attached AudioSource.
-    private AudioSource audioSource;
+  private float micVolumePeakAverage = 0;
 
-    // Use this for initialization.
-    void Start()   
-    {
-        // Check if there is at least one microphone connected.
-        if (Microphone.devices.Length <= 0)  
-        {
-            UINoMicrophoneDetected.Invoke();
-        }
-        else // At least one microphone is available.
-        {
-            // Get the default microphone recording capabilities  
-            Microphone.GetDeviceCaps(null, out minFreq, out maxFreq);  
+  [SerializeField]
+  [Tooltip("State to enter after recording a sample")]
+  private MicState stateAfterSending = MicState.Idle;
+
+  [Serializable] private class AudioEvent : UnityEvent<float[], int, int> { }
+  [Header("Client Events")]
+  [SerializeField] private AudioEvent OnReadyToSendAudio;
+
+  [Serializable] private class NtooEvent : UnityEvent { }
+  [Header("Ntoo Manager Events")]
+  [SerializeField] private NtooEvent OnStoppedMonitoring;
+
+  [Serializable] private class LevelEvent : UnityEvent<float> { }
+  [Header("Monitoring Events")]
+  [SerializeField] private LevelEvent OnMicLevelUpdated;
+  [SerializeField] private LevelEvent OnThresholdLevelUpdated;
   
-            // According to the documentation, if minFreq and maxFreq are zero,
-            // the microphone supports any frequency...  
-            if (minFreq == 0 && maxFreq == 0)  
-            {  
-                // ...meaning 44100 Hz can be used as the recording sampling rate.
-                maxFreq = 44100;
-            }
-  
-            // Get the attached AudioSource component  
-            audioSource = this.GetComponent<AudioSource>();
-        }
+  private MicState state = MicState.Idle;
+
+  public MicState State
+  {
+    get
+    {
+      return state;
     }
 
-    public void StartRecording()
+    set
     {
-        UIStartedRecording.Invoke();
-        audioSource.clip = Microphone.Start(Microphone.devices[selectedMic], true, 20, maxFreq);
-    }
+      if (value == state) return;
 
-    public void StopRecording()
-    {
-        // Update the UI and Unity Mic to stop recording.
-        UIStoppedRecording.Invoke();
-        Microphone.End(null); // Stop the audio recording
-
-        // For debug use:
-        //audioSource.Play(); // Playback the recorded audio
-
-        // Send the Audio Clip to the Client Manager for streaming.
-        ClientStreamingAudio.Invoke(audioSource.clip);
-    }
-
-    public void PlayAudio(AudioClip audioClip)
-    {
-        // This overwrites the input audioClip, as it
-        // isn't necessary to maintain both concurrently.
-        Debug.Log($"Playing audioClip");
-        audioSource.clip = audioClip;
-        audioSource.Play();
-    }
-    public void SetMicrophone(Int32 micIndex)
-    {
-        if (micIndex > 0 && micIndex < Microphone.devices.Length)
+      if (value == MicState.Idle)
+      {
+        if (state == MicState.Listening)
         {
-            selectedMic = micIndex;
-            PlayerPrefs.SetInt("selectedMic", micIndex);
+          // Clean up recording
+          StopListening();
         }
+
+        // Stop microphone
+        StopMonitoring();
+        state = value;
+        Debug.Log("[Mic Manager] Mic now Idle");
+      }
+      else if (value == MicState.Listening)
+      {
+        if (state == MicState.Idle)
+        {
+          // Start microphone and init buffers
+          if (!StartMonitoring()) return;
+        }
+
+        // Start recording
+        StartListening();
+        state = value;
+        Debug.Log("[Mic Manager] Started Listening");
+      }
+      else if (value == MicState.Monitoring)
+      {
+        if (state == MicState.Idle)
+        {
+          // Start Microphone and Monitor
+          if (!StartMonitoring()) return;
+        }
+        else if (state == MicState.Listening)
+        {
+          // Clean up Listening
+          StopListening();
+        }
+
+        state = value;
+        Debug.Log("[Mic Manager] Started Monitoring");
+      }
+      else
+      {
+        Debug.LogWarning("[Mic Manager] Unrecognised state transition");
+      }
     }
+  }
+
+  public float MicThreshold { get { return micVolumeThreshold; } }
+
+  // Non-exposed variables
+  // General
+  private bool isInitialised = false;
+
+  // Microphone settings
+  private int micSelectedIndex;
+  private string micDeviceName;
+  private int micDeviceFrequency;
+  private int micLastSamplePos = 0;
+  private bool volumeHitThreshold = false;
+  private float lastVolumeThresholdChange = 0;
+
+  // Active listening
+  private float[] activeListeningBuffer;
+  private int activeListeningBufferOffset = 0;
+
+  private AudioClip micRecording;
+  private float[] preRecordLoop;
+  private bool listeningLoopPassedBuffer = false;
+
+  void Start()
+  {
+    string configFilePath = Path.Combine(Application.persistentDataPath, configFile);
+    if (File.Exists(configFilePath))
+    {
+      try
+      {
+        string configJson = File.ReadAllText(configFilePath);
+        MicConfig config = JsonUtility.FromJson<MicConfig>(configJson);
+        micVolumeThreshold = config.threshold;
+        micVolumeDeadzone = config.deadZone;
+        micLevelSmoothing = config.levelSmoothing;
+        useRms = config.useRms;
+        micLoopDuration = config.loopDuration;
+        silenceMaxDuration = config.silenceDuration;
+        activeListeningMaxDuration = config.maxListeningDuration;
+      }
+      catch (Exception e)
+      {
+        Debug.LogError("[Mic Manager] Error reading config from file: " + e.Message);
+      }
+
+      OnThresholdLevelUpdated.Invoke(micVolumeThreshold);
+    } 
+    else
+    {
+      MicConfig config = new MicConfig()
+      {
+        threshold = micVolumeThreshold,
+        deadZone = micVolumeDeadzone,
+        levelSmoothing = micLevelSmoothing,
+        useRms = useRms,
+        loopDuration = micLoopDuration,
+        silenceDuration = silenceMaxDuration,
+        maxListeningDuration = activeListeningMaxDuration
+      };
+      string configJson = JsonUtility.ToJson(config);
+      try
+      {
+        File.WriteAllText(configFilePath, configJson);
+      }
+      catch (Exception e)
+      {
+        Debug.LogError("[Mic Manager] Error writing config to file: " + e.Message);
+      }
+    }
+
+    // Check if there is at least one microphone connected.
+    if (Microphone.devices.Length <= 0)
+    {
+      Debug.Log("Warning: No Microphone Detected!");
+    }
+    else // At least one microphone is available.
+    {
+      InitialiseMicrophone();
+      InitialiseBuffers();
+      isInitialised = true;
+    }
+
+    OnMicLevelUpdated.Invoke(0); // initialise with 0 mic level for monitors
+  }
+
+  public void SetStateIdle()
+  {
+    State = MicState.Idle;
+  }
+
+  public void SetStateMonitoring()
+  {
+    State = MicState.Monitoring;
+  }
+
+  public void SetStateListening()
+  {
+    State = MicState.Listening;
+  }
+
+  public void CancelSend()
+  {
+    if (State != MicState.Idle)
+    {
+      State = MicState.Monitoring;
+    }
+  }
+
+  /// <summary>
+  /// Initialises the device frequency and device name.
+  /// </summary>
+  /// <param name="fallbackFrequency"></param>
+  private void InitialiseMicrophone(int fallbackFrequency = 44100)
+  {
+    // Set Microphone based on Prefs.
+    int _micIndex = PlayerPrefs.GetInt("micDeviceIndex", 0);
+    SetMicrophone(_micIndex);
+
+    // Poll the device's frequency capabilities.
+    int _minFreq, _maxFreq;
+    Microphone.GetDeviceCaps(micDeviceName, out _minFreq, out _maxFreq);
+
+    // According to the documentation, if minFreq and maxFreq are zero,
+    // the microphone supports any frequency, meaning we can use the
+    // fallback frequency (default: 44100).
+    if (_minFreq == 0 && _maxFreq == 0) _maxFreq = fallbackFrequency;
+    micDeviceFrequency = _maxFreq;
+
+    Debug.Log($"[MicManager] Initialised ${micDeviceName} with min frequency of {_minFreq} and max frequency of {_maxFreq}.");
+  }
+
+  /// <summary>
+  /// Initialises passive, active, and volumeDetection buffers and corresponding capacities.
+  /// </summary>
+  public void InitialiseBuffers()
+  {
+    // Active Listening Buffer
+    int _activeListeningBufferCapacity = (int)Math.Ceiling(micDeviceFrequency * activeListeningMaxDuration);
+    Debug.Log($"[MicManager] Creating new Active Listening Buffer with capacity {_activeListeningBufferCapacity}.");
+    activeListeningBuffer = new float[_activeListeningBufferCapacity];
+  }
+
+  /// <summary>
+  /// If volume hit threshold, do active listening. Otherwise, do passive listening.
+  /// </summary>
+  private void FixedUpdate()
+  {
+    if (State == MicState.Idle) return;
+
+    // Read data from microphone clip and store in micBuffer.
+    float[] latestData = ReadMicrophoneData();
+
+    if (State == MicState.Listening && latestData != null)
+    {
+      if (activeListeningBufferOffset + latestData.Length >= activeListeningBuffer.Length)
+      {
+        int remainingBuffer = activeListeningBuffer.Length - activeListeningBufferOffset;
+        for(int i = 0; i < remainingBuffer; i++)
+        {
+          activeListeningBuffer[activeListeningBufferOffset + i] = latestData[i];
+        }
+        Debug.LogWarning($"[Mic Manager] Sending audio due to buffer overflow (this can indicate someone was still talking and we cut them off). Listening duration: {Time.time - lastVolumeThresholdChange}. Max Duration: {activeListeningMaxDuration}.");
+        // The buffer is full, send what we have.
+        // Note: This error should never occur as we're handling it below in TestInputVolume().
+        SendAudio();
+      }
+      else
+      {
+        latestData.CopyTo(activeListeningBuffer, activeListeningBufferOffset);
+        activeListeningBufferOffset += latestData.Length;
+      }
+    }
+
+    // Test micBuffer volume against threshold.
+    TestInputVolume(latestData);
+  }
+
+  /// <summary>
+  /// Get latest microphone data.
+  /// </summary>
+  private float[] ReadMicrophoneData()
+  {
+    // Read the number of samples remaining in the microphone's clip.
+    int micSamplePos = Microphone.GetPosition(micDeviceName);
+    int samplesToRead = micSamplePos - micLastSamplePos;
+
+    // Skip if we are up to date
+    if (samplesToRead == 0) return null;
+
+    // Check for wraparound
+    if (samplesToRead < 0)
+    {
+      samplesToRead += micRecording.samples;
+      listeningLoopPassedBuffer = true;
+    }
+
+    // Read data (note GetData will automatically wrap around)
+    float[] newSamples = new float[samplesToRead];
+    micRecording.GetData(newSamples, micLastSamplePos);
+
+    // Update last sample pos for next time.
+    micLastSamplePos = micSamplePos;
+
+    return newSamples;
+  }
+
+
+  private float minLevel = 0;
+  private float maxLevel = 0;
+  private float previousSample = 0;
+  private float previousDelta = 0;
+  private bool newMinLevel = false;
+  private bool newMaxLevel = false;
+
+  private float peakToPeakLevel = 0;
+  private float rmsLevel = 0;
+
+  private float testLevel = 0;
+
+  /// <summary>
+  /// Test input volume against threshold.
+  /// </summary>
+  private void TestInputVolume(float[] input)
+  {
+    if (State == MicState.Idle || input == null) return;
+
+    if (useRms)
+    {
+      // Calculate RMS level
+      float sum = 0;
+      foreach (float sample in input)
+      {
+        sum += sample;
+      }
+      float avg = sum / input.Length;
+      float sumMeanSq = 0;
+      foreach (float sample in input)
+      {
+        sumMeanSq += Mathf.Pow(sample - avg, 2);
+      }
+      float avgMeanSq = sumMeanSq / input.Length;
+      rmsLevel = Mathf.Pow(avgMeanSq, 0.5f);
+      testLevel = rmsLevel;
+    }
+    else
+    {
+      // Calculate averaged peak-to-peak levels
+      foreach (float sample in input)
+      {
+        float delta = sample - previousSample;
+        if (delta == 0)
+        {
+          if (previousDelta < 0)
+          {
+            minLevel = sample;
+            newMinLevel = true;
+          }
+          else
+          {
+            maxLevel = sample;
+            newMaxLevel = true;
+          }
+        }
+        else if (delta > 0 && previousDelta < 0)
+        {
+          minLevel = previousSample;
+          newMinLevel = true;
+        }
+        else if (delta < 0 && previousDelta > 0)
+        {
+          maxLevel = previousSample;
+          newMaxLevel = true;
+        }
+
+        if (newMinLevel && newMaxLevel)
+        {
+          peakToPeakLevel = maxLevel - minLevel;
+          newMinLevel = false;
+          newMaxLevel = false;
+        }
+
+        float volumeDelta = peakToPeakLevel - micVolumePeakAverage;
+        micVolumePeakAverage += volumeDelta * micLevelSmoothing;
+        previousDelta = delta;
+        previousSample = sample;
+      }
+
+      testLevel = micVolumePeakAverage;
+    }
+
+    OnMicLevelUpdated.Invoke(testLevel);
+
+    // Test against threshold.
+    if (testLevel > micVolumeThreshold)
+    {
+      if (!volumeHitThreshold)
+      {
+        lastVolumeThresholdChange = Time.time;
+        volumeHitThreshold = true;
+        State = MicState.Listening;
+      }
+    }
+    else if (testLevel < micVolumeThreshold - micVolumeDeadzone)
+    {
+      if (volumeHitThreshold)
+      {
+        volumeHitThreshold = false;
+        lastVolumeThresholdChange = Time.time;
+      }
+
+      if (State == MicState.Listening && Time.time - lastVolumeThresholdChange > silenceMaxDuration)
+      {
+        // Detected pause - send audio
+        Debug.Log($"Detected pause. Thinking...");
+        volumeHitThreshold = false;
+        SendAudio();
+      }
+    }
+
+    if (State == MicState.Listening && Time.time - lastVolumeThresholdChange >= activeListeningMaxDuration)
+    {
+      // Reached maximum length, send audio
+      SendAudio();
+    }
+  }
+
+  /// <summary>
+  /// Bundles up the PreRecord Loop Buffer with the Active Listening Buffer and sends to the client
+  /// manager for streaming to the server.
+  /// </summary>
+  private void SendAudio()
+  {
+    if (preRecordLoop == null || activeListeningBuffer == null || activeListeningBufferOffset == 0)
+    {
+      // no data to send
+      State = MicState.Monitoring;
+      return;
+    }
+
+    Debug.Log($"[Mic Manager] Sending audio with preRecordLoop length of {preRecordLoop.Length} and recorded length of {activeListeningBufferOffset}");
+
+    // 1. Combine circular buffer with extended buffer then send to server.
+    // Note: Size means total non-default entries - see `for loop` below.
+    int _totalCapacity = preRecordLoop.Length + activeListeningBufferOffset;
+
+    // 2. Create a new array holding the contents of the passive and (all meaningful values of) the active buffer.
+    float[] combinedArray = new float[_totalCapacity];
+    preRecordLoop.CopyTo(combinedArray, 0); // This can be further optimised.
+    for (int i = 0; i < activeListeningBufferOffset; i++)
+    {
+      combinedArray[preRecordLoop.Length + i] = activeListeningBuffer[i];
+    }
+
+    // 3. Send data to client manager to stream to server.
+    OnReadyToSendAudio.Invoke(combinedArray, 1, micDeviceFrequency);
+
+    // 4. Transition to post-audio send state
+    State = stateAfterSending;
+  }
+
+  /// <summary>
+  /// Begin reading input from the selected microphone device.
+  /// </summary>
+  private bool StartMonitoring()
+  {
+    if (!isInitialised) return false;
+    Debug.Log("Starting microphone: " + micDeviceName);
+    // reset monitoring variables
+    volumeHitThreshold = false;
+    lastVolumeThresholdChange = Time.time;
+    Debug.Log("[Mic Manager] Resetting loop buffer trigger");
+    listeningLoopPassedBuffer = false;
+    micLastSamplePos = 0;
+
+    // start microphone
+    micRecording = Microphone.Start(micDeviceName, true, micLoopDuration, micDeviceFrequency);
+    return micRecording != null;
+  }
+
+  /// <summary>
+  /// Stop reading input into the selected microphone device.
+  /// </summary>
+  private void StopMonitoring()
+  {
+    if (!isInitialised) return;
+
+    // Stop the recording.
+    Microphone.End(micDeviceName); // Stop the audio recording
+
+    OnStoppedMonitoring.Invoke();
+    OnMicLevelUpdated.Invoke(0); // update monitor with silent mic input
+  }
+
+  private void StartListening()
+  {
+    activeListeningBufferOffset = 0;
+    // store current contents of clip buffer for appending
+    int micPosition = Microphone.GetPosition(micDeviceName);
+    Debug.Log($"[Mic Manager] Started listening - micPos: {micPosition}, full buffer: {listeningLoopPassedBuffer}");
+    if (listeningLoopPassedBuffer)
+    {
+      preRecordLoop = new float[micRecording.samples];
+      if (micPosition == micRecording.samples - 1)
+      {
+        micRecording.GetData(preRecordLoop, 0);
+      }
+      else
+      {
+        // increment by 1 to start from the oldest value (the one that will
+        // next be overridden by the mic)
+        micRecording.GetData(preRecordLoop, micPosition + 1);
+      }
+    }
+    else
+    {
+      preRecordLoop = new float[micPosition];
+      micRecording.GetData(preRecordLoop, 0);
+    }
+
+    Debug.Log($"[Mic Manager] Initialised Pre Record Loop with length {preRecordLoop.Length}");
+  }
+
+  private void StopListening()
+  {
+    preRecordLoop = null;
+  }
+
+  /// <summary>
+  /// Select the given microphone device and, if currently recording,
+  /// switch recording to the new device.
+  /// </summary>
+  /// <param name="micIndex"></param>
+  public void SetMicrophone(Int32 micIndex)
+  {
+    //Debug.Log($"[MicManager] Attempting to set microphone to index {micIndex}...");
+    if (micIndex > 0 && micIndex < Microphone.devices.Length)
+    {
+      if (micIndex != micSelectedIndex)
+      {
+        micSelectedIndex = micIndex;
+        micDeviceName = Microphone.devices[micSelectedIndex];
+        Debug.Log($"[MicManager] Set active Microphone Device to {micDeviceName}.");
+
+        if (isInitialised && State != MicState.Idle)
+        {
+          MicState currentState = State;
+          State = MicState.Idle;
+          InitialiseMicrophone();
+          State = currentState;
+        }
+      }
+      //else Debug.Log($"[MicManager] ...But couldn't because it is identical to the current index of {micSelectedIndex}.");
+    }
+    //else Debug.Log($"[MicManager] ...But couldn't because it does not fall within the range of 0 and {Microphone.devices.Length}.");
+  }
+
+  void OnDisable()
+  {
+    State = MicState.Idle;
+  }
+
+  void OnDestroy()
+  {
+    State = MicState.Idle;
+    isInitialised = false;
+  }
 }
