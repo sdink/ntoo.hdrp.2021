@@ -36,11 +36,11 @@ namespace com.rfilkov.kinect
 
         [Tooltip("Minimum distance in meters, used for creating the depth-related images.")]
         [Range(0f, 10f)]
-        public float minDepthDistance = 0.5f;
+        public float minDistance = 0.5f;
 
         [Tooltip("Maximum distance in meters, used for creating the depth-related images.")]
         [Range(0f, 10f)]
-        public float maxDepthDistance = 10f;
+        public float maxDistance = 10f;
 
         [Tooltip("Resolution of the generated point-cloud textures.")]
         public PointCloudResolution pointCloudResolution = PointCloudResolution.DepthCameraResolution;
@@ -229,9 +229,6 @@ namespace com.rfilkov.kinect
         protected KinectUserBodyMerger userBodyMerger = null;
         protected bool userBodyMergerInited = false;
 
-        // joint position filter
-        protected JointPositionsFilter jointPositionFilter = null;
-
 
         // base depth sensor settings
         [System.Serializable]
@@ -298,8 +295,8 @@ namespace com.rfilkov.kinect
             settings.deviceStreamingMode = (int)deviceStreamingMode;
             settings.deviceIndex = deviceIndex;
             settings.recordingFile = recordingFile;
-            settings.minDistance = minDepthDistance;
-            settings.maxDistance = maxDepthDistance;
+            settings.minDistance = minDistance;
+            settings.maxDistance = maxDistance;
 
             return settings;
         }
@@ -313,8 +310,8 @@ namespace com.rfilkov.kinect
             deviceStreamingMode = (KinectInterop.DeviceStreamingMode)settings.deviceStreamingMode;
             deviceIndex = settings.deviceIndex;
             recordingFile = settings.recordingFile;
-            minDepthDistance = settings.minDistance;
-            maxDepthDistance = settings.maxDistance;
+            minDistance = settings.minDistance;
+            maxDistance = settings.maxDistance;
         }
 
 
@@ -328,19 +325,6 @@ namespace com.rfilkov.kinect
             isSyncBodyAndDepth = bSyncBodyAndDepth && ((dwFlags & (KinectInterop.FrameSource.TypeBody | KinectInterop.FrameSource.TypeBodyIndex)) != 0) && ((dwFlags & KinectInterop.FrameSource.TypeDepth) != 0);
 
             consoleLogMessages = kinectManager ? kinectManager.consoleLogMessages : false;
-
-            if (kinectManager && kinectManager.jointPositionSmoothing != SmoothingType.None)
-            {
-                // joint position filter
-                jointPositionFilter = new JointPositionsFilter();
-                jointPositionFilter.Init(kinectManager.jointPositionSmoothing);
-            }
-
-            if ((dwFlags & KinectInterop.FrameSource.TypePose) != 0)
-            {
-                // clear sensor pose
-                SetSensorToWorldMatrix(Vector3.zero, Quaternion.identity, true);
-            }
 
             return null;
         }
@@ -369,9 +353,6 @@ namespace com.rfilkov.kinect
             if (bEnable)
             {
                 frameSourceFlags |= KinectInterop.FrameSource.TypePose;
-
-                // clear sensor pose
-                SetSensorToWorldMatrix(Vector3.zero, Quaternion.identity, true);
             }
             else
             {
@@ -741,7 +722,7 @@ namespace com.rfilkov.kinect
                     }
 
                     sensorData.lastBodyFrameTime = currentBodyTimestamp;
-                    //Debug.Log("D" + deviceIndex + " UpdateBodyTimestamp: " + currentBodyTimestamp + ", BodyCount: " + trackedBodiesCount + ", Now: " + DateTime.Now.Ticks /*.ToString("HH:mm:ss.fff")*/);
+                    //Debug.Log("D" + deviceIndex + " UpdateBodyTimestamp: " + currentBodyTimestamp + ", BodyCount: " + trackedBodiesCount + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
                 }
             }
 
@@ -1166,8 +1147,8 @@ namespace com.rfilkov.kinect
 
                 KinectInterop.SetComputeShaderInt2(pointCloudVertexShader, "PointCloudRes", pointCloudVertexRes.x, pointCloudVertexRes.y);
                 KinectInterop.SetComputeShaderFloat2(pointCloudVertexShader, "SpaceScale", sensorData.sensorSpaceScale.x, sensorData.sensorSpaceScale.y);
-                pointCloudVertexShader.SetInt("MinDepth", (int)(minDepthDistance * 1000f));
-                pointCloudVertexShader.SetInt("MaxDepth", (int)(maxDepthDistance * 1000f));
+                pointCloudVertexShader.SetInt("MinDepth", (int)(minDistance * 1000f));
+                pointCloudVertexShader.SetInt("MaxDepth", (int)(maxDistance * 1000f));
                 pointCloudVertexShader.SetBuffer(pointCloudVertexKernel, "SpaceTable", pointCloudSpaceBuffer);
                 pointCloudVertexShader.SetBuffer(pointCloudVertexKernel, "DepthMap", pointCloudDepthBuffer);
                 pointCloudVertexShader.SetTexture(pointCloudVertexKernel, "PointCloudVertexTex", pointCloudVertexRT);
@@ -1955,14 +1936,13 @@ namespace com.rfilkov.kinect
 
             sensorData.depthImageMaterial.SetInt("_TexResX", sensorData.depthImageWidth);
             sensorData.depthImageMaterial.SetInt("_TexResY", sensorData.depthImageHeight);
-            sensorData.depthImageMaterial.SetInt("_MinDepth", (int)(minDepthDistance * 1000f));
-            sensorData.depthImageMaterial.SetInt("_MaxDepth", (int)(maxDepthDistance * 1000f));
+            sensorData.depthImageMaterial.SetInt("_MinDepth", (int)(minDistance * 1000f));
+            sensorData.depthImageMaterial.SetInt("_MaxDepth", (int)(maxDistance * 1000f));
             sensorData.depthImageMaterial.SetInt("_TotalPoints", depthHistTotalPoints);
             sensorData.depthImageMaterial.SetBuffer("_DepthMap", sensorData.depthImageBuffer);
             sensorData.depthImageMaterial.SetBuffer("_HistMap", sensorData.depthHistBuffer);
 
             Graphics.Blit(null, sensorData.depthImageTexture, sensorData.depthImageMaterial);
-            //Debug.Log("  UpdateSensorTexDepthImg: " + depthHistTotalPoints + " pts");
         }
 
         // updates sensor infrared image
@@ -2007,8 +1987,8 @@ namespace com.rfilkov.kinect
                 Array.Clear(equalBodyBufferData, 0, equalBodyBufferData.Length);
                 bodyHistTotalPoints = 0;
 
-                int depthMinDistance = (int)(minDepthDistance * 1000f);
-                int depthMaxDistance = (int)(maxDepthDistance * 1000f);
+                int depthMinDistance = (int)(minDistance * 1000f);
+                int depthMaxDistance = (int)(maxDistance * 1000f);
 
                 int frameLen = sensorData.depthImage.Length;
                 for (int i = 0; i < frameLen; i++)
@@ -2046,8 +2026,8 @@ namespace com.rfilkov.kinect
                 KinectInterop.SetComputeBufferData(sensorData.bodyIndexBuffer, sensorData.bodyIndexImage, bodyIndexBufferLength, sizeof(uint));
             }
 
-            float minDist = minDepthDistance;  // kinectManager.minUserDistance != 0f ? kinectManager.minUserDistance : minDepthDistance;
-            float maxDist = maxDepthDistance;  // kinectManager.maxUserDistance != 0f ? kinectManager.maxUserDistance : maxDepthDistance;
+            float minDist = kinectManager.minUserDistance != 0f ? kinectManager.minUserDistance : minDistance;
+            float maxDist = kinectManager.maxUserDistance != 0f ? kinectManager.maxUserDistance : maxDistance;
 
             sensorData.bodyImageMaterial.SetInt("_TexResX", sensorData.depthImageWidth);
             sensorData.bodyImageMaterial.SetInt("_TexResY", sensorData.depthImageHeight);
@@ -2088,8 +2068,8 @@ namespace com.rfilkov.kinect
             sensorData.depthTexMaterial.SetBuffer("_DepthMap", sensorData.depthImageBuffer);
             sensorData.depthTexMaterial.SetInt("_TexResX", sensorData.depthImageWidth);
             sensorData.depthTexMaterial.SetInt("_TexResY", sensorData.depthImageHeight);
-            sensorData.depthTexMaterial.SetInt("_MinDepth", (int)(minDepthDistance * 1000f));
-            sensorData.depthTexMaterial.SetInt("_MaxDepth", (int)(maxDepthDistance * 1000f));
+            sensorData.depthTexMaterial.SetInt("_MinDepth", (int)(minDistance * 1000f));
+            sensorData.depthTexMaterial.SetInt("_MaxDepth", (int)(maxDistance * 1000f));
 
             Graphics.Blit(null, sensorData.depthTexTexture, sensorData.depthTexMaterial);
         }
@@ -2333,9 +2313,9 @@ namespace com.rfilkov.kinect
                 Vector3 colorSpacePos1 = UnprojectPoint(sensorData.colorCamIntr, colorPos, 1f);
 
                 if(minDist <= 0)
-                    minDist = (int)(minDepthDistance * 1000f);
+                    minDist = (int)(minDistance * 1000f);
                 if(maxDist <= 0)
-                    maxDist = (int)(maxDepthDistance * 1000f);
+                    maxDist = (int)(maxDistance * 1000f);
 
                 int depthImageW = sensorData.depthImageWidth;
                 int depthImageL = sensorData.depthImage.Length;
@@ -2534,7 +2514,7 @@ namespace com.rfilkov.kinect
 
 
         // initializes the body-data structures and start the body tracking
-        public virtual bool InitBodyTracking(KinectInterop.FrameSource dwFlags, KinectInterop.SensorData sensorData)
+        protected virtual bool InitBodyTracking(KinectInterop.FrameSource dwFlags, KinectInterop.SensorData sensorData)
         {
             if ((dwFlags & KinectInterop.FrameSource.TypeBodyIndex) != 0)
             {
@@ -2555,7 +2535,7 @@ namespace com.rfilkov.kinect
         }
 
         // stops the body tracker and releases its data
-        public virtual void StopBodyTracking(KinectInterop.SensorData sensorData)
+        protected virtual void StopBodyTracking(KinectInterop.SensorData sensorData)
         {
         }
 
@@ -2658,49 +2638,6 @@ namespace com.rfilkov.kinect
                 bodyData.joint[f].trackingState = KinectInterop.TrackingState.NotTracked;
             }
 
-            // ankle left
-            int knee = (int)KinectInterop.JointType.KneeLeft;
-            int ank = (int)KinectInterop.JointType.AnkleLeft;
-            int foot = (int)KinectInterop.JointType.FootLeft;
-
-            if (bodyData.joint[knee].trackingState != KinectInterop.TrackingState.NotTracked &&
-               bodyData.joint[ank].trackingState != KinectInterop.TrackingState.NotTracked &&
-               bodyData.joint[foot].trackingState != KinectInterop.TrackingState.NotTracked)
-            {
-                Vector3 vAnkDir = bodyData.joint[ank].kinectPos - bodyData.joint[knee].kinectPos;
-                Vector3 vFootDir = bodyData.joint[foot].kinectPos - bodyData.joint[ank].kinectPos;
-
-                Vector3 vFootProj = Vector3.Project(vFootDir, vAnkDir);
-                bodyData.joint[ank].kinectPos += vFootProj;
-
-                vAnkDir = bodyData.joint[ank].position - bodyData.joint[knee].position;
-                vFootDir = bodyData.joint[foot].position - bodyData.joint[ank].position;
-
-                vFootProj = Vector3.Project(vFootDir, vAnkDir);
-                bodyData.joint[ank].position += vFootProj;
-            }
-
-            // ankle right
-            knee = (int)KinectInterop.JointType.KneeRight;
-            ank = (int)KinectInterop.JointType.AnkleRight;
-            foot = (int)KinectInterop.JointType.FootRight;
-
-            if (bodyData.joint[knee].trackingState != KinectInterop.TrackingState.NotTracked &&
-               bodyData.joint[ank].trackingState != KinectInterop.TrackingState.NotTracked &&
-               bodyData.joint[foot].trackingState != KinectInterop.TrackingState.NotTracked)
-            {
-                Vector3 vAnkDir = bodyData.joint[ank].kinectPos - bodyData.joint[knee].kinectPos;
-                Vector3 vFootDir = bodyData.joint[foot].kinectPos - bodyData.joint[ank].kinectPos;
-
-                Vector3 vFootProj = Vector3.Project(vFootDir, vAnkDir);
-                bodyData.joint[ank].kinectPos += vFootProj;
-
-                vAnkDir = bodyData.joint[ank].position - bodyData.joint[knee].position;
-                vFootDir = bodyData.joint[foot].position - bodyData.joint[ank].position;
-
-                vFootProj = Vector3.Project(vFootDir, vAnkDir);
-                bodyData.joint[ank].position += vFootProj;
-            }
         }
 
 
@@ -2731,12 +2668,6 @@ namespace com.rfilkov.kinect
 
         // calculates all joint orientations for the given body
         protected virtual void CalcBodyJointOrients(ref KinectInterop.BodyData bodyData)
-        {
-            DoCalcBodyJointOrients(ref bodyData, bIgnoreInferredJoints);
-        }
-
-        // calculates all joint orientations for the given body (static method)
-        public static void DoCalcBodyJointOrients(ref KinectInterop.BodyData bodyData, bool bIgnoreInferredJoints)
         {
             int jointCount = bodyData.joint.Length;
 
@@ -2797,8 +2728,7 @@ namespace com.rfilkov.kinect
                                 }
 
                                 float parDotJoint = Vector3.Dot(parJointDir, jointDir);
-                                //if (joint == (int)KinectInterop.JointType.ElbowLeft)
-                                //    Debug.Log ((KinectInterop.JointType)joint + ": " + parDotJoint);
+                                //Debug.Log (joint + ": " + parDotJoint);
 
                                 if ((parDotJoint >= 0.01f && parDotJoint <= 0.99f) || (parDotJoint >= -0.99f && parDotJoint <= -0.01f))
                                 {
@@ -2808,53 +2738,21 @@ namespace com.rfilkov.kinect
                                         Vector3 fwdDir = Vector3.Cross(-jointDir, upDir).normalized;
                                         if (fwdDir.sqrMagnitude >= 0.5f && upDir.sqrMagnitude >= 0.5f)  // avoid zero-length directions
                                             jointOrientNormal = Quaternion.LookRotation(fwdDir, upDir);
-                                        //if(joint == (int)KinectInterop.JointType.ElbowLeft)
-                                        //    Debug.Log((KinectInterop.JointType)joint + " - F:" + fwdDir + ", U:" + upDir + ", P: " + parJointDir + ", J: " + jointDir);
                                     }
                                     else
                                     {
-                                        // shoulder left
-                                        Vector3 fwdDir = Vector3.zero, upDir = Vector3.zero;
                                         KinectInterop.JointData shCenterData = bodyData.joint[(int)KinectInterop.JointType.ClavicleLeft];
 
-                                        Vector3 spineDir = shCenterData.direction;
+                                        Vector3 spineDir = shCenterData.direction.normalized;
                                         spineDir = new Vector3(spineDir.x, spineDir.y, -spineDir.z).normalized;
 
-                                        fwdDir = Vector3.Cross(-jointDir, spineDir).normalized;
-                                        float fwdDotJoint = Vector3.Dot(fwdDir, Vector3.forward);
-                                        //Debug.Log("fwdDotJointL: " + fwdDotJoint);
-
-                                        if (fwdDotJoint >= 0f && bodyData.joint[(int)KinectInterop.JointType.ElbowLeft].trackingState == KinectInterop.TrackingState.Tracked &&
-                                            bodyData.joint[(int)KinectInterop.JointType.WristLeft].trackingState == KinectInterop.TrackingState.Tracked)
-                                        {
-                                            // get up-dir from elbow
-                                            Vector3 elbowDir = bodyData.joint[(int)KinectInterop.JointType.WristLeft].direction;
-                                            elbowDir = new Vector3(elbowDir.x, elbowDir.y, -elbowDir.z).normalized;
-
-                                            upDir = -Vector3.Cross(-jointDir, elbowDir).normalized;
-                                            fwdDir = Vector3.Cross(-jointDir, upDir).normalized;
-                                            //Debug.Log((KinectInterop.JointType)joint + "*E - U:" + upDir + ", F:" + fwdDir + ", J: " + jointDir + ", E: " + elbowDir);
-                                        }
-                                        else
-                                        {
-                                            // get fwd-dir from spine
-                                            upDir = Vector3.Cross(fwdDir, -jointDir).normalized;
-                                            //Debug.Log((KinectInterop.JointType)joint + "*S - F:" + fwdDir + ", U:" + upDir + ", S:" + spineDir + ", J:" + jointDir);
-                                        }
-
+                                        Vector3 fwdDir = Vector3.Cross(-jointDir, spineDir).normalized;
+                                        Vector3 upDir = Vector3.Cross(fwdDir, -jointDir).normalized;
                                         if (fwdDir.sqrMagnitude >= 0.5f && upDir.sqrMagnitude >= 0.5f)  // avoid zero-length directions
                                             jointOrientNormal = Quaternion.LookRotation(fwdDir, upDir);
                                     }
 
                                     jointData.normalRotation = jointOrientNormal;
-                                }
-                                else
-                                {
-                                    // no angle between bones - use the parent's rotation
-                                    KinectInterop.JointType parJoint = KinectInterop.GetParentJoint((KinectInterop.JointType)joint);
-                                    KinectInterop.JointData parJointData = bodyData.joint[(int)parJoint];
-
-                                    jointData.normalRotation = parJointData.normalRotation;
                                 }
                             }
 
@@ -2938,8 +2836,7 @@ namespace com.rfilkov.kinect
                                 }
 
                                 float parDotJoint = Vector3.Dot(parJointDir, jointDir);
-                                //if (joint == (int)KinectInterop.JointType.ElbowRight)
-                                //    Debug.Log ((KinectInterop.JointType)joint + ": " + parDotJoint);
+                                //Debug.Log (joint + ": " + parDotJoint);
 
                                 if ((parDotJoint >= 0.01f && parDotJoint <= 0.99f) || (parDotJoint >= -0.99f && parDotJoint <= -0.01f))
                                 {
@@ -2949,53 +2846,21 @@ namespace com.rfilkov.kinect
                                         Vector3 fwdDir = Vector3.Cross(jointDir, upDir).normalized;
                                         if (fwdDir.sqrMagnitude >= 0.5f && upDir.sqrMagnitude >= 0.5f)  // avoid zero-length directions
                                             jointOrientNormal = Quaternion.LookRotation(fwdDir, upDir);
-                                        //if(joint == (int)KinectInterop.JointType.ElbowRight)
-                                        //    Debug.Log((KinectInterop.JointType)joint + " - F:" + fwdDir + ", U:" + upDir + ", P: " + parJointDir + ", J: " + jointDir);
                                     }
                                     else
                                     {
-                                        // shoulder right
-                                        Vector3 fwdDir = Vector3.zero, upDir = Vector3.zero;
                                         KinectInterop.JointData shCenterData = bodyData.joint[(int)KinectInterop.JointType.ClavicleRight];
 
                                         Vector3 spineDir = shCenterData.direction.normalized;
                                         spineDir = new Vector3(spineDir.x, spineDir.y, -spineDir.z).normalized;
 
-                                        fwdDir = Vector3.Cross(jointDir, spineDir).normalized;
-                                        float fwdDotJoint = Vector3.Dot(fwdDir, Vector3.forward);
-                                        //Debug.Log("fwdDotJointR: " + fwdDotJoint);
-
-                                        if (fwdDotJoint >= 0f && bodyData.joint[(int)KinectInterop.JointType.ElbowRight].trackingState == KinectInterop.TrackingState.Tracked &&
-                                            bodyData.joint[(int)KinectInterop.JointType.WristRight].trackingState == KinectInterop.TrackingState.Tracked)
-                                        {
-                                            // get up-dir from elbow
-                                            Vector3 elbowDir = bodyData.joint[(int)KinectInterop.JointType.WristRight].direction;
-                                            elbowDir = new Vector3(elbowDir.x, elbowDir.y, -elbowDir.z).normalized;
-
-                                            upDir = -Vector3.Cross(jointDir, elbowDir).normalized;
-                                            fwdDir = Vector3.Cross(jointDir, upDir).normalized;
-                                            //Debug.Log((KinectInterop.JointType)joint + "*E - U:" + upDir + ", F:" + fwdDir + ", J: " + jointDir + ", E: " + elbowDir);
-                                        }
-                                        else
-                                        {
-                                            // get fwd-dir from spine
-                                            upDir = Vector3.Cross(fwdDir, jointDir).normalized;
-                                            //Debug.Log((KinectInterop.JointType)joint + " - F:" + fwdDir + ", U:" + upDir + ", S:" + spineDir + ", J:" + jointDir);
-                                        }
-
+                                        Vector3 fwdDir = Vector3.Cross(jointDir, spineDir).normalized;
+                                        Vector3 upDir = Vector3.Cross(fwdDir, jointDir).normalized;
                                         if (fwdDir.sqrMagnitude >= 0.5f && upDir.sqrMagnitude >= 0.5f)  // avoid zero-length directions
                                             jointOrientNormal = Quaternion.LookRotation(fwdDir, upDir);
                                     }
 
                                     jointData.normalRotation = jointOrientNormal;
-                                }
-                                else
-                                {
-                                    // no angle between bones - use the parent's rotation
-                                    KinectInterop.JointType parJoint = KinectInterop.GetParentJoint((KinectInterop.JointType)joint);
-                                    KinectInterop.JointData parJointData = bodyData.joint[(int)parJoint];
-
-                                    jointData.normalRotation = parJointData.normalRotation;
                                 }
                             }
 
@@ -3050,30 +2915,6 @@ namespace com.rfilkov.kinect
                                 }
                             }
 
-                        }
-                        else if (joint == (int)KinectInterop.JointType.ClavicleLeft)
-                        {
-                            Vector3 parJointDir = jointData.direction.normalized;
-                            parJointDir = new Vector3(parJointDir.x, parJointDir.y, -parJointDir.z).normalized;
-
-                            Vector3 fwdDir = Vector3.Cross(-jointDir, parJointDir).normalized;
-                            Vector3 upDir = Vector3.Cross(fwdDir, -jointDir).normalized;
-                            if (fwdDir.sqrMagnitude >= 0.5f && upDir.sqrMagnitude >= 0.5f)  // avoid zero-length directions
-                                jointOrientNormal = Quaternion.LookRotation(fwdDir, upDir);
-
-                            jointData.normalRotation = jointOrientNormal;
-                        }
-                        else if (joint == (int)KinectInterop.JointType.ClavicleRight)
-                        {
-                            Vector3 parJointDir = jointData.direction.normalized;
-                            parJointDir = new Vector3(parJointDir.x, parJointDir.y, -parJointDir.z).normalized;
-
-                            Vector3 fwdDir = Vector3.Cross(jointDir, parJointDir).normalized;
-                            Vector3 upDir = Vector3.Cross(fwdDir, jointDir).normalized;
-                            if (fwdDir.sqrMagnitude >= 0.5f && upDir.sqrMagnitude >= 0.5f)  // avoid zero-length directions
-                                jointOrientNormal = Quaternion.LookRotation(fwdDir, upDir);
-
-                            jointData.normalRotation = jointOrientNormal;
                         }
                         else
                         {

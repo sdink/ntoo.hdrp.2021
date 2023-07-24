@@ -53,7 +53,7 @@
     <UnityVersion>2020.3.41f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\MultiScene\LoadFirstLevel.cs" />
@@ -65,6 +65,7 @@
     <Compile Include="Assets\Faceware\Scripts\LiveClientAdv.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\PoseDetectionDemo\Scripts\StaticPoseDetector.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\FittingRoomDemo\Scripts\ModelSelector.cs" />
+    <Compile Include="Assets\DOTDOT\Audio Utilities\Mic Manager\MicManager.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\SceneMeshRendererGpu.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\InteractionDemo\Scripts\GrabDropScript.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BackgroundRemovalByDist.cs" />
@@ -74,12 +75,14 @@
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Interfaces\Kinect4AzureSyncher.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\ForegroundBlendRenderer.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_anxiety.cs" />
+    <Compile Include="Assets\DOTDOT\Utils\CircularBuffer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\PhotoShooter.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\DepthImageViewer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\AvatarScaler.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\MocapAnimatorDemo\Scripts\MocapPlayer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\GestureDemo\Scripts\ModelGestureListener.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Samples\JointPositionView.cs" />
+    <Compile Include="Assets\DOTDOT\Audio Utilities\Mic Manager\MicTesting.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\UserSkeletonCollider.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\VariousDemos\Scripts\SimpleHolographicCamera.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\PointCloudTarget.cs" />
@@ -91,6 +94,7 @@
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Interfaces\KinectFloorDetector.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Interfaces\NetClientInterface.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_giggle.cs" />
+    <Compile Include="Assets\DOTDOT\Audio Utilities\AudioPlaybackQueue.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_erlenesmile.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_disgust.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Samples\StartStopDepthSensors.cs" />
@@ -120,23 +124,30 @@
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\BackgroundRemovalDemo\Scripts\UserImageMover.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\ForegroundToRawImage.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\BallSpawner.cs" />
+    <Compile Include="Assets\DOTDOT\Scripts\MicLevelMonitor.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_erlenesurprise.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\SceneMeshRenderer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\FittingRoomDemo\Scripts\CategorySelector.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sadelaughter.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_satisfaction.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BackgroundRemovalByBodyBounds.cs" />
+    <Compile Include="Assets\DOTDOT\NTOO\NtooManager.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\BackgroundRemovalDemo\Scripts\ColorImageJointOverlayer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\OverlayDemo\Scripts\LinePainter.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\EggSpawner.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_melancholy.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\AvatarDemo\Scripts\OffsetNodeMover.cs" />
+    <Compile Include="Assets\DOTDOT\Scripts\UserPresence.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_lipsmack.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\VariousDemos\Scripts\HeightEstimator.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Interfaces\DepthSensorInterface.cs" />
+    <Compile Include="Assets\DOTDOT\Audio Utilities\Mic Manager\MicUiController.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Samples\MouseCameraOrbit.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_alert.cs" />
+    <Compile Include="Assets\DOTDOT\Network Managers\WebSocket\WebSocketManager.cs" />
+    <Compile Include="Assets\DOTDOT\NTOO Client\NtooClientManager.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\MocapAnimatorDemo\Scripts\MocapRecorder.cs" />
+    <Compile Include="Assets\DOTDOT\Scripts\PresenceDetector.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Interfaces\DummyK4AInterface.cs" />
     <Compile Include="Assets\Faceware\Scripts\LiveHelpers.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\DepthSpriteViewer.cs" />
@@ -154,6 +165,7 @@
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\BlobDetectionDemo\Scripts\CollisionLogger.cs" />
     <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SALSA_Template_CustomAudioAnalysisPlugin.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\PointCloudDemo\Scripts\ThreeDMovieRenderer.cs" />
+    <Compile Include="Assets\DOTDOT\Audio Utilities\Mic Manager\MicSelectorBehaviour.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\SensorPoseStartupEstimator.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_shock.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sadness.cs" />
@@ -168,10 +180,11 @@
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_anger.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\randomanim_idle.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Interfaces\DepthSensorBase.cs" />
-    <Compile Include="Assets\ntoo.live.bust\scripts\blackpixel_postprocessing.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\UserMeshRendererGpu.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\HmdHeadMover.cs" />
+    <Compile Include="Assets\DOTDOT\Network Managers\NetworkConnectionManager.cs" />
     <Compile Include="Assets\Faceware\Scripts\LiveBase.cs" />
+    <Compile Include="Assets\DOTDOT\Utils\ExtendedBuffer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\InteractionDemo\Scripts\GrabRotateScript.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_surprise.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BackgroundColorCamUserImage.cs" />
@@ -202,6 +215,7 @@
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\RecorderDemo\Scripts\PlayerDetectorController.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BackgroundColorCamInfraredImage.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Interfaces\RealSenseInterface.cs" />
+    <Compile Include="Assets\DOTDOT\Audio Utilities\WaveUtility.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Filters\JointPositionsFilter.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BodySlicer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\BlobDetectionDemo\Scripts\Blob.cs" />
@@ -214,6 +228,7 @@
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\ForegroundToRenderer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\JumpTrigger.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Filters\MahonyAHRS.cs" />
+    <Compile Include="Assets\DOTDOT\NTOO\Audio\Speaker Manager\SpeakerManager.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sadesad.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_smile.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Samples\PlayMultipleRecordings.cs" />
@@ -229,6 +244,14 @@
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_fear.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BackgroundStaticImage.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\SceneBlendRenderer.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Examples\Scripts\AmplitudeSamplesUI.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SalsaTextSync_ExampleBasicGUI.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SalsaTextSync_ExampleTextSyncTester.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Addons\SalsaTextSync\SalsaTextSync.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Plugins\Amplitude.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Examples\Scripts\AmplitudeTester.cs" />
+    <Compile Include="Assets\ntoo.live.bust\scripts\blackpixel_postprocessing.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Addons\AmplitudeSALSA\AmplitudeSALSA.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\AzureKinectExamples\Resources\UserHistImageShader.shader" />
@@ -248,6 +271,7 @@
     <None Include="Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\System.Runtime.CompilerServices.Unsafe.dll" />
     <None Include="Assets\AzureKinectExamples\KinectDemos\PointCloudDemo\VFX\DownloadMoreVFX.txt" />
     <None Include="Assets\AzureKinectExamples\_Readme\致盗版使用者-ToPiracyUsers.txt" />
+    <None Include="Assets\Packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll" />
     <None Include="Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\onnxruntime.dll" />
     <None Include="Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\AzureKinectSDK_License.txt" />
     <None Include="Assets\AzureKinectExamples\KinectDemos\PointCloudDemo\Attribution.txt" />
@@ -528,14 +552,14 @@
     <Reference Include="UnityEditor.UnityConnectModule">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\Managed\UnityEngine\UnityEditor.UnityConnectModule.dll</HintPath>
     </Reference>
-    <Reference Include="SALSA-LipSync">
-      <HintPath>Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\SALSA-LipSync.dll</HintPath>
-    </Reference>
     <Reference Include="Intel.RealSense">
       <HintPath>Assets\AzureKinectExamples\SDK\RealSenseSDK2.0\Plugins\Intel.RealSense.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.Kinect.Sensor">
       <HintPath>Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\Microsoft.Azure.Kinect.Sensor.dll</HintPath>
+    </Reference>
+    <Reference Include="SALSA-LipSync">
+      <HintPath>Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\SALSA-LipSync.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe">
       <HintPath>Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
@@ -545,6 +569,9 @@
     </Reference>
     <Reference Include="Kinect2UnityWrapper">
       <HintPath>Assets\AzureKinectExamples\SDK\KinectSDK2.0\Plugins\Kinect2UnityWrapper.dll</HintPath>
+    </Reference>
+    <Reference Include="websocket-sharp">
+      <HintPath>Assets\Packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>

@@ -45,7 +45,6 @@ namespace com.rfilkov.kinect
         // userId to index
         private Dictionary<ulong, int> dictUserIdToIndex = new Dictionary<ulong, int>();
 
-
         /// Initializes a new instance of the class.
         public JointPositionsFilter()
         {
@@ -226,35 +225,34 @@ namespace com.rfilkov.kinect
         // Update the filter for all body joints
         private void FilterBodyJoints(ref KinectInterop.BodyData bodyData, int bodyIndex, SmoothParameters tempSmoothingParams)
         {
-            KinectManager kinectManager = KinectManager.Instance;
-            int jointCount = kinectManager.GetJointCount();
-            long lastUpdateTime = history[bodyIndex].lastUpdateTime;
+            KinectManager manager = KinectManager.Instance;
+            int jointCount = manager.GetJointCount();
 
             for (int jointIndex = 0; jointIndex < jointCount; jointIndex++)
             {
-                //// If not tracked, we smooth a bit more by using a bigger jitter radius
-                //// Always filter end joints highly as they are more noisy
-                //if (bodyData.joint[jointIndex].trackingState != KinectInterop.TrackingState.Tracked ||
-                //    jointIndex == (int)KinectInterop.JointType.FootLeft || jointIndex == (int)KinectInterop.JointType.FootRight ||
-                //    jointIndex == (int)KinectInterop.JointType.HandLeft || jointIndex == (int)KinectInterop.JointType.HandRight ||
-                //    jointIndex == (int)KinectInterop.JointType.HandtipLeft || jointIndex == (int)KinectInterop.JointType.HandtipRight ||
-                //    jointIndex == (int)KinectInterop.JointType.ThumbLeft || jointIndex == (int)KinectInterop.JointType.ThumbRight)
-                ////|| jointIndex == (int)KinectInterop.JointType.Head)
-                //{
-                //    tempSmoothingParams.jitterRadius = smoothParameters.jitterRadius * 2.0f;
-                //    tempSmoothingParams.maxDeviationRadius = smoothParameters.maxDeviationRadius * 2.0f;
-                //}
-                //else
+                // If not tracked, we smooth a bit more by using a bigger jitter radius
+                // Always filter end joints highly as they are more noisy
+                if (bodyData.joint[jointIndex].trackingState != KinectInterop.TrackingState.Tracked ||
+                    jointIndex == (int)KinectInterop.JointType.FootLeft || jointIndex == (int)KinectInterop.JointType.FootRight ||
+                    jointIndex == (int)KinectInterop.JointType.HandLeft || jointIndex == (int)KinectInterop.JointType.HandRight ||
+                    jointIndex == (int)KinectInterop.JointType.HandtipLeft || jointIndex == (int)KinectInterop.JointType.HandtipRight ||
+                    jointIndex == (int)KinectInterop.JointType.ThumbLeft || jointIndex == (int)KinectInterop.JointType.ThumbRight)
+                    //|| jointIndex == (int)KinectInterop.JointType.Head)
+                {
+                    tempSmoothingParams.jitterRadius = smoothParameters.jitterRadius * 2.0f;
+                    tempSmoothingParams.maxDeviationRadius = smoothParameters.maxDeviationRadius * 2.0f;
+                }
+                else
                 {
                     tempSmoothingParams.jitterRadius = smoothParameters.jitterRadius;
                     tempSmoothingParams.maxDeviationRadius = smoothParameters.maxDeviationRadius;
                 }
 
-                bodyData.joint[jointIndex].position = FilterJoint(bodyData.joint[jointIndex].position, bodyIndex, jointIndex, tempSmoothingParams);
+                Vector3 jPosition = bodyData.joint[jointIndex].trackingState != KinectInterop.TrackingState.NotTracked ? bodyData.joint[jointIndex].position : Vector3.zero;
+                bodyData.joint[jointIndex].position = FilterJoint(jPosition, bodyIndex, jointIndex, tempSmoothingParams);
             }
 
             bodyData.position = bodyData.joint[0].position;
-            //Debug.Log("  updated pos history for userId: " + history[bodyIndex].userId + ", index: " + bodyIndex + ", time: " + history[bodyIndex].lastUpdateTime + " (" + lastUpdateTime + ")");
         }
 
         // Update the filter for one joint
@@ -331,6 +329,7 @@ namespace com.rfilkov.kinect
             DateTime dtNow = DateTime.UtcNow;
             history[bodyIndex].lastUpdateTime = dtNow.Ticks;
 
+            //Debug.Log("Updated history for userId: " + history[bodyIndex].userId + ", index: " + bodyIndex + ", time: " + dtNow + " (" + history[bodyIndex].lastUpdateTime + ")");
             return predictedPosition;
         }
 
@@ -369,7 +368,7 @@ namespace com.rfilkov.kinect
             {
                 if (history[i].userId != 0 && (timeNow - history[i].lastUpdateTime) >= 10000000)
                 {
-                    //Debug.Log("Removed pos history for userId " + history[i].userId + ", index: " + i + ", time: " + dtNow + ", not used since: " + (timeNow - history[i].lastUpdateTime) + " ticks");
+                    //Debug.Log("Removed history for userId " + history[i].userId + ", index: " + i + ", time: " + dtNow + ", not used since: " + (timeNow - history[i].lastUpdateTime) + " ticks");
 
                     history[i].userId = 0;
                     history[i].lastUpdateTime = 0;

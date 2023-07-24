@@ -11,15 +11,6 @@ namespace com.rfilkov.kinect
     /// </summary>
     public class Kinect4AzureInterface : DepthSensorBase
     {
-        // body tracking sdk's tools folder - used to copy the needed libraries and files.
-        // TODO - please change the path below, if the BT-SDK tools-folder in your case is different 
-        internal const string BODY_TRACKING_TOOLS_FOLDER = "C:/Program Files/Azure Kinect Body Tracking SDK/tools";
-
-        // body tracking model file name - lite or full model
-        internal const string BODY_TRACKING_FULL_MODEL_FILE = "dnn_model_2_0_op11.onnx";
-        internal const string BODY_TRACKING_LITE_MODEL_FILE = "dnn_model_2_0_lite_op11.onnx";
-
-
         [Tooltip("Color camera resolution.")]
         public ColorCameraMode colorCameraMode = ColorCameraMode._1920_x_1080_30Fps;
         public enum ColorCameraMode : int { _1280_x_720_30Fps = 1, _1920_x_1080_30Fps = 2, _2560_x_1440_30Fps = 3, _2048_x_1536_30Fps = 4, _3840_x_2160_30Fps = 5, _4096_x_3072_15Fps = 6 }
@@ -54,13 +45,6 @@ namespace com.rfilkov.kinect
 
         [Tooltip("Sensor orientation hint to the Body Tracking SDK.")]
         public k4abt_sensor_orientation_t bodyTrackingSensorOrientation = k4abt_sensor_orientation_t.K4ABT_SENSOR_ORIENTATION_DEFAULT;
-
-        [Tooltip("Processing mode to be used by the Body Tracking SDK.")]
-        public k4abt_tracker_processing_mode_t bodyTrackingProcessingMode = k4abt_tracker_processing_mode_t.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA;
-
-        [Tooltip("Model type (full or lite), to be used by the Body Tracking SDK.")]
-        private BodyTrackingModelType bodyTrackingModelType = BodyTrackingModelType.FullModel;
-        public enum BodyTrackingModelType : int { FullModel = 0, LiteModel = 1 }
 
         [Tooltip("Whether to try to detect the floor plane, to estimate the sensor position and rotation.")]
         public bool detectFloorForPoseEstimation = true;
@@ -97,7 +81,6 @@ namespace com.rfilkov.kinect
         private long startTimeOffset = 0;
 
         // playback and record
-        public Recording kinectRecording = null;
         public Playback kinectPlayback = null;
         private long playbackStartTime = 0;
 
@@ -145,9 +128,9 @@ namespace com.rfilkov.kinect
         private Capture bodyOutputCapture = null;
         private object bodyCaptureLock = new object();
 
-        protected float leftHandFingerAngle = 0f;
-        protected float rightHandFingerAngle = 0f;
-        protected ulong lastHandStatesTimestamp = 0;
+        //protected float leftHandFingerAngle = 0f;
+        //protected float rightHandFingerAngle = 0f;
+        //protected ulong lastHandStatesTimestamp = 0;
 
         // coord mapper transformation & BI image
         public Calibration coordMapperCalib;
@@ -174,8 +157,7 @@ namespace com.rfilkov.kinect
             public float bodyTemporalSmoothing = 0f;  // by-default value
             public float playbackPosSeconds;
             public bool loopPlayback;
-            public int bodyTrackingSensorOrientation = (int)k4abt_sensor_orientation_t.K4ABT_SENSOR_ORIENTATION_DEFAULT;  // by-default value
-            public int bodyTrackingProcessingMode = (int)k4abt_tracker_processing_mode_t.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA;  // by-default value
+            public int bodyTrackingSensorOrientation = 0;  // by-default value
             public bool detectFloorForPoseEstimation = true;  // by-default value
         }
 
@@ -211,7 +193,6 @@ namespace com.rfilkov.kinect
             extSettings.playbackPosSeconds = playbackPosSeconds;
             extSettings.loopPlayback = loopPlayback;
             extSettings.bodyTrackingSensorOrientation = (int)bodyTrackingSensorOrientation;
-            extSettings.bodyTrackingProcessingMode = (int)bodyTrackingProcessingMode;
             extSettings.detectFloorForPoseEstimation = detectFloorForPoseEstimation;
 
             return settings;
@@ -237,7 +218,6 @@ namespace com.rfilkov.kinect
             loopPlayback = extSettings.loopPlayback;
 
             bodyTrackingSensorOrientation = (k4abt_sensor_orientation_t)extSettings.bodyTrackingSensorOrientation;
-            bodyTrackingProcessingMode = (k4abt_tracker_processing_mode_t)extSettings.bodyTrackingProcessingMode;
             detectFloorForPoseEstimation = extSettings.detectFloorForPoseEstimation;
         }
 
@@ -432,22 +412,6 @@ namespace com.rfilkov.kinect
 
                 // expected master-slave delay
                 expSensorDelay = kinectConfig.SuboridinateDelayOffMaster.Ticks + kinectConfig.DepthDelayOffColor.Ticks;
-
-                // create recording if needed
-                if (deviceStreamingMode == KinectInterop.DeviceStreamingMode.SaveRecording)
-                {
-                    if (!string.IsNullOrEmpty(recordingFile))
-                    {
-                        if (consoleLogMessages)
-                            Debug.Log("  Recording to file: " + recordingFile);
-
-                        kinectRecording = new Recording(recordingFile, kinectSensor, kinectConfig);
-                    }
-                    else
-                    {
-                        Debug.LogError("Save-recording selected, but the path to recording file is missing.");
-                    }
-                }
             }
 
             // reset the frame number
@@ -460,7 +424,7 @@ namespace com.rfilkov.kinect
             sensorData.sensorName = sensorName;
             sensorData.sensorCaps = sensorCaps;
 
-            // flip color & depth image horizontally and vertically
+            // flip color & depth image vertically
             sensorData.colorImageScale = new Vector3(-1f, -1f, 1f);
             sensorData.depthImageScale = new Vector3(-1f, -1f, 1f);
             sensorData.infraredImageScale = new Vector3(-1f, -1f, 1f);
@@ -629,17 +593,6 @@ namespace com.rfilkov.kinect
                 // close the playback file
                 kinectPlayback.Dispose();
                 kinectPlayback = null;
-            }
-
-            if(kinectRecording != null)
-            {
-                // close the recording file
-                kinectRecording.CloseRecordingFile();
-                if (consoleLogMessages)
-                    Debug.Log("  Finished recording to file: " + recordingFile);
-
-                kinectRecording.Dispose();
-                kinectRecording = null;
             }
 
             if(sensorSyncher != null)
@@ -869,7 +822,7 @@ namespace com.rfilkov.kinect
             // update the floor detector, if needed
             if (detectFloorForPoseEstimation && floorDetector != null)
             {
-                if(floorDetector.UpdateFloorDetector(sensorData.depthImage, sensorData.lastDepthFrameTime, ref depthFrameLock, minDepthDistance, maxDepthDistance))
+                if(floorDetector.UpdateFloorDetector(sensorData.depthImage, sensorData.lastDepthFrameTime, ref depthFrameLock, minDistance, maxDistance))
                 {
                     lock (poseFrameLock)
                     {
@@ -1313,16 +1266,8 @@ namespace com.rfilkov.kinect
                         }
 
                         int bufCaptureLen = ci;
-                        int lastCapIndex = bufCaptureLen - 1;
-
                         if (bufCaptureLen > 0)
                         {
-                            if (kinectRecording != null)
-                            {
-                                // save the last capture ti the recording
-                                kinectRecording.WriteCapture(bufCaptures[lastCapIndex]);
-                            }
-
                             if (sensorSyncher != null && syncSensorIndex >= 0)  // check for synched device
                             {
                                 // process all captures
@@ -1338,6 +1283,7 @@ namespace com.rfilkov.kinect
                             else
                             {
                                 // process the last capture only
+                                int lastCapIndex = bufCaptureLen - 1;
                                 for (ci = 0; ci < lastCapIndex; ci++)
                                 {
                                     //Debug.LogWarning("D" + deviceIndex + " Disposing capture. Timestamp: " + bufCapTimes[ci] + ", CapIndex: " + ci);
@@ -1854,27 +1800,27 @@ namespace com.rfilkov.kinect
 
                 int iAccDepth = (int)CalibrationDeviceType.Accel * (int)CalibrationDeviceType.Num + (int)CalibrationDeviceType.Depth;
                 float[] accDepthRot = coordMapperCalib.DeviceExtrinsics[iAccDepth].Rotation;
+                //Debug.Log("accDepthRot: " + accDepthRot[0] + ", " + accDepthRot[1] + ", " + accDepthRot[3] + ", ..., " + accDepthRot[8]);
+                //floorDetector.UpdateImuUpVector(vAccSample, accDepthRot);
 
                 Vector3 Rx = new Vector3(accDepthRot[0], accDepthRot[1], accDepthRot[2]);
                 Vector3 Ry = new Vector3(accDepthRot[3], accDepthRot[4], accDepthRot[5]);
                 Vector3 Rz = new Vector3(accDepthRot[6], accDepthRot[7], accDepthRot[8]);
 
                 Vector3 imuUpVector = new Vector3(Vector3.Dot(Rx, vAccSample), Vector3.Dot(Ry, vAccSample), Vector3.Dot(Rz, vAccSample));
-                //Debug.Log("accSample: " + vAccSample + ", upVector: " + imuUpVector);
-
                 floorDetector.UpdateImuUpVector(imuUpVector);
             }
         }
 
 
         // initializes the body-data structures and starts the body tracking
-        public bool InitBodyTracking(KinectInterop.FrameSource dwFlags, KinectInterop.SensorData sensorData, Calibration calibration, bool bCreateTracker)
+        private bool InitBodyTracking(KinectInterop.FrameSource dwFlags, KinectInterop.SensorData sensorData, Calibration calibration, bool bCreateTracker)
         {
             try
             {
                 if ((dwFlags & KinectInterop.FrameSource.TypeDepth) != 0)  // check for depth stream
                 {
-                    string bodyTrackingPath = BODY_TRACKING_TOOLS_FOLDER;
+                    string bodyTrackingPath = KinectInterop.BODY_TRACKING_TOOLS_FOLDER;
                     if (!string.IsNullOrEmpty(bodyTrackingPath) && bodyTrackingPath[bodyTrackingPath.Length - 1] != '/' && bodyTrackingPath[bodyTrackingPath.Length - 1] != '\\')
                     {
                         bodyTrackingPath += "/";
@@ -1891,37 +1837,15 @@ namespace com.rfilkov.kinect
                     }
 
                     // copy the needed libraries
-                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "cublas64_100.dll", ".");  // v1.0.1
-                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "cudart64_100.dll", ".");
-                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn64_7.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cublas64_100.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudart64_100.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn64_7.dll", ".");
 
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cublas64_11.dll", ".");  // v1.1.1
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cublasLt64_11.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudart64_110.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn_cnn_infer64_8.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn_ops_infer64_8.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn64_8.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cufft64_10.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "directml.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "myelin64_1.dll", ".", true);  // v1.1.0
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvinfer.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvinfer_plugin.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvrtc64_111_0.dll", ".", true);  // v1.1.0
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvrtc-builtins64_111.dll", ".", true);  // v1.1.0
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvrtc64_112_0.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvrtc-builtins64_114.dll", ".");
-
+                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "k4abt.dll", ".");
                     KinectInterop.CopyFolderFile(bodyTrackingPath, "onnxruntime.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "onnxruntime_providers_cuda.dll", ".");  // v1.1.1
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "onnxruntime_providers_shared.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "onnxruntime_providers_tensorrt.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "vcomp140.dll", ".", true);
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "vcomp140.dll", ".");
 
-                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "dnn_model_2_0.onnx", ".");
-                    string bodyTrackingModelFile = BODY_TRACKING_FULL_MODEL_FILE;
-                    if (bodyTrackingModelType == BodyTrackingModelType.LiteModel)  // v1.1.0
-                        bodyTrackingModelFile = BODY_TRACKING_LITE_MODEL_FILE;
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, bodyTrackingModelFile, ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "dnn_model_2_0.onnx", ".");
 
                     // init basic variables
                     base.InitBodyTracking(dwFlags, sensorData);
@@ -1933,14 +1857,7 @@ namespace com.rfilkov.kinect
 
                     if (bCreateTracker)
                     {
-                        k4abt_tracker_configuration_t btConfig = new k4abt_tracker_configuration_t();
-                        btConfig.sensor_orientation = bodyTrackingSensorOrientation;
-                        btConfig.processing_mode = bodyTrackingProcessingMode;  // k4abt_tracker_processing_mode_t.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA;
-                        btConfig.gpu_device_id = 0;  // 1st GPU
-                        btConfig.model_path = bodyTrackingModelFile;
-                        //Debug.Log("Loading BT model: " + bodyTrackingModelFile);
-
-                        bodyTracker = new BodyTracking(calibration, btConfig);
+                        bodyTracker = new BodyTracking(calibration, bodyTrackingSensorOrientation, k4abt_tracker_processing_mode_t.K4ABT_TRACKER_PROCESSING_MODE_GPU, 0);
                         bodyTracker.SetTemporalSmoothing(bodyTemporalSmoothing);  // 0f
                         //Debug.Log("BodyTemporalSmoothing: " + bodyTemporalSmoothing);
 
@@ -1972,7 +1889,7 @@ namespace com.rfilkov.kinect
 
 
         // stops the body tracker and releases its data
-        public override void StopBodyTracking(KinectInterop.SensorData sensorData)
+        protected override void StopBodyTracking(KinectInterop.SensorData sensorData)
         {
             if (bodyTrackerThread != null)
             {
@@ -2441,14 +2358,11 @@ namespace com.rfilkov.kinect
                                     }
                                 }
 
+                                // estimate hand states
+                                CalcBodyHandStates(ref bodyData, rawBodyTimestamp);
+
                                 // estimate additional joints
                                 CalcBodySpecialJoints(ref bodyData);
-
-                                // filter joint positions
-                                if (jointPositionFilter != null)
-                                {
-                                    jointPositionFilter.UpdateFilter(ref bodyData);
-                                }
 
                                 // calculate bone dirs
                                 KinectInterop.CalcBodyJointDirs(ref bodyData);
@@ -2460,17 +2374,9 @@ namespace com.rfilkov.kinect
                                 bodyData.normalRotation = bodyData.joint[0].normalRotation;
                                 bodyData.mirroredRotation = bodyData.joint[0].mirroredRotation;
 
-                                // estimate hand states
-                                CalcBodyHandStates(ref bodyData, rawBodyTimestamp);
-
                                 alTrackedBodies[i] = bodyData;
-                                //Debug.Log("  (T)User ID: " + bodyData.liTrackingID + ", body: " + i + ", bi: " + bodyData.iBodyIndex + ", pos: " + bodyData.joint[0].kinectPos + ", rot: " + bodyData.joint[0].normalRotation.eulerAngles + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
-                            }
 
-                            // clean up user history
-                            if (jointPositionFilter != null)
-                            {
-                                jointPositionFilter.CleanUpUserHistory();
+                                //Debug.Log("  (T)User ID: " + bodyData.liTrackingID + ", body: " + i + ", bi: " + bodyData.iBodyIndex + ", pos: " + bodyData.joint[0].kinectPos + ", rot: " + bodyData.joint[0].normalRotation.eulerAngles + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
                             }
                         }
                     }
@@ -2501,9 +2407,9 @@ namespace com.rfilkov.kinect
         // estimates hand states for the given body
         private void CalcBodyHandStates(ref KinectInterop.BodyData bodyData, ulong bodyTimestamp)
         {
-            ulong uTimeDelta = bodyTimestamp - lastHandStatesTimestamp;
-            float fTimeDelta = (float)uTimeDelta / 10000000f;
-            float fTimeSmooth = 5f * fTimeDelta;
+            //ulong uTimeDelta = bodyTimestamp - lastHandStatesTimestamp;
+            //float fTimeDelta = (float)uTimeDelta / 10000000f;
+            //float fTimeSmooth = 5f * fTimeDelta;
 
             int h = (int)KinectInterop.JointType.WristLeft;
             int f = (int)KinectInterop.JointType.HandtipLeft;
@@ -2513,10 +2419,9 @@ namespace com.rfilkov.kinect
                 bodyData.joint[f].trackingState != KinectInterop.TrackingState.NotTracked)
             {
                 lHandFingerAngle = Quaternion.Angle(bodyData.joint[h].normalRotation, bodyData.joint[f].normalRotation);
-
-                lHandFingerAngle = (leftHandFingerAngle + lHandFingerAngle) / 2f;  // Mathf.Lerp(leftHandFingerAngle, lHandFingerAngle, fTimeSmooth);
-                bodyData.leftHandState = (lHandFingerAngle >= 40f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;  // 50f
-                //bodyData.leftHandState = (lHandFingerAngle >= 40f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;  // 50f
+                //leftHandFingerAngle = Mathf.Lerp(leftHandFingerAngle, lHandFingerAngle, fTimeSmooth);
+                //bodyData.leftHandState = (leftHandFingerAngle >= 50f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;
+                bodyData.leftHandState = (lHandFingerAngle >= 50f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;
             }
             else
             {
@@ -2531,25 +2436,18 @@ namespace com.rfilkov.kinect
                 bodyData.joint[f].trackingState != KinectInterop.TrackingState.NotTracked)
             {
                 rHandFingerAngle = Quaternion.Angle(bodyData.joint[h].normalRotation, bodyData.joint[f].normalRotation);
-
-                rHandFingerAngle = (rightHandFingerAngle + rHandFingerAngle) / 2f;  // Mathf.Lerp(rightHandFingerAngle, rHandFingerAngle, fTimeSmooth);
-                bodyData.rightHandState = (rHandFingerAngle >= 40f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;  // 50f
-                //bodyData.rightHandState = (rHandFingerAngle >= 40f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open; // 50f
+                //rightHandFingerAngle = Mathf.Lerp(rightHandFingerAngle, rHandFingerAngle, fTimeSmooth);
+                //bodyData.rightHandState = (rightHandFingerAngle >= 50f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;
+                bodyData.rightHandState = (rHandFingerAngle >= 50f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;
             }
             else
             {
                 bodyData.rightHandState = KinectInterop.HandState.NotTracked;
             }
 
-            //Debug.Log("LHA: " + (int)lHandFingerAngle + ", RHA: " + (int)rHandFingerAngle +
-            //    ", LH: " + bodyData.leftHandState + ", RH: " + bodyData.rightHandState + ", Timestamp: " + bodyTimestamp);
-
-            if(fTimeSmooth >= 1f)
-            {
-                leftHandFingerAngle = lHandFingerAngle;
-                rightHandFingerAngle = rHandFingerAngle;
-                lastHandStatesTimestamp = bodyTimestamp;
-            }
+            //Debug.Log("LH: " + bodyData.leftHandState + ", RH: " + bodyData.rightHandState + ", LHA: " + lHandFingerAngle + 
+            //    ", RHA: " + rHandFingerAngle + ", Timestamp: " + bodyTimestamp);
+            //lastHandStatesTimestamp = bodyTimestamp;
         }
 
         private static readonly KinectInterop.TrackingState[] BtConf2TrackingState =
@@ -2621,21 +2519,10 @@ namespace com.rfilkov.kinect
         // calculates all joint orientations for the given body
         protected override void CalcBodyJointOrients(ref KinectInterop.BodyData bodyData)
         {
-            base.CalcBodyJointOrients(ref bodyData);
-
             if (bodyData.bIsTracked)
             {
-                if (bIgnoreZCoordinates)
+                for (int j = 0; j < (int)KinectInterop.JointType.Count; j++)
                 {
-                    //base.CalcBodyJointOrients(ref bodyData);
-                    return;
-                }
-
-                //for (int j = 0; j < (int)KinectInterop.JointType.Count; j++)
-                {
-                    // additionally estimate head orientation (hinted by Garrett Tuer)
-                    int j = (int)KinectInterop.JointType.Head;
-
                     if (bodyData.joint[j].trackingState != KinectInterop.TrackingState.NotTracked)
                     {
                         Quaternion jointOrient = bodyData.joint[j].orientation;

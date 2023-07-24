@@ -446,7 +446,6 @@ namespace com.rfilkov.kinect
                         if (compressRawFrames)
                         {
                             message.SetCompressor(depthFrameCompressor);
-                            message.CompressData();
                         }
 
                         depthFrameServer.SendMessageToAllConnections(message);
@@ -504,7 +503,6 @@ namespace com.rfilkov.kinect
                         if (compressRawFrames)
                         {
                             message.SetCompressor(bodyIndexFrameCompressor);
-                            message.CompressData();
                         }
 
                         bodyIndexFrameServer.SendMessageToAllConnections(message);
@@ -592,7 +590,6 @@ namespace com.rfilkov.kinect
                         if (compressRawFrames)
                         {
                             message.SetCompressor(color2depthFrameCompressor);
-                            message.CompressData();
                         }
 
                         color2depthFrameServer.SendMessageToAllConnections(message);
@@ -663,7 +660,6 @@ namespace com.rfilkov.kinect
                         if (compressRawFrames)
                         {
                             message.SetCompressor(color2bodyIndexFrameCompressor);
-                            message.CompressData();
                         }
 
                         color2bodyIndexFrameServer.SendMessageToAllConnections(message);
@@ -746,7 +742,6 @@ namespace com.rfilkov.kinect
             if (compressRawFrames)
             {
                 message.SetCompressor(controlFrameCompressor);
-                message.CompressData();
             }
 
             controlFrameServer.SendMessageToAllConnections(message);
@@ -770,7 +765,6 @@ namespace com.rfilkov.kinect
                 if (compressRawFrames)
                 {
                     message.SetCompressor(controlFrameCompressor);
-                    message.CompressData();
                 }
 
                 controlFrameServer.SendMessageToAllConnections(message);
@@ -795,7 +789,6 @@ namespace com.rfilkov.kinect
                 if (compressRawFrames)
                 {
                     message.SetCompressor(controlFrameCompressor);
-                    message.CompressData();
                 }
 
                 controlFrameServer.SendMessageToAllConnections(message);
@@ -1162,11 +1155,7 @@ namespace com.rfilkov.kinect
                         byte[] sendBuffer;
                         lock (conn.messageQueue)
                         {
-                            NetMessageData message = conn.messageQueue.Dequeue();
-                            //int messageLen = message.frameData.Length;
-                            sendBuffer = message.WrapMessage();
-                            //if (message.msgType == NetMessageType.Depth)
-                            //    Debug.Log("  msg type: " + message.msgType + " - " + message.encType + ", ts: " + message.timestamp + ", frameLen: " + messageLen + " - " + message.frameData.Length + ", bufLen: " + sendBuffer.Length);
+                            sendBuffer = conn.messageQueue.Dequeue().WrapMessage();
                             conn.readyToSend = false;
                         }
 

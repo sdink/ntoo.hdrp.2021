@@ -57,12 +57,7 @@ namespace com.rfilkov.components
         private int lastScreenH = 0;
         private int lastColorW = 0;
         private int lastColorH = 0;
-        private float lastAnchorPos = 0f;
         private Vector3 initialScale = Vector3.one;
-
-        // distances
-        private float distToBackImage = 0f;
-        private float distToTransform = 0f;
 
 
         void Start()
@@ -70,21 +65,6 @@ namespace com.rfilkov.components
             kinectManager = KinectManager.Instance;
             initialScale = transform.localScale;
 
-            // get distance to back image
-            if (backgroundImage)
-            {
-                Canvas canvas = backgroundImage.canvas;
-
-                if (canvas.renderMode == RenderMode.ScreenSpaceCamera)
-                    distToBackImage = canvas.planeDistance;
-                else
-                    distToBackImage = 0f;
-            }
-
-            // get distance to transform
-            distToTransform = transform.localPosition.z;
-
-            // set renderer material
             Renderer meshRenderer = GetComponent<Renderer>();
             if (meshRenderer)
             {
@@ -96,9 +76,9 @@ namespace com.rfilkov.components
                 }
             }
 
-            // get sensor data
             if (kinectManager && kinectManager.IsInitialized())
             {
+                // get sensor data
                 sensorData = kinectManager.GetSensorData(sensorIndex);
             }
 
@@ -186,15 +166,7 @@ namespace com.rfilkov.components
             int curScreenH = foregroundCamera ? foregroundCamera.pixelHeight : Screen.height;
             if (lastScreenW != curScreenW || lastScreenH != curScreenH || lastColorW != sensorData.colorImageWidth || lastColorH != sensorData.colorImageHeight)
             {
-                ScaleRendererTransform(curScreenW, curScreenH);
-            }
-
-            Vector2 anchorPos = backgroundImage ? backgroundImage.rectTransform.anchoredPosition : Vector2.zero;
-            float curAnchorPos = anchorPos.x + anchorPos.y;  // Mathf.Abs(anchorPos.x) + Mathf.Abs(anchorPos.y);
-            if (Mathf.Abs(curAnchorPos - lastAnchorPos) >= 20f)
-            {
-                //Debug.Log("anchorPos: " + anchorPos + ", curAnchorPos: " + curAnchorPos + ", lastAnchorPos: " + lastAnchorPos + ", diff: " + Mathf.Abs(curAnchorPos - lastAnchorPos));
-                CenterRendererTransform(anchorPos, curAnchorPos);
+                ScaleRendererTransform(colorTex, curScreenW, curScreenH);
             }
 
             // update lighting parameters
@@ -202,22 +174,22 @@ namespace com.rfilkov.components
         }
 
         // scales the renderer's transform properly
-        private void ScaleRendererTransform(int curScreenW, int curScreenH)
+        private void ScaleRendererTransform(Texture colorTex, int curScreenW, int curScreenH)
         {
             lastScreenW = curScreenW;
             lastScreenH = curScreenH;
             lastColorW = sensorData.colorImageWidth;
             lastColorH = sensorData.colorImageHeight;
 
-            Vector3 localScale = transform.localScale;
+            Vector3 localScale = Vector3.one;  // transform.localScale;
 
             if (maximizeOnScreen && foregroundCamera)
             {
-                float objectZ = distToTransform;  // transform.localPosition.z;  // the transform should be a child of the camera
+                float objectZ = transform.position.z;
                 float screenW = foregroundCamera.pixelWidth;
                 float screenH = foregroundCamera.pixelHeight;
 
-                if (backgroundImage)
+                if(backgroundImage)
                 {
                     PortraitBackground portraitBack = backgroundImage.gameObject.GetComponent<PortraitBackground>();
 
@@ -239,9 +211,7 @@ namespace com.rfilkov.components
 
                 localScale.x = distLeftRight / initialScale.x;
                 localScale.y = distBottomTop / initialScale.y;
-                //Debug.Log("SceneRenderer scale: " + localScale + ", screenW: " + screenW + ", screenH: " + screenH + ", objZ: " + objectZ +
-                //    "\nleft: " + vLeft + ", right: " + vRight + ", bottom: " + vBottom + ", vTop: " + vTop +
-                //    "\ndH: " + distLeftRight + ", dV: " + distBottomTop + ", initialScale: " + initialScale);
+                //Debug.Log("SceneRenderer scale: " + localScale + ", screenW: " + screenW + ", screenH: " + screenH);
             }
 
             // scale according to color-tex resolution
@@ -255,28 +225,6 @@ namespace com.rfilkov.components
                 localScale.y = -localScale.y;
 
             transform.localScale = localScale;
-        }
-
-        // centers the renderer's transform, according to the background image
-        private void CenterRendererTransform(Vector2 anchorPos, float curAnchorPos)
-        {
-            lastAnchorPos = curAnchorPos;
-
-            if (foregroundCamera && distToBackImage > 0f)
-            {
-                float objectZ = distToTransform;  // transform.localPosition.z;  // the transform should be a child of the camera
-                float screenW = sensorData.colorImageWidth;  // foregroundCamera.pixelWidth;
-                float screenH = sensorData.colorImageHeight;  // foregroundCamera.pixelHeight;
-
-                Vector2 screenCenter = new Vector2(screenW / 2f, screenH / 2f);
-                Vector2 anchorScaled = new Vector2(anchorPos.x * distToTransform / distToBackImage, anchorPos.y * distToTransform / distToBackImage);
-                Vector3 vCenter = foregroundCamera.ScreenToWorldPoint(new Vector3(screenCenter.x + anchorScaled.x, screenCenter.y + anchorScaled.y, objectZ));
-                transform.position = vCenter;
-
-                //Vector3 vLocalPos = transform.localPosition;
-                //string sLocalPos = string.Format("({0:F3}, {1:F3}, {2:F3})", vLocalPos.x, vLocalPos.y, vLocalPos.z);
-                //Debug.Log("SceneRenderer anchor: " + anchorPos + ", screenW: " + screenW + ", screenH: " + screenH + ", objZ: " + objectZ + ", localPos: " + sLocalPos);
-            }
         }
 
     }

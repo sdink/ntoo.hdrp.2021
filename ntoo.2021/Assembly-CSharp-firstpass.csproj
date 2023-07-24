@@ -53,10 +53,10 @@
     <UnityVersion>2020.3.41f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickBoxHead.cs" />
+    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickBoxHead.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\WheelEffects.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarSelfRighting.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\Mudguard.cs" />
@@ -65,7 +65,7 @@
     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\ButtonHandler.cs" />
     <Compile Include="Assets\Standard Assets\Utility\LerpControlledBob.cs" />
     <Compile Include="Assets\Standard Assets\Utility\PlatformSpecificContent.cs" />
-    <Compile Include="Assets\Plugins\DynamicBone\Scripts\DynamicBonePlaneCollider.cs" />
+    <Compile Include="Assets\plugins\DynamicBone\Scripts\DynamicBonePlaneCollider.cs" />
     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\VirtualInput.cs" />
     <Compile Include="Assets\Standard Assets\Cameras\Scripts\ProtectCameraFromWallClip.cs" />
     <Compile Include="Assets\Standard Assets\Environment\Water\Water\Scripts\Displace.cs" />
@@ -76,8 +76,7 @@
     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneController.cs" />
     <Compile Include="Assets\Standard Assets\ParticleSystems\Scripts\ExplosionPhysicsForce.cs" />
     <Compile Include="Assets\Standard Assets\Environment\Water\Water\Scripts\PlanarReflection.cs" />
-    <Compile Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickConfiguration.cs" />
-    <Compile Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickBase.cs" />
+    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickBase.cs" />
     <Compile Include="Assets\Standard Assets\Utility\TimedObjectActivator.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\BrakeLight.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\JetParticleEffect.cs" />
@@ -97,7 +96,7 @@
     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneControlSurfaceAnimator.cs" />
     <Compile Include="Assets\Standard Assets\2D\Scripts\Camera2DFollow.cs" />
     <Compile Include="Assets\Standard Assets\Characters\FirstPersonCharacter\Scripts\RigidbodyFirstPersonController.cs" />
-    <Compile Include="Assets\Plugins\DynamicBone\Demo\DynamicBoneDemo1.cs" />
+    <Compile Include="Assets\plugins\DynamicBone\Demo\DynamicBoneDemo1.cs" />
     <Compile Include="Assets\Standard Assets\Environment\Water\Water\Scripts\GerstnerDisplace.cs" />
     <Compile Include="Assets\Standard Assets\Cameras\Scripts\PivotBasedCameraRig.cs" />
     <Compile Include="Assets\Standard Assets\Utility\AutoMoveAndRotate.cs" />
@@ -113,8 +112,7 @@
     <Compile Include="Assets\Standard Assets\Cameras\Scripts\AbstractTargetFollower.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Car\Scripts\CarController.cs" />
     <Compile Include="Assets\Standard Assets\Utility\SmoothFollow.cs" />
-    <Compile Include="Assets\Plugins\MicrophoneWebGL.cs" />
-    <Compile Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickComponent.cs" />
+    <Compile Include="Assets\plugins\MicrophoneWebGL.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneUserControl2Axis.cs" />
     <Compile Include="Assets\Standard Assets\Utility\WaypointCircuit.cs" />
     <Compile Include="Assets\Standard Assets\Utility\TimedObjectDestructor.cs" />
@@ -122,17 +120,17 @@
     <Compile Include="Assets\Standard Assets\Environment\Water\Water\Scripts\WaterTile.cs" />
     <Compile Include="Assets\Standard Assets\Characters\ThirdPersonCharacter\Scripts\ThirdPersonUserControl.cs" />
     <Compile Include="Assets\Standard Assets\Environment\Water\Water\Scripts\SpecularLighting.cs" />
-    <Compile Include="Assets\Plugins\DynamicBone\Scripts\DynamicBone.cs" />
+    <Compile Include="Assets\plugins\DynamicBone\Scripts\DynamicBone.cs" />
     <Compile Include="Assets\Standard Assets\2D\Scripts\Platformer2DUserControl.cs" />
     <Compile Include="Assets\Standard Assets\Utility\WaypointProgressTracker.cs" />
     <Compile Include="Assets\Standard Assets\Utility\DragRigidbody.cs" />
     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\PlatformSpecific\StandaloneInput.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneAudio.cs" />
     <Compile Include="Assets\Standard Assets\ParticleSystems\Scripts\FireLight.cs" />
-    <Compile Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickBoxHeadEyes.cs" />
+    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickBoxHeadEyes.cs" />
     <Compile Include="Assets\Standard Assets\Environment\Water\Water\Scripts\WaterBase.cs" />
     <Compile Include="Assets\Standard Assets\Environment\Water\Water\Scripts\MeshContainer.cs" />
-    <Compile Include="Assets\Plugins\DynamicBone\Scripts\DynamicBoneCollider.cs" />
+    <Compile Include="Assets\plugins\DynamicBone\Scripts\DynamicBoneCollider.cs" />
     <Compile Include="Assets\Standard Assets\Utility\FollowTarget.cs" />
     <Compile Include="Assets\Standard Assets\Vehicles\Aircraft\Scripts\AeroplaneAiControl.cs" />
     <Compile Include="Assets\Standard Assets\ParticleSystems\Scripts\ExtinguishableParticleSystem.cs" />
@@ -142,9 +140,8 @@
     <Compile Include="Assets\Standard Assets\Utility\ObjectResetter.cs" />
     <Compile Include="Assets\Standard Assets\Utility\AutoMobileShaderSwitch.cs" />
     <Compile Include="Assets\Standard Assets\Characters\ThirdPersonCharacter\Scripts\AICharacterControl.cs" />
-    <Compile Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickExpression.cs" />
     <Compile Include="Assets\Standard Assets\Utility\AlphaButtonClickMask.cs" />
-    <Compile Include="Assets\Plugins\DynamicBone\Scripts\DynamicBoneColliderBase.cs" />
+    <Compile Include="Assets\plugins\DynamicBone\Scripts\DynamicBoneColliderBase.cs" />
     <Compile Include="Assets\Standard Assets\Utility\FOVKick.cs" />
     <Compile Include="Assets\Standard Assets\2D\Scripts\Restarter.cs" />
     <Compile Include="Assets\Standard Assets\2D\Scripts\CameraFollow.cs" />
@@ -162,12 +159,16 @@
     <Compile Include="Assets\Standard Assets\Characters\RollerBall\Scripts\BallUserControl.cs" />
     <Compile Include="Assets\Standard Assets\CrossPlatformInput\Scripts\AxisTouchButton.cs" />
     <Compile Include="Assets\Standard Assets\ParticleSystems\Scripts\Hose.cs" />
+    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickExpression.cs" />
+    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickDAZ.cs" />
+    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickComponent.cs" />
+    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\OneClickRuntimes\OneClickConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Standard Assets\Prototyping\Shaders\WorldCoordDiffuse.shader" />
     <None Include="Assets\Standard Assets\Effects\Projectors\Shaders\ProjectorLight.shader" />
     <None Include="Assets\Standard Assets\Effects\Projectors\Shaders\ProjectorMultiply.shader" />
-    <None Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\SALSA-LipSync.dll" />
+    <None Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\SALSA-LipSync.dll" />
     <None Include="Assets\Standard Assets\Effects\Projectors\Guidelines.txt" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
     <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\WaterInclude.cginc" />
@@ -195,7 +196,7 @@
     <None Include="Assets\Standard Assets\Characters\FirstPersonCharacter\FirstPersonCharacterGuidelines.txt" />
     <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAlpha.shader" />
     <None Include="Assets\Standard Assets\Environment\Water (Basic)\Shaders\FXWaterBasic.shader" />
-    <None Include="Assets\Plugins\DynamicBone\ReadMe.txt" />
+    <None Include="Assets\plugins\DynamicBone\ReadMe.txt" />
     <None Include="Assets\Standard Assets\Vehicles\Car\Shaders\DiffuseReflectiveShader.shader" />
     <None Include="Assets\Standard Assets\Characters\ThirdPersonCharacter\ThirdPersonCharacterGuidelines.txt" />
     <None Include="Assets\Standard Assets\Vehicles\Car\Shaders\ReflectiveDiffuseSpec.shader" />
@@ -427,14 +428,14 @@
     <Reference Include="UnityEditor.UnityConnectModule">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\Managed\UnityEngine\UnityEditor.UnityConnectModule.dll</HintPath>
     </Reference>
-    <Reference Include="SALSA-LipSync">
-      <HintPath>Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\SALSA-LipSync.dll</HintPath>
-    </Reference>
     <Reference Include="Intel.RealSense">
       <HintPath>Assets\AzureKinectExamples\SDK\RealSenseSDK2.0\Plugins\Intel.RealSense.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.Kinect.Sensor">
       <HintPath>Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\Microsoft.Azure.Kinect.Sensor.dll</HintPath>
+    </Reference>
+    <Reference Include="SALSA-LipSync">
+      <HintPath>Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\SALSA-LipSync.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe">
       <HintPath>Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
@@ -444,6 +445,9 @@
     </Reference>
     <Reference Include="Kinect2UnityWrapper">
       <HintPath>Assets\AzureKinectExamples\SDK\KinectSDK2.0\Plugins\Kinect2UnityWrapper.dll</HintPath>
+    </Reference>
+    <Reference Include="websocket-sharp">
+      <HintPath>Assets\Packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>

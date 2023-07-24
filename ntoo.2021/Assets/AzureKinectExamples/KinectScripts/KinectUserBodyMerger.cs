@@ -22,11 +22,6 @@ namespace com.rfilkov.kinect
         private Dictionary<string, float> dictSensorUserIdToFirstUsed = new Dictionary<string, float>();
         private ulong nextUserId = 0;
 
-        // first sensor data
-        private KinectInterop.SensorData firstSensorData = null;
-
-        // log-file name
-        //private string logFileName = string.Empty;
 
         // maximum distance between close bodies
         private const float MAX_DISTANCE_TO_CLOSE_BODY = 0.35f;
@@ -35,17 +30,12 @@ namespace com.rfilkov.kinect
         private const int SINGLE_SENSOR_INDEX = -1;
 
         // wait time in seconds, before sensor user gets removed from the dictionaries 
-        private const float WAIT_TIME_BEFORE_REMOVAL = 0.3f;
+        private const float WAIT_TIME_BEFORE_REMOVAL = 0.5f;
 
 
         public KinectUserBodyMerger(List<KinectInterop.SensorData> sensorDatas)
         {
             this.sensorDatas = sensorDatas;
-
-            if(sensorDatas.Count > 0)
-            {
-                firstSensorData = sensorDatas[0];
-            }
 
             adUserIdToSensorTrackingId = new Dictionary<ulong, ulong>[sensorDatas.Count];
             for(int i = 0; i < adUserIdToSensorTrackingId.Length; i++)
@@ -58,9 +48,6 @@ namespace com.rfilkov.kinect
             dictSensorUserIdToLastUsed.Clear();
 
             nextUserId = 1;
-
-            //logFileName = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".log";
-            //Debug.Log("Logging merger to: " + logFileName);
         }
 
 
@@ -72,16 +59,8 @@ namespace com.rfilkov.kinect
             // get list of all bodies
             List<KinectInterop.BodyData> alAllBodies = GetAllBodiesList(ref lastBodyFrameTime, boneConstraints);
 
-            //System.Text.StringBuilder sbDebug = new System.Text.StringBuilder();
-            //sbDebug.AppendFormat("Time: {0:F3} - {1:T}", Time.time, DateTime.Now);
-
-            //sbDebug.AppendFormat("\nAll({0}): ", alAllBodies.Count);
-            //foreach (KinectInterop.BodyData body in alAllBodies)
-            //    sbDebug.AppendFormat("{0}_{1} {2}  ", body.sensorIndex, body.liTrackingID, body.position);
-
             // build mergeable body sets
             List<List<KinectInterop.BodyData>> mergeableBodySets = new List<List<KinectInterop.BodyData>>();
-            //sbDebug.Append("\nMergeable: ");
 
             while (alAllBodies.Count > 0)
             {
@@ -89,13 +68,8 @@ namespace com.rfilkov.kinect
                 alCloseBodies.Add(alAllBodies[0]);
                 alAllBodies.RemoveAt(0);
 
-                FindOverlappingBodies(alCloseBodies, alAllBodies, MAX_DISTANCE_TO_CLOSE_BODY, mergeableBodySets.Count);
+                FindOverlappingBodies(ref alCloseBodies, ref alAllBodies, MAX_DISTANCE_TO_CLOSE_BODY, mergeableBodySets.Count);
                 mergeableBodySets.Add(alCloseBodies);
-
-                //sbDebug.AppendFormat("({0}): ", alCloseBodies.Count);
-                //foreach (KinectInterop.BodyData body in alCloseBodies)
-                //    sbDebug.AppendFormat("{0}_{1} {2} D:{3:F2} ", body.sensorIndex, body.liTrackingID, body.position, Vector3.Distance(alCloseBodies[0].position, body.position));
-                //sbDebug.Append("; ");
             }
 
             // merge the bodies
@@ -106,25 +80,14 @@ namespace com.rfilkov.kinect
                 adUserIdToSensorTrackingId[i].Clear();
             }
 
-            Matrix4x4 world2SensorMat = Matrix4x4.identity;
-            if (firstSensorData != null)
-            {
-                Matrix4x4 sensor2WorldMat = firstSensorData.sensorInterface.GetSensorToWorldMatrix();
-                world2SensorMat = sensor2WorldMat.inverse;
-            }
-
             List<string> lostUsers = new List<string>();
             lostUsers.AddRange(dictSensorUserIdToUserId.Keys);
 
             for (int i = 0; i < mergeableBodySets.Count; i++)
             {
-                KinectInterop.BodyData mergedBody = GetMergedBody(mergeableBodySets[i], i, ref world2SensorMat, lostUsers, alMergedBodies);
+                KinectInterop.BodyData mergedBody = GetMergedBody(mergeableBodySets[i], i, ref lostUsers);
                 alMergedBodies.Add(mergedBody);
             }
-
-            //sbDebug.AppendFormat("\nMerged({0}): ", alMergedBodies.Count);
-            //foreach (KinectInterop.BodyData body in alMergedBodies)
-            //    sbDebug.AppendFormat("{0} {1}  ", body.liTrackingID, body.position);
 
             // clean up
             mergeableBodySets.Clear();
@@ -133,12 +96,8 @@ namespace com.rfilkov.kinect
 
             if (lostUsers.Count > 0)
             {
-                //sbDebug.AppendFormat("\nLost({0}): ", lostUsers.Count);
-
                 foreach (string sensorUserId in lostUsers)
                 {
-                    //sbDebug.Append(sensorUserId);
-
                     if (dictSensorUserIdToUserId.ContainsKey(sensorUserId) && (Time.time - dictSensorUserIdToLastUsed[sensorUserId]) >= WAIT_TIME_BEFORE_REMOVAL)
                     {
                         dictSensorUserIdToUserId.Remove(sensorUserId);
@@ -146,20 +105,12 @@ namespace com.rfilkov.kinect
                         dictSensorUserIdToLastUsed.Remove(sensorUserId);
 
                         //Debug.Log("Removed lost sensor-user-id from dict: " + sensorUserId);
-                        //sbDebug.Append("*");
                     }
-
-                    //sbDebug.Append("  ");
                 }
 
                 lostUsers.Clear();
                 lostUsers = null;
             }
-
-            //sbDebug.Append("\n\n");
-            //if (!string.IsNullOrEmpty(logFileName))
-            //    System.IO.File.AppendAllText(logFileName, sbDebug.ToString());
-            //sbDebug.Clear();
 
             return alMergedBodies;
         }
@@ -231,7 +182,7 @@ namespace com.rfilkov.kinect
 
 
         // finds all other overlapping bodies in the list
-        private void FindOverlappingBodies(List<KinectInterop.BodyData> alCloseBodies, List<KinectInterop.BodyData> alAllBodies, 
+        private void FindOverlappingBodies(ref List<KinectInterop.BodyData> alCloseBodies, ref List<KinectInterop.BodyData> alAllBodies, 
             float mergeDistance, int mBodyIndex)
         {
             Vector3 pelvisAvgPos = GetBodyJointAvgPos(alCloseBodies, (int)KinectInterop.JointType.Pelvis);
@@ -240,55 +191,30 @@ namespace com.rfilkov.kinect
             string sensorUserId0 = alCloseBodies.Count > 0 ? alCloseBodies[0].sensorIndex.ToString() + "_" + alCloseBodies[0].liTrackingID.ToString() : string.Empty;
             ulong firstUserId = dictSensorUserIdToUserId.ContainsKey(sensorUserId0) ? dictSensorUserIdToUserId[sensorUserId0] : 0;
 
-            int bodyIndex = 0;
-            while((bodyIndex = GetClosestBodyIndex(alAllBodies, firstUserId, pelvisAvgPos, mergeDistance, alCloseBodies)) >= 0)
+            for (int i = alAllBodies.Count - 1; i >= 0; i--)
             {
-                alCloseBodies.Add(alAllBodies[bodyIndex]);
-                alAllBodies.RemoveAt(bodyIndex);
-            }
-
-            //Debug.Log("mBodyIndex " + mBodyIndex + " has " + alCloseBodies.Count + " mergeable bodies.");
-        }
-
-        // returns the index of the closest body
-        private int GetClosestBodyIndex(List<KinectInterop.BodyData> alAllBodies, ulong userId, Vector3 pelvisPos, float maxDistance,
-            List<KinectInterop.BodyData> alCloseBodies)
-        {
-            int bodyIndex = -1;
-            float minDistance2 = float.MaxValue;
-            float maxDistance2 = maxDistance * maxDistance;
-
-            int bodyCount = alAllBodies.Count;
-            for (int i = 0; i < bodyCount; i++)
-            {
-                int sensorIndex = alAllBodies[i].sensorIndex;
-                string sensorUserId = sensorIndex.ToString() + "_" + alAllBodies[i].liTrackingID.ToString();
+                string sensorUserId = alAllBodies[i].sensorIndex.ToString() + "_" + alAllBodies[i].liTrackingID.ToString();
                 ulong curUserId = dictSensorUserIdToUserId.ContainsKey(sensorUserId) ? dictSensorUserIdToUserId[sensorUserId] : 0;
-
                 Vector3 pelvisUserPos = alAllBodies[i].joint[(int)KinectInterop.JointType.Pelvis].position;
-                float pelvisDist2 = Vector3.SqrMagnitude(pelvisUserPos - pelvisPos);
 
-                if (((userId != 0 && curUserId == userId) || pelvisDist2 <= maxDistance2) && pelvisDist2 < minDistance2 &&
-                    !IsBodyListContainsSensorIndex(alCloseBodies, sensorIndex))  // prevent sensor-body duplications (more than one body from the same sensor in the list)
+                if ((firstUserId != 0 && curUserId == firstUserId) || Vector3.Distance(pelvisUserPos, pelvisAvgPos) <= mergeDistance)
                 {
-                    bodyIndex = i;
-                    minDistance2 = pelvisDist2;
+                    alCloseBodies.Add(alAllBodies[i]);
+                    alAllBodies.RemoveAt(i);
+
+                    //if(firstUserId != 0 && curUserId != 0 && curUserId != firstUserId)  // just in case
+                    //{
+                    //    dictSensorUserIdToUserId.Remove(sensorUserId);
+                    //    Debug.Log("Removed sensor-user-id from dict: " + sensorUserId);
+                    //}
+                }
+                else
+                {
+                    //Debug.Log(string.Format("{0} - {1}: {2}, {3}: {4}, dist: {5:F2}", firstUserId, sensorUserId0, pelvisAvgPos, sensorUserId, pelvisUserPos, Vector3.Distance(pelvisUserPos, pelvisAvgPos)));
                 }
             }
 
-            return bodyIndex;
-        }
-
-        // checks whether the list of body data already contains body with the specified sensor-index, or not
-        private bool IsBodyListContainsSensorIndex(List<KinectInterop.BodyData> alBodies, int sensorIndex)
-        {
-            foreach(KinectInterop.BodyData body in alBodies)
-            {
-                if (body.sensorIndex == sensorIndex)
-                    return true;
-            }
-
-            return false;
+            //Debug.Log("mBodyIndex " + mBodyIndex + " has " + alCloseBodies.Count + " mergeable bodies.");
         }
 
         // returns averaged position of a body joint in a list of bodies
@@ -313,8 +239,7 @@ namespace com.rfilkov.kinect
         }
 
         // averages the bodies in the list and returns the single merged body 
-        private KinectInterop.BodyData GetMergedBody(List<KinectInterop.BodyData> alCloseBodies, int bodyIndex, ref Matrix4x4 world2SensorMat, 
-            List<string> lostUsers, List<KinectInterop.BodyData> alMergedBodies)
+        private KinectInterop.BodyData GetMergedBody(List<KinectInterop.BodyData> alCloseBodies, int bodyIndex, ref List<string> lostUsers)
         {
             int jointCount = (int)KinectInterop.JointType.Count;
             KinectInterop.BodyData mergedBody = new KinectInterop.BodyData(jointCount);
@@ -324,10 +249,10 @@ namespace com.rfilkov.kinect
                 //int maxTrackingState = GetBodyJointMaxState(alCloseBodies, j);
                 int minTrackingState = GetBodyJointMinState(alCloseBodies, j);
 
-                CalcAverageBodyJoint(alCloseBodies, j, minTrackingState, ref world2SensorMat, ref mergedBody);
+                CalcAverageBodyJoint(alCloseBodies, j, minTrackingState, ref mergedBody);
             }
 
-            mergedBody.liTrackingID = GetMergedBodyId(alCloseBodies, lostUsers, alMergedBodies);
+            mergedBody.liTrackingID = GetMergedBodyId(alCloseBodies, ref lostUsers);
             mergedBody.iBodyIndex = bodyIndex;
 
             for(int i = 0; i < alCloseBodies.Count; i++)
@@ -430,11 +355,11 @@ namespace com.rfilkov.kinect
         };
 
         // returns averaged position of a body joint in a list of bodies
-        private void CalcAverageBodyJoint(List<KinectInterop.BodyData> alBodyList, int jointIndex, int minTrackingState, ref Matrix4x4 world2SensorMat,
+        private void CalcAverageBodyJoint(List<KinectInterop.BodyData> alBodyList, int jointIndex, int minTrackingState,
             ref KinectInterop.BodyData bodyData)
         {
             Vector3 avgJointPos = Vector3.zero;
-            //Vector3 firstKinectPos = Vector3.zero;
+            Vector3 firstKinectPos = Vector3.zero;
 
             Quaternion avgJointRot = Quaternion.identity;
             Quaternion firstJointOri = Quaternion.identity;
@@ -471,7 +396,7 @@ namespace com.rfilkov.kinect
 
                     if (avgJointPos == Vector3.zero)
                     {
-                        //firstKinectPos = alBodyList[i].joint[jointIndex].kinectPos;
+                        firstKinectPos = alBodyList[i].joint[jointIndex].kinectPos;
                         firstJointOri = alBodyList[i].joint[jointIndex].orientation;
                         firstJointRot = jointRot;
                     }
@@ -511,15 +436,10 @@ namespace com.rfilkov.kinect
                 avgJointRot = new Quaternion(x, y, z, w);
             }
 
-            // avg kinect pos
-            Vector3 avgKinectPos = world2SensorMat.MultiplyPoint3x4(avgJointPos);
-            Vector3 spaceScale = firstSensorData != null ? firstSensorData.sensorSpaceScale : Vector3.one;
-            avgKinectPos = new Vector3(avgKinectPos.x * spaceScale.x, avgKinectPos.y * spaceScale.y, avgKinectPos.z * spaceScale.z);
-
-            // set joint data
             KinectInterop.JointData jointData = bodyData.joint[jointIndex];
+
             jointData.trackingState = (KinectInterop.TrackingState)minTrackingState;
-            jointData.kinectPos = avgKinectPos;  // firstKinectPos;
+            jointData.kinectPos = firstKinectPos;
             jointData.position = avgJointPos;
 
             jointData.orientation = firstJointOri;
@@ -540,8 +460,7 @@ namespace com.rfilkov.kinect
 
 
         // averages the bodies in the list and returns the single merged body 
-        private ulong GetMergedBodyId(List<KinectInterop.BodyData> alCloseBodies, List<string> lostUsers, 
-            List<KinectInterop.BodyData> alMergedBodies)
+        private ulong GetMergedBodyId(List<KinectInterop.BodyData> alCloseBodies, ref List<string> lostUsers)
         {
             int bodyCount = alCloseBodies.Count;
             float minStartTime = float.MaxValue;
@@ -552,8 +471,7 @@ namespace com.rfilkov.kinect
             {
                 string sensorUserId = alCloseBodies[i].sensorIndex.ToString() + "_" + alCloseBodies[i].liTrackingID.ToString();
 
-                if(dictSensorUserIdToUserId.ContainsKey(sensorUserId) && dictSensorUserIdToFirstUsed[sensorUserId] < minStartTime &&
-                    !IsBodyListContainsUserId(alMergedBodies, dictSensorUserIdToUserId[sensorUserId]))  // prevent userId duplications in merged-body list
+                if (dictSensorUserIdToUserId.ContainsKey(sensorUserId) && dictSensorUserIdToFirstUsed[sensorUserId] < minStartTime)
                 {
                     userBodyId = dictSensorUserIdToUserId[sensorUserId];
                     minStartTime = dictSensorUserIdToFirstUsed[sensorUserId];
@@ -566,14 +484,31 @@ namespace com.rfilkov.kinect
 
                 if (userBodyId == 0)
                 {
-                    if (!dictSensorUserIdToUserId.ContainsKey(sensorUserId) ||
-                        IsBodyListContainsUserId(alMergedBodies, dictSensorUserIdToUserId[sensorUserId]))  // prevent userId duplications in merged-body list
+                    if (!dictSensorUserIdToUserId.ContainsKey(sensorUserId))
                     {
-                        //Debug.Log("Creating new userId '" + nextUserId + "' for sensor-user-id '" + sensorUserId + "'");
-                        dictSensorUserIdToUserId[sensorUserId] = nextUserId;
-                        dictSensorUserIdToFirstUsed[sensorUserId] = Time.time;
-                        dictSensorUserIdToLastUsed[sensorUserId] = Time.time;
-                        nextUserId++;
+                        //bool bBodyIdFound = false;
+                        //for(int b = bodyCount - 1; b > i; b--)
+                        //{
+                        //    string closeUserId = alCloseBodies[b].sensorIndex.ToString() + "_" + alCloseBodies[b].liTrackingID.ToString();
+                        //    if(dictSensorUserIdToUserId.ContainsKey(closeUserId))
+                        //    {
+                        //        //Debug.Log("Using userId of close-user-id '" + closeUserId + "' for sensor-user-id '" + sensorUserId + "': " + dictSensorUserIdToUserId[closeUserId]);
+
+                        //        dictSensorUserIdToUserId[sensorUserId] = dictSensorUserIdToUserId[closeUserId];
+                        //        dictSensorUserIdToLastUsed[sensorUserId] = Time.time;
+                        //        bBodyIdFound = true;
+                        //    }
+                        //}
+
+                        //if(!bBodyIdFound)
+                        {
+                            //Debug.Log("Creating new userId '" + nextUserId + "' for sensor-user-id '" + sensorUserId + "'");
+
+                            dictSensorUserIdToUserId[sensorUserId] = nextUserId;
+                            dictSensorUserIdToFirstUsed[sensorUserId] = Time.time;
+                            dictSensorUserIdToLastUsed[sensorUserId] = Time.time;
+                            nextUserId++;
+                        }
                     }
 
                     userBodyId = dictSensorUserIdToUserId[sensorUserId];
@@ -596,18 +531,6 @@ namespace com.rfilkov.kinect
             }
 
             return userBodyId;
-        }
-
-        // checks whether the list of body data already contains body with the specified userId, or not
-        private bool IsBodyListContainsUserId(List<KinectInterop.BodyData> alBodies, ulong userId)
-        {
-            foreach (KinectInterop.BodyData body in alBodies)
-            {
-                if (body.liTrackingID == userId)
-                    return true;
-            }
-
-            return false;
         }
 
     }

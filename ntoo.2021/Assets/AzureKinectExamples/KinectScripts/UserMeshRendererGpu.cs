@@ -546,15 +546,9 @@ namespace com.rfilkov.components
                 // mesh bounds
                 if (kinectManager.GetUserBoundingBox(userId, null, sensorIndex, Rect.zero, out Vector3 posMin, out Vector3 posMax))
                 {
-                    Vector3 boundsCenter = new Vector3((posMax.x - posMin.x) / 2f, (posMax.y - posMin.y) / 2f, (posMax.z /**- posMin.z*/) / 2f);
-                    Vector3 boundsSize = new Vector3((posMax.x - posMin.x), (posMax.y - posMin.y), (posMax.z /**- posMin.z*/));
+                    Vector3 boundsCenter = new Vector3((posMax.x - posMin.x) / 2f, (posMax.y - posMin.y) / 2f, (posMax.z - posMin.z) / 2f);
+                    Vector3 boundsSize = new Vector3((posMax.x - posMin.x), (posMax.y - posMin.y), (posMax.z - posMin.z));
                     mesh.bounds = new Bounds(boundsCenter, boundsSize);
-                    //Debug.Log("Bounds center: " + mesh.bounds.center + ", size: " + mesh.bounds.size);
-                }
-                else if (mesh.bounds.size.z == 0f)
-                {
-                    mesh.bounds = new Bounds(Vector3.zero, new Vector3(10, 10, 10));
-                    //Debug.Log("Bounds center: " + mesh.bounds.center + ", size: " + mesh.bounds.size);
                 }
 
                 // update lighting parameters

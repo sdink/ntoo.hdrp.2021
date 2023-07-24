@@ -49,7 +49,7 @@ namespace com.rfilkov.components
         public bool lateUpdateAvatar = false;
 
         [Tooltip("Game object this transform is relative to (optional).")]
-        public Transform offsetNode;
+        public GameObject offsetNode;
 
         [Tooltip("If enabled, makes the avatar position relative to this camera to be the same as the player's position to the sensor.")]
         public Camera posRelativeToCamera;
@@ -60,8 +60,8 @@ namespace com.rfilkov.components
         //[Tooltip("Plane used to render the color camera background to overlay.")]
         //public Transform backgroundPlane;
 
-        [Tooltip("Whether z-axis movement needs to be inverted (Pos-Relative mode only).")]
-        public bool posRelInvertedZ = false;
+        //[Tooltip("Whether z-axis movement needs to be inverted (Pos-Relative mode only).")]
+        //public bool posRelInvertedZ = false;
 
         [Tooltip("Whether the avatar's feet must stick to the ground.")]
         public bool groundedFeet = false;
@@ -89,10 +89,6 @@ namespace com.rfilkov.components
         [Tooltip("Whether to use unscaled or normal (scaled) time.")]
         public bool useUnscaledTime = false;
 
-        [Tooltip("Radius of the joint sphere and bone capsule colliders, in meters. You can set it to 0.02 to try it out. 0 means no collider.")]
-        [Range(0f, 0.1f)]
-        public float boneColliderRadius = 0f;  // 0.02f;
-
         // userId of the player
         [NonSerialized]
         public ulong playerId = 0;
@@ -105,11 +101,6 @@ namespace com.rfilkov.components
         // Variable to hold all them bones. It will initialize the same size as initialRotations.
         protected Transform[] bones;
         //protected Transform[] fingerBones;
-
-        protected CapsuleCollider[] boneColliders;
-        protected Transform[] boneColTrans;
-        protected Transform[] boneColJoint;
-        protected Transform[] boneColParent;
 
         // Rotations of the bones when the Kinect tracking starts.
         protected Quaternion[] initialRotations;
@@ -127,8 +118,8 @@ namespace com.rfilkov.components
         protected Quaternion initialHipsRotation;
         protected Vector3 initialUpVector;
 
-        //protected Vector3 offsetNodePos;
-        //protected Quaternion offsetNodeRot;
+        protected Vector3 offsetNodePos;
+        protected Quaternion offsetNodeRot;
         protected Vector3 bodyRootPosition;
 
         // Calibration Offset Variables for Character Position.
@@ -139,13 +130,6 @@ namespace com.rfilkov.components
         //private Quaternion originalRotation;
         //protected Vector3 offsetCamPos = Vector3.zero;
         //protected Quaternion offsetCamRot = Quaternion.identity;
-
-        // whether the user pose has been applied on the avatar or not
-        protected bool poseApplied = false;
-        protected Quaternion pelvisRotation = Quaternion.identity;
-
-        // sharp rotation angle
-        protected const float sharpRotAngle = 90f;  // 90 degrees
 
         private Animator animatorComponent = null;
         private HumanPoseHandler humanPoseHandler = null;
@@ -364,11 +348,7 @@ namespace com.rfilkov.components
 
                 initialHipsPosition = (humanPose.bodyPosition - rootTransform.position);  // hipsTransform.position
                 initialHipsRotation = humanPose.bodyRotation;
-                //Debug.Log("initial hips pos: " + initialHipsPosition + ", rot: " + initialHipsRotation.eulerAngles);
             }
-
-            // create bone and joint colliders, if needed
-            CreateBoneColliders();
         }
 
 
@@ -405,9 +385,6 @@ namespace com.rfilkov.components
             {
                 UpdateAvatar(playerId);
             }
-
-            // update bone colliders, as needed
-            UpdateBoneColliders();
         }
 
 
@@ -519,62 +496,43 @@ namespace com.rfilkov.components
             //    }
             //}
 
-            // check for sharp pelvis rotations
-            float pelvisAngle = GetPelvisAngle(UserID, false);
-
-            if (!poseApplied || pelvisAngle < sharpRotAngle)  
+            // rotate the avatar bones
+            for (var boneIndex = 0; boneIndex < bones.Length; boneIndex++)
             {
-                // rotate the avatar bones
-                for (var boneIndex = 0; boneIndex < bones.Length; boneIndex++)
+                if (!bones[boneIndex] || isBoneDisabled[boneIndex])
+                    continue;
+
+                if (boneIndex2JointMap.ContainsKey(boneIndex))
                 {
-                    if (!bones[boneIndex] || isBoneDisabled[boneIndex])  // check for missing or disabled bones
+                    KinectInterop.JointType joint = !(mirroredMovement ^ flipLeftRight) ?
+                        boneIndex2JointMap[boneIndex] : boneIndex2MirrorJointMap[boneIndex];
+
+                    if (externalHeadRotation && joint == KinectInterop.JointType.Head)   // skip head if moved externally
+                    {
                         continue;
-
-                    bool flip = !(mirroredMovement ^ flipLeftRight);
-                    if (boneIndex2JointMap.ContainsKey(boneIndex))
-                    {
-                        KinectInterop.JointType joint = flip ? boneIndex2JointMap[boneIndex] : boneIndex2MirrorJointMap[boneIndex];
-
-                        if (externalHeadRotation && joint == KinectInterop.JointType.Head)   // skip head if moved externally
-                        {
-                            continue;
-                        }
-
-                        if (externalHandRotations &&    // skip hands if moved externally
-                            (joint == KinectInterop.JointType.WristLeft || joint == KinectInterop.JointType.WristRight ||
-                                joint == KinectInterop.JointType.HandLeft || joint == KinectInterop.JointType.HandRight))
-                        {
-                            continue;
-                        }
-
-                        TransformBone(UserID, joint, boneIndex, flip);
                     }
-                    else if (boneIndex >= 21 && boneIndex <= 24)
-                    {
-                        // fingers or thumbs
-                        if (fingerOrientations && !externalHandRotations)
-                        {
-                            KinectInterop.JointType joint = flip ? boneIndex2FingerMap[boneIndex] : boneIndex2MirrorFingerMap[boneIndex];
 
-                            TransformSpecialBoneFingers(UserID, (int)joint, boneIndex, flip);
-                        }
+                    if (externalHandRotations &&    // skip hands if moved externally
+                        (joint == KinectInterop.JointType.WristLeft || joint == KinectInterop.JointType.WristRight ||
+                            joint == KinectInterop.JointType.HandLeft || joint == KinectInterop.JointType.HandRight))
+                    {
+                        continue;
+                    }
+
+                    TransformBone(UserID, joint, boneIndex, !(mirroredMovement ^ flipLeftRight));
+                }
+                else if (boneIndex >= 21 && boneIndex <= 24)
+                {
+                    // fingers or thumbs
+                    if (fingerOrientations && !externalHandRotations)
+                    {
+                        KinectInterop.JointType joint = !(mirroredMovement ^ flipLeftRight) ?
+                            boneIndex2FingerMap[boneIndex] : boneIndex2MirrorFingerMap[boneIndex];
+
+                        TransformSpecialBoneFingers(UserID, (int)joint, boneIndex, !(mirroredMovement ^ flipLeftRight));
                     }
                 }
-
             }
-            else
-            {
-                //// sharp rotation detected
-                //Quaternion curPelvisRot = kinectManager.GetJointOrientation(UserID, (int)KinectInterop.JointType.Pelvis, false);
-                //Debug.Log($"P{playerIndex}, id: {playerId} - sharp rotation detected. angle: {pelvisAngle:F0} > {sharpRotAngle} deg." +
-                //    $"\nPel: {pelvisRotation.eulerAngles}, Cur: {curPelvisRot.eulerAngles}, dT: {Time.deltaTime:F3}");
-            }
-
-            // save pelvis rotation
-            SavePelvisRotation(UserID);
-
-            // user pose has been applied
-            poseApplied = true;
 
             if (applyMuscleLimits && kinectManager && kinectManager.IsUserTracked(UserID))
             {
@@ -588,8 +546,8 @@ namespace com.rfilkov.components
         /// </summary>
         public virtual void ResetToInitialPosition()
         {
-            //Debug.Log("ResetToInitialPosition. UserId: " + playerId);
             playerId = 0;
+            //Debug.Log("ResetToInitialPosition. UserId: " + playerId);
 
             if (bones == null)
                 return;
@@ -620,12 +578,12 @@ namespace com.rfilkov.components
                 }
             }
 
-            //// Restore the offset's position and rotation
-            //if (offsetNode != null)
-            //{
-            //    offsetNode.transform.position = offsetNodePos;
-            //    offsetNode.transform.rotation = offsetNodeRot;
-            //}
+            // Restore the offset's position and rotation
+            if (offsetNode != null)
+            {
+                offsetNode.transform.position = offsetNodePos;
+                offsetNode.transform.rotation = offsetNodeRot;
+            }
 
             transform.position = initialPosition;
             transform.rotation = initialRotation;
@@ -641,12 +599,12 @@ namespace com.rfilkov.components
             playerId = userId;
             //Debug.Log("SuccessfulCalibration. UserId: " + playerId);
 
-            //// reset the models position
-            //if (offsetNode != null)
-            //{
-            //    offsetNode.transform.position = offsetNodePos;
-            //    offsetNode.transform.rotation = offsetNodeRot;
-            //}
+            // reset the models position
+            if (offsetNode != null)
+            {
+                offsetNode.transform.position = offsetNodePos;
+                offsetNode.transform.rotation = offsetNodeRot;
+            }
 
             // reset initial position / rotation if needed 
             if (resetInitialTransform)
@@ -662,7 +620,6 @@ namespace com.rfilkov.components
 
             // re-calibrate the position offset
             offsetCalibrated = false;
-            poseApplied = false;
         }
 
         /// <summary>
@@ -680,8 +637,7 @@ namespace com.rfilkov.components
             transform.rotation = initialRotation;
             initialUpVector = transform.up;
 
-            offsetCalibrated = false;  // this causes calibrating offset in MoveAvatar function 
-            poseApplied = false;
+            offsetCalibrated = false;       // this cause also calibrating kinect offset in moveAvatar function 
         }
 
         // Checks if the given joint is part of the legs
@@ -690,37 +646,6 @@ namespace com.rfilkov.components
             return ((joint == KinectInterop.JointType.HipLeft) || (joint == KinectInterop.JointType.HipRight) ||
                     (joint == KinectInterop.JointType.KneeLeft) || (joint == KinectInterop.JointType.KneeRight) ||
                     (joint == KinectInterop.JointType.AnkleLeft) || (joint == KinectInterop.JointType.AnkleRight));
-        }
-
-        // saves current pelvis rotation
-        protected void SavePelvisRotation(ulong userId)
-        {
-            if (kinectManager != null && kinectManager.IsJointTracked(userId, (int)KinectInterop.JointType.Pelvis))
-            {
-                Quaternion curPelvisRot = kinectManager.GetJointOrientation(userId, (int)KinectInterop.JointType.Pelvis, false);
-                if (poseApplied)
-                    pelvisRotation = Quaternion.RotateTowards(pelvisRotation, curPelvisRot, 90f * Time.deltaTime);  // 90 deg/s
-                else
-                    pelvisRotation = curPelvisRot;
-                //Debug.Log($"    P{playerIndex}, id: {playerId} - Pel: {pelvisRotation.eulerAngles}, Cur: {curPelvisRot.eulerAngles} P: {poseApplied}, dT: {Time.deltaTime:F3}, P: {poseApplied}, dT: {Time.deltaTime:F3}");
-            }
-        }
-
-        // returns the angle between the last and current pelvis orientations (in degrees 0-180), or -1 if anything goes wrong
-        protected float GetPelvisAngle(ulong userId, bool flip)
-        {
-            int iJoint = (int)KinectInterop.JointType.Pelvis;
-            if (kinectManager == null || !kinectManager.IsJointTracked(userId, iJoint))
-                return -1f;
-
-            // get Kinect joint orientation
-            Quaternion jointRotation = kinectManager.GetJointOrientation(userId, iJoint, flip);
-            if (jointRotation == Quaternion.identity)
-                return -1f;
-
-            float angle = Quaternion.Angle(pelvisRotation, jointRotation);
-
-            return angle;
         }
 
         // Apply the rotations tracked by kinect to the joints.
@@ -904,7 +829,6 @@ namespace com.rfilkov.components
 
             // get the position of user's spine base
             Vector3 trans = kinectManager.GetUserPosition(UserID);
-            //Debug.Log("User " + playerIndex + " pos: " + trans);
             if (flipLeftRight)
                 trans.x = -trans.x;
 
@@ -946,7 +870,6 @@ namespace com.rfilkov.components
                     Vector3 bodyRootPos = bodyRoot != null ? bodyRoot.position : transform.position;
                     Vector3 userLocalPos = kinectManager.GetUserKinectPosition(UserID, true);
                     trans = posRelativeToCamera.transform.TransformPoint(userLocalPos);
-                    //Debug.Log("  trans: " + trans + ", localPos: " + userLocalPos + ", camPos: " + posRelativeToCamera.transform.position);
 
                     if (!horizontalMovement)
                     {
@@ -988,11 +911,11 @@ namespace com.rfilkov.components
                 }
             }
 
-            // invert the z-coordinate, if needed
-            if (posRelativeToCamera && posRelInvertedZ)
-            {
-                trans.z = -trans.z;
-            }
+            //// invert the z-coordinate, if needed
+            //if (posRelativeToCamera && posRelInvertedZ)
+            //{
+            //    trans.z = -trans.z;
+            //}
 
             //if (posRelativeToCamera /**&& horizontalMovement*/)
             //{
@@ -1015,7 +938,6 @@ namespace com.rfilkov.components
 
             // transition to the new position
             Vector3 targetPos = bodyRootPosition + Kinect2AvatarPos(trans, verticalMovement, horizontalMovement);
-            //Debug.Log("  targetPos: " + targetPos + ", trans: " + trans + ", offsetPos: " + offsetPos + ", bodyRootPos: " + bodyRootPosition);
 
             if (isRigidBody && !verticalMovement)
             {
@@ -1023,35 +945,29 @@ namespace com.rfilkov.components
                 targetPos.y = bodyRoot != null ? bodyRoot.position.y : transform.position.y;
             }
 
-            // fixed bone indices - thanks to Martin Cvengros!
-            var biShoulderL = GetBoneIndexByJoint(KinectInterop.JointType.ShoulderLeft, false);  // you may replace 'false' with 'mirroredMovement'
-            var biShoulderR = GetBoneIndexByJoint(KinectInterop.JointType.ShoulderRight, false);  // you may replace 'false' with 'mirroredMovement'
-            var biPelvis = GetBoneIndexByJoint(KinectInterop.JointType.Pelvis, false);  // you may replace 'false' with 'mirroredMovement'
-            var biNeck = GetBoneIndexByJoint(KinectInterop.JointType.Neck, false);  // you may replace 'false' with 'mirroredMovement'
-
             // added by r618
             if (horizontalMovement && horizontalOffset != 0f &&
-                bones[biShoulderL] != null && bones[biShoulderR] != null)
+                bones[5] != null && bones[11] != null)
             {
                 // { 5, HumanBodyBones.LeftUpperArm},
                 // { 11, HumanBodyBones.RightUpperArm},
                 //Vector3 dirSpine = bones[5].position - bones[11].position;
-                Vector3 dirShoulders = bones[biShoulderR].position - bones[biShoulderL].position;
+                Vector3 dirShoulders = bones[11].position - bones[5].position;
                 targetPos += dirShoulders.normalized * horizontalOffset;
             }
 
             if (verticalMovement && verticalOffset != 0f &&
-                bones[biPelvis] != null && bones[biNeck] != null)
+                bones[0] != null && bones[3] != null)
             {
-                Vector3 dirSpine = bones[biNeck].position - bones[biPelvis].position;
+                Vector3 dirSpine = bones[3].position - bones[0].position;
                 targetPos += dirSpine.normalized * verticalOffset;
             }
 
             if (horizontalMovement && forwardOffset != 0f &&
-                bones[biPelvis] != null && bones[biNeck] != null && bones[biShoulderL] != null && bones[biShoulderR] != null)
+                bones[0] != null && bones[3] != null && bones[5] != null && bones[11] != null)
             {
-                Vector3 dirSpine = (bones[biNeck].position - bones[biPelvis].position).normalized;
-                Vector3 dirShoulders = (bones[biShoulderR].position - bones[biShoulderL].position).normalized;
+                Vector3 dirSpine = (bones[3].position - bones[0].position).normalized;
+                Vector3 dirShoulders = (bones[11].position - bones[5].position).normalized;
                 Vector3 dirForward = Vector3.Cross(dirShoulders, dirSpine).normalized;
 
                 targetPos += dirForward * forwardOffset;
@@ -1193,91 +1109,15 @@ namespace com.rfilkov.components
             //}
         }
 
-        // creates the joint and bone colliders 
-        protected void CreateBoneColliders()
-        {
-            if (boneColliderRadius <= 0f)
-                return;
-
-            boneColliders = new CapsuleCollider[bones.Length];
-            boneColTrans = new Transform[bones.Length];
-            boneColJoint = new Transform[bones.Length];
-            boneColParent = new Transform[bones.Length];
-
-            for (int i = 0; i < bones.Length; i++)
-            {
-                if (bones[i] == null)
-                    continue;
-
-                SphereCollider jCollider = bones[i].gameObject.AddComponent<SphereCollider>();
-                jCollider.radius = boneColliderRadius;
-
-                if (i > 0)
-                {
-                    GameObject objBoneCollider = new GameObject("BoneCollider" + i);
-                    objBoneCollider.transform.parent = bones[i];
-                    boneColTrans[i] = objBoneCollider.transform;
-
-                    CapsuleCollider bCollider = objBoneCollider.AddComponent<CapsuleCollider>();
-                    bCollider.radius = boneColliderRadius;
-                    bCollider.height = 0f;
-
-                    boneColliders[i] = bCollider;
-                }
-            }
-
-            for (int i = 0; i < bones.Length; i++)
-            {
-                if (boneColliders[i] == null)
-                    continue;
-
-                boneColJoint[i] = bones[i];
-                Transform parentTrans = boneColJoint[i].parent;
-
-                while (parentTrans != null)
-                {
-                    if (parentTrans.GetComponent<SphereCollider>() != null)
-                        break;
-                    parentTrans = parentTrans.parent;
-                }
-
-                if (parentTrans != null)
-                    boneColParent[i] = parentTrans;
-                else
-                    boneColliders[i] = null;
-            }
-        }
-
-        // updates the bone colliders, as needed
-        protected void UpdateBoneColliders()
-        {
-            if (boneColliders == null)
-                return;
-
-            for (int i = 0; i < bones.Length; i++)
-            {
-                if (boneColliders[i] == null)
-                    continue;
-
-                Vector3 posJoint = boneColJoint[i].position;
-                Vector3 posParent = boneColParent[i].position;
-
-                Vector3 dirFromParent = posJoint - posParent;
-                boneColTrans[i].position = posParent + dirFromParent / 2f;
-                boneColTrans[i].up = dirFromParent.normalized;
-                boneColliders[i].height = dirFromParent.magnitude;
-            }
-        }
-
         // Capture the initial rotations of the bones
         protected void GetInitialRotations()
         {
-            //// save the initial rotation
-            //if (offsetNode != null)
-            //{
-            //    offsetNodePos = offsetNode.transform.position;
-            //    offsetNodeRot = offsetNode.transform.rotation;
-            //}
+            // save the initial rotation
+            if (offsetNode != null)
+            {
+                offsetNodePos = offsetNode.transform.position;
+                offsetNodeRot = offsetNode.transform.rotation;
+            }
 
             initialPosition = transform.position;
             initialRotation = transform.rotation;
@@ -1297,7 +1137,7 @@ namespace com.rfilkov.components
 
             if (offsetNode != null)
             {
-                bodyRootPosition = bodyRootPosition - offsetNode.position;
+                bodyRootPosition = bodyRootPosition - offsetNodePos;
             }
 
             // save the initial bone rotations
@@ -1354,14 +1194,14 @@ namespace com.rfilkov.components
             Quaternion newRotation = jointRotation * initialRotations[boneIndex];
             //newRotation = initialRotation * newRotation;
 
+    //		if(offsetNode != null)
+    //		{
+    //			newRotation = offsetNode.transform.rotation * newRotation;
+    //		}
+    //		else
             if (!externalRootMotion)  // fix by Mathias Parger
             {
                 newRotation = initialRotation * newRotation;
-
-                if (offsetNode != null)
-                {
-                    newRotation = offsetNode.rotation * newRotation;
-                }
             }
 
             return newRotation;
@@ -1382,7 +1222,7 @@ namespace com.rfilkov.components
             if (offsetNode != null)
             {
                 //newPosition += offsetNode.transform.position;
-                newPosition = offsetNode.position;
+                newPosition = offsetNode.transform.position;
             }
 
             return newPosition;
@@ -1475,12 +1315,12 @@ namespace com.rfilkov.components
 		    {13, HumanBodyBones.LeftUpperLeg},
             {14, HumanBodyBones.LeftLowerLeg},
             {15, HumanBodyBones.LeftFoot},
-    		{16, HumanBodyBones.LeftToes},
+//    		{16, HumanBodyBones.LeftToes},
 		
 		    {17, HumanBodyBones.RightUpperLeg},
             {18, HumanBodyBones.RightLowerLeg},
             {19, HumanBodyBones.RightFoot},
-    		{20, HumanBodyBones.RightToes},
+//    		{20, HumanBodyBones.RightToes},
 
 		    {21, HumanBodyBones.LeftIndexProximal},
             {22, HumanBodyBones.LeftThumbProximal},

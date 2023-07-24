@@ -10,9 +10,6 @@ namespace com.rfilkov.components
         [Tooltip("Index of the player, tracked by this component. 0 means the 1st player, 1 - the 2nd one, 2 - the 3rd one, etc.")]
         public int playerIndex = 0;
 
-        [Tooltip("Depth sensor index used for color frame overlay - 0 is the 1st one, 1 - the 2nd one, etc.")]
-        public int sensorIndex = 0;
-
         [Tooltip("Camera used to estimate the overlay positions of 3D-objects over the background. By default it is the main camera.")]
         public Camera foregroundCamera;
 
@@ -23,7 +20,7 @@ namespace com.rfilkov.components
         private KinectManager kinectManager;
 
         // sensor index used for body tracking
-        //private int sensorIndex;
+        private int sensorIndex;
         private KinectInterop.SensorData sensorData = null;
 
         // the foreground texture
@@ -66,7 +63,7 @@ namespace com.rfilkov.components
             // get the users texture
             if (kinectManager && kinectManager.IsInitialized())
             {
-                foregroundTex = kinectManager.GetUsersImageTex(sensorIndex);
+                foregroundTex = kinectManager.GetUsersImageTex();
             }
 
             // update joint colliders
@@ -139,7 +136,7 @@ namespace com.rfilkov.components
         {
             if (kinectManager && kinectManager.IsInitialized())
             {
-                //sensorIndex = kinectManager.GetPrimaryBodySensorIndex();
+                sensorIndex = kinectManager.GetPrimaryBodySensorIndex();
                 sensorData = kinectManager.GetSensorData(sensorIndex);
 
                 if (sensorData != null && foregroundCamera != null)

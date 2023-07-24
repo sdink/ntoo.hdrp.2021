@@ -30,7 +30,6 @@ namespace com.rfilkov.components
 
         // reference to the KM
         private KinectManager kinectManager = null;
-        private KinectInterop.SensorData sensorData = null;
 
         // time variables used for recording and playing
         private ulong liRelTime = 0;
@@ -42,7 +41,6 @@ namespace com.rfilkov.components
         private StreamReader fileReader = null;
         private float fPlayTime = 0f;
         private string sPlayLine = string.Empty;
-        private Vector3 sensorSpaceScale = Vector3.one;
 
 
         /// <summary>
@@ -103,7 +101,7 @@ namespace com.rfilkov.components
 
             if (isRecording)
             {
-                Debug.Log("Recording started. File: " + filePath);
+                Debug.Log("Recording started.");
                 if (infoText != null)
                 {
                     infoText.text = "Recording...";
@@ -168,7 +166,7 @@ namespace com.rfilkov.components
 
             if (isPlaying)
             {
-                Debug.Log("Playing started. File: " + filePath);
+                Debug.Log("Playing started.");
                 if (infoText != null)
                 {
                     infoText.text = "Playing...";
@@ -213,12 +211,6 @@ namespace com.rfilkov.components
 
             if (isPlaying)
             {
-                // restore the space scale
-                if(sensorData != null)
-                {
-                    sensorData.sensorSpaceScale = sensorSpaceScale;
-                }
-
                 // close the file, if it is playing
                 CloseFile();
                 isPlaying = false;
@@ -264,11 +256,11 @@ namespace com.rfilkov.components
             //    infoText.text = "Say: 'Record' to start the recorder, or 'Play' to start the player.";
             //}
 
-            kinectManager = KinectManager.Instance;
-            sensorData = kinectManager ? kinectManager.GetSensorData(0) : null;
-            sensorSpaceScale = sensorData != null ? sensorData.sensorSpaceScale : Vector3.one;
-
             if (!kinectManager)
+            {
+                kinectManager = KinectManager.Instance;
+            }
+            else
             {
                 Debug.Log("KinectManager not found, probably not initialized.");
 

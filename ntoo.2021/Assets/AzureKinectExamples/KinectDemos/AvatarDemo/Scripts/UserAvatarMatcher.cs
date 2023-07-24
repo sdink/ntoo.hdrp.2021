@@ -33,8 +33,6 @@ namespace com.rfilkov.components
         [Tooltip("Whether to apply the humanoid model's muscle limits or not.")]
         public bool applyMuscleLimits = false;
 
-        public UnityEngine.UI.Text debugText;
-
 
         private KinectManager kinectManager;
         private int maxUserCount = 0;
@@ -50,11 +48,6 @@ namespace com.rfilkov.components
 
         void Update()
         {
-            if(debugText)
-            {
-                debugText.text = string.Format("Time: {0:F1}", Time.time);
-            }
-
             ulong checksum = GetUserChecksum(out maxUserCount);
 
             if (userChecksum != checksum)
@@ -71,8 +64,7 @@ namespace com.rfilkov.components
                     if (alAvatarToRemove.Contains(userId))
                         alAvatarToRemove.Remove(userId);
 
-                    if (!alUserAvatars.ContainsKey(userId) &&
-                        kinectManager.IsJointTracked(userId, KinectInterop.JointType.Pelvis))
+                    if (!alUserAvatars.ContainsKey(userId))
                     {
                         //Debug.Log("Creating avatar for userId: " + userId + ", Time: " + Time.realtimeSinceStartup);
 
@@ -130,8 +122,7 @@ namespace com.rfilkov.components
                     ulong userId = kinectManager.GetUserIdByIndex(i);
                     //userId &= csMask;
 
-                    if (userId != 0 &&
-                        kinectManager.IsJointTracked(userId, KinectInterop.JointType.Pelvis))
+                    if (userId != 0)
                     {
                         checksum += userId;
                         //checksum &= csMask;
@@ -150,9 +141,8 @@ namespace com.rfilkov.components
 
             if (avatarModel)
             {
+                Vector3 userPos = Vector3.zero;  // new Vector3(userIndex, 0, 0);
                 Quaternion userRot = Quaternion.Euler(!mirroredMovement ? Vector3.zero : new Vector3(0, 180, 0));
-                Vector3 userPos = kinectManager.GetUserPosition(userId);  // Vector3.zero;  // new Vector3(userIndex, 0, 0);
-                userPos.y = 0f;  // set the model's vertical position to 0 (floor)
 
                 //Debug.Log("User " + userIndex + ", ID: " + userId + ", pos: " + kinectManager.GetUserPosition(userId) + ", k.pos: " + kinectManager.GetUserKinectPosition(userId, true));
 

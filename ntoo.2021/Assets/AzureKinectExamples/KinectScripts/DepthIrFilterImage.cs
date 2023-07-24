@@ -127,8 +127,8 @@ namespace com.rfilkov.components
                         }
                     }
 
-                    float minDistance = ((DepthSensorBase)sensorData.sensorInterface).minDepthDistance;
-                    float maxDistance = ((DepthSensorBase)sensorData.sensorInterface).maxDepthDistance;
+                    float minDistance = ((DepthSensorBase)sensorData.sensorInterface).minDistance;
+                    float maxDistance = ((DepthSensorBase)sensorData.sensorInterface).maxDistance;
 
                     depthFilterMat.SetInt("_TexResX", sensorData.depthImageWidth);
                     depthFilterMat.SetInt("_TexResY", sensorData.depthImageHeight);

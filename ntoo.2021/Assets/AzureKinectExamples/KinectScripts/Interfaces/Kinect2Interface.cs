@@ -711,12 +711,6 @@ namespace com.rfilkov.kinect
                 // estimate additional joints
                 CalcBodySpecialJoints(ref bodyData);
 
-                // filter joint positions
-                if (jointPositionFilter != null)
-                {
-                    jointPositionFilter.UpdateFilter(ref bodyData);
-                }
-
                 // calculate bone dirs
                 KinectInterop.CalcBodyJointDirs(ref bodyData);
 
@@ -731,12 +725,6 @@ namespace com.rfilkov.kinect
                 trackedBodiesCount++;
 
                 //Debug.Log("  (T)User ID: " + bodyData.liTrackingID + ", body: " + (trackedBodiesCount - 1) + ", bi: " + bodyData.iBodyIndex + ", pos: " + bodyData.joint[0].kinectPos + ", rot: " + bodyData.joint[0].normalRotation.eulerAngles);
-            }
-
-            // clean up user history
-            if (jointPositionFilter != null)
-            {
-                jointPositionFilter.CleanUpUserHistory();
             }
         }
 
@@ -817,50 +805,6 @@ namespace com.rfilkov.kinect
                 jointData.position = (posPelvis + posChest) * 0.5f;
 
                 bodyData.joint[sn] = jointData;
-            }
-
-            // ankle left
-            int knee = (int)KinectInterop.JointType.KneeLeft;
-            int ank = (int)KinectInterop.JointType.AnkleLeft;
-            int foot = (int)KinectInterop.JointType.FootLeft;
-
-            if (bodyData.joint[knee].trackingState != KinectInterop.TrackingState.NotTracked &&
-               bodyData.joint[ank].trackingState != KinectInterop.TrackingState.NotTracked &&
-               bodyData.joint[foot].trackingState != KinectInterop.TrackingState.NotTracked)
-            {
-                Vector3 vAnkDir = bodyData.joint[ank].kinectPos - bodyData.joint[knee].kinectPos;
-                Vector3 vFootDir = bodyData.joint[foot].kinectPos - bodyData.joint[ank].kinectPos;
-
-                Vector3 vFootProj = Vector3.Project(vFootDir, vAnkDir);
-                bodyData.joint[ank].kinectPos += vFootProj;
-
-                vAnkDir = bodyData.joint[ank].position - bodyData.joint[knee].position;
-                vFootDir = bodyData.joint[foot].position - bodyData.joint[ank].position;
-
-                vFootProj = Vector3.Project(vFootDir, vAnkDir);
-                bodyData.joint[ank].position += vFootProj;
-            }
-
-            // ankle right
-            knee = (int)KinectInterop.JointType.KneeRight;
-            ank = (int)KinectInterop.JointType.AnkleRight;
-            foot = (int)KinectInterop.JointType.FootRight;
-
-            if (bodyData.joint[knee].trackingState != KinectInterop.TrackingState.NotTracked &&
-               bodyData.joint[ank].trackingState != KinectInterop.TrackingState.NotTracked &&
-               bodyData.joint[foot].trackingState != KinectInterop.TrackingState.NotTracked)
-            {
-                Vector3 vAnkDir = bodyData.joint[ank].kinectPos - bodyData.joint[knee].kinectPos;
-                Vector3 vFootDir = bodyData.joint[foot].kinectPos - bodyData.joint[ank].kinectPos;
-
-                Vector3 vFootProj = Vector3.Project(vFootDir, vAnkDir);
-                bodyData.joint[ank].kinectPos += vFootProj;
-
-                vAnkDir = bodyData.joint[ank].position - bodyData.joint[knee].position;
-                vFootDir = bodyData.joint[foot].position - bodyData.joint[ank].position;
-
-                vFootProj = Vector3.Project(vFootDir, vAnkDir);
-                bodyData.joint[ank].position += vFootProj;
             }
         }
 
@@ -1267,8 +1211,8 @@ namespace com.rfilkov.kinect
                 KinectInterop.SetComputeShaderInt2(pointCloudVertexShader, "PointCloudRes", pointCloudVertexRes.x, pointCloudVertexRes.y);
                 KinectInterop.SetComputeShaderInt2(pointCloudVertexShader, "DepthRes", sensorData.depthImageWidth, sensorData.depthImageHeight);
                 KinectInterop.SetComputeShaderFloat2(pointCloudVertexShader, "SpaceScale", sensorData.sensorSpaceScale.x, sensorData.sensorSpaceScale.y);
-                pointCloudVertexShader.SetInt("MinDepth", (int)(minDepthDistance * 1000f));
-                pointCloudVertexShader.SetInt("MaxDepth", (int)(maxDepthDistance * 1000f));
+                pointCloudVertexShader.SetInt("MinDepth", (int)(minDistance * 1000f));
+                pointCloudVertexShader.SetInt("MaxDepth", (int)(maxDistance * 1000f));
                 pointCloudVertexShader.SetBuffer(pointCloudVertexKernel, "SpaceTable", pointCloudSpaceBuffer);
                 pointCloudVertexShader.SetBuffer(pointCloudVertexKernel, "DepthMap", pointCloudDepthBuffer);
                 pointCloudVertexShader.SetBuffer(pointCloudVertexKernel, "ColorToDepthMap", pointCloudCoordBuffer);

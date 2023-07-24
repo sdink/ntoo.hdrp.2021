@@ -93,8 +93,6 @@ namespace com.rfilkov.kinect
 
                 if (jc.thisJoint == (int)KinectInterop.JointType.Pelvis || bodyData.joint[jc.thisJoint].normalRotation == Quaternion.identity)
                     continue;
-                if (kinectManager.ignoreZCoordinates && (jc.thisJoint == (int)KinectInterop.JointType.KneeLeft || jc.thisJoint == (int)KinectInterop.JointType.KneeRight))
-                    continue;
                 if (bodyData.joint[jc.thisJoint].trackingState == KinectInterop.TrackingState.NotTracked)
                     continue;
 

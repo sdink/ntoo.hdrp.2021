@@ -132,31 +132,22 @@ namespace com.rfilkov.components
                         if (horizontalOffset != 0f)
                         {
                             // add the horizontal offset
-                            Vector3 dirShoulders = kinectManager.GetJointPosition(userId, KinectInterop.JointType.ShoulderRight) -
-                                kinectManager.GetJointPosition(userId, KinectInterop.JointType.ShoulderLeft);
-                            //Vector3 dirHorizOfs = overlayObject.InverseTransformDirection(new Vector3(horizontalOffset, 0, 0));
-                            posJoint += dirShoulders.normalized * horizontalOffset;  // dirHorizOfs;
+                            Vector3 dirHorizOfs = overlayObject.InverseTransformDirection(new Vector3(horizontalOffset, 0, 0));
+                            posJoint += dirHorizOfs;
                         }
 
                         if (verticalOffset != 0f)
                         {
                             // add the vertical offset
-                            Vector3 dirSpine = kinectManager.GetJointPosition(userId, KinectInterop.JointType.Neck) -
-                                kinectManager.GetJointPosition(userId, KinectInterop.JointType.Pelvis);
-                            //Vector3 dirVertOfs = overlayObject.InverseTransformDirection(new Vector3(0, verticalOffset, 0));
-                            posJoint += dirSpine.normalized * verticalOffset;  // dirVertOfs;
+                            Vector3 dirVertOfs = overlayObject.InverseTransformDirection(new Vector3(0, verticalOffset, 0));
+                            posJoint += dirVertOfs;
                         }
 
                         if (forwardOffset != 0f)
                         {
                             // add the forward offset
-                            Vector3 dirShoulders = (kinectManager.GetJointPosition(userId, KinectInterop.JointType.ShoulderRight) -
-                                kinectManager.GetJointPosition(userId, KinectInterop.JointType.ShoulderLeft)).normalized;
-                            Vector3 dirSpine = (kinectManager.GetJointPosition(userId, KinectInterop.JointType.Neck) -
-                                kinectManager.GetJointPosition(userId, KinectInterop.JointType.Pelvis)).normalized;
-                            Vector3 dirForward = Vector3.Cross(dirShoulders, dirSpine).normalized;
-                            //Vector3 dirFwdOfs = overlayObject.InverseTransformDirection(new Vector3(0, 0, forwardOffset));
-                            posJoint += dirForward * forwardOffset;  // dirFwdOfs;
+                            Vector3 dirFwdOfs = overlayObject.InverseTransformDirection(new Vector3(0, 0, forwardOffset));
+                            posJoint += dirFwdOfs;
                         }
 
                         overlayObject.position = posJoint;

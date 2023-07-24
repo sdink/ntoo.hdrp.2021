@@ -504,8 +504,8 @@ namespace com.rfilkov.components
                 meshShaderMat.SetVector("_PosMax", new Vector3(xMax, yMax, zMax));
 
                 // mesh bounds
-                Vector3 boundsCenter = new Vector3((xMax - xMin) / 2f, (yMax - yMin) / 2f, (zMax /**- zMin*/) / 2f);
-                Vector3 boundsSize = new Vector3((xMax - xMin), (yMax - yMin), (zMax /**- zMin*/));
+                Vector3 boundsCenter = new Vector3((xMax - xMin) / 2f, (yMax - yMin) / 2f, (zMax - zMin) / 2f);
+                Vector3 boundsSize = new Vector3((xMax - xMin), (yMax - yMin), (zMax - zMin));
                 mesh.bounds = new Bounds(boundsCenter, boundsSize);
 
                 // update lighting parameters

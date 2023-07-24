@@ -563,11 +563,8 @@ namespace com.rfilkov.kinect
             if (sensorData == null)
                 return null;
 
-            if (depth2SpaceTable == null || depth2SpaceWidth != sensorData.depthImageWidth || depth2SpaceHeight != sensorData.depthImageHeight)
+            if (depth2SpaceTable == null)
             {
-                depth2SpaceWidth = sensorData.depthImageWidth;
-                depth2SpaceHeight = sensorData.depthImageHeight;
-
                 int depthImageLength = sensorData.depthImageWidth * sensorData.depthImageHeight;
                 depth2SpaceTable = new Vector3[depthImageLength];
                 //bNeedDST = true;
@@ -600,11 +597,8 @@ namespace com.rfilkov.kinect
             if (sensorData == null)
                 return null;
 
-            if (color2SpaceTable == null || color2SpaceWidth != sensorData.colorImageWidth || color2SpaceHeight != sensorData.colorImageHeight)
+            if (color2SpaceTable == null)
             {
-                color2SpaceWidth = sensorData.colorImageWidth;
-                color2SpaceHeight = sensorData.colorImageHeight;
-
                 int colorImageLength = sensorData.colorImageWidth * sensorData.colorImageHeight;
                 color2SpaceTable = new Vector3[colorImageLength];
                 //bNeedCST = true;
@@ -1434,7 +1428,7 @@ namespace com.rfilkov.kinect
                     Matrix4x4 sensorToWorld = GetSensorToWorldMatrix();
 
                     string sBodyFrameData = System.Text.Encoding.UTF8.GetString(args.message.frameData);
-                    sensorData.trackedBodiesCount = KinectInterop.SetBodyFrameFromCsv(sBodyFrameData, "\t", sensorData, ref sensorData.alTrackedBodies, 
+                    sensorData.trackedBodiesCount = KinectInterop.SetBodyFrameFromCsv(sBodyFrameData, "\t", ref sensorData.alTrackedBodies, 
                         ref sensorToWorld, bIgnoreZcoords, out rawBodyTimestamp);
                     sensorData.lastBodyFrameTime = currentBodyTimestamp = rawBodyTimestamp = args.message.timestamp;
                     //Debug.Log("ReceivedBodyTimestamp: " + rawBodyTimestamp);
@@ -1677,21 +1671,19 @@ namespace com.rfilkov.kinect
                         alNetMessageTime.Sort();
                     }
 
-                    while (alNetMessageTime.Count > 20)
+                    while (alNetMessageTime.Count > 10)
                     {
                         ulong msgTime = alNetMessageTime[0];
 
-                        int msgDataCount = 0;
                         if (dictNetMessageData.ContainsKey(msgTime))
                         {
-                            msgDataCount = dictNetMessageData[msgTime].Count;
                             dictNetMessageData[msgTime].Clear();
                             dictNetMessageData.Remove(msgTime);
                         }
 
                         alNetMessageTime.RemoveAt(0);
                         if (consoleLogMessages)
-                            Debug.Log("Removed cache-entry: " + msgTime + ", frame-count: " + msgDataCount + ", cache-size: " + alNetMessageTime.Count);
+                            Debug.Log("Removed cache-entry: " + msgTime + ", cache-size: " + alNetMessageTime.Count);
                     }
                 }
             }
@@ -1799,16 +1791,14 @@ namespace com.rfilkov.kinect
                 {
                     ulong msgTime = alNetMessageTime[0];
 
-                    int msgDataCount = 0;
                     if (dictNetMessageData.ContainsKey(msgTime))
                     {
-                        msgDataCount = dictNetMessageData[msgTime].Count;
                         dictNetMessageData[msgTime].Clear();
                         dictNetMessageData.Remove(msgTime);
                     }
 
                     alNetMessageTime.RemoveAt(0);
-                    //Debug.Log("Removed synched cache-entry: " + msgTime + ", frame-time: " + frameTime + ", frame-count: " + msgDataCount + ", cache-size: " + alNetMessageTime.Count);
+                    //Debug.Log("Removed cache-entry: " + msgTime + ", cache-size: " + alNetMessageTime.Count);
 
                     if (msgTime == frameTime)
                         break;

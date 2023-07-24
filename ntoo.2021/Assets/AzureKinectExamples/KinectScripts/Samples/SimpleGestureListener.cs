@@ -122,8 +122,6 @@ namespace com.rfilkov.components
                 return true;
 
             string sGestureText = gesture + " detected";
-            Debug.Log(sGestureText);
-
             if (gestureInfo != null)
             {
                 gestureInfo.text = sGestureText;

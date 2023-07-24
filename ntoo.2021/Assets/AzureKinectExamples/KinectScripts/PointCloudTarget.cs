@@ -24,9 +24,6 @@ namespace com.rfilkov.components
         [Tooltip("Render texture, used for point-cloud color mapping. The texture resolution should match the depth or color image resolution.")]
         public RenderTexture pointCloudColorTexture = null;
 
-        [Tooltip("List of comma-separated player indices to be included in the point cloud. Use -1 for all players, or empty list for full point cloud.")]
-        public string pointCloudPlayerList = string.Empty;
-
 
         // references
         private KinectManager kinectManager = null;
@@ -46,7 +43,6 @@ namespace com.rfilkov.components
                 sensorInt.pointCloudResolution = pointCloudResolution;
                 sensorInt.pointCloudVertexTexture = pointCloudVertexTexture;
                 sensorInt.pointCloudColorTexture = pointCloudColorTexture;
-                sensorInt.pointCloudPlayerList = pointCloudPlayerList;
                 //Debug.Log("PointCloudResolution: " + pointCloudResolution + ", PointCloudVertexTexture: " + pointCloudVertexTexture + ", PointCloudColorTexture: " + pointCloudColorTexture);
             }
         }
