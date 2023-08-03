@@ -345,6 +345,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useMultiCamConfig: 0
   syncMultiCamFrames: 0
+  startDepthSensors: 1
   getDepthFrames: 1
   getColorFrames: 0
   getInfraredFrames: 0
@@ -360,6 +361,9 @@ MonoBehaviour:
   userDetectionOrder: 0
   ignoreInferredJoints: 0
   ignoreZCoordinates: 0
+  jointPositionSmoothing: 1
+  estimateJointVelocities: 0
+  jointVelocitySmoothing: 2
   boneOrientationConstraints: 1
   playerCalibrationPose: 0
   userManager: {fileID: 0}
@@ -490,7 +494,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 243b01ef97e8ecb40b0d023858d3aa46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  avatarModel: {fileID: 100176, guid: ae23d50304c93b9418b65cec8f9fe954, type: 3}
+  avatarModel: {fileID: 2691144524556480796, guid: e0464946b8cf0944a9755800efc950e3,
+    type: 3}
   smoothFactor: 10
   posRelativeToCamera: {fileID: 2132550432}
   mirroredMovement: 1
@@ -498,6 +503,7 @@ MonoBehaviour:
   horizontalMovement: 1
   groundedFeet: 1
   applyMuscleLimits: 1
+  debugText: {fileID: 0}
 --- !u!4 &816136788
 Transform:
   m_ObjectHideFlags: 0
@@ -650,8 +656,8 @@ MonoBehaviour:
   deviceStreamingMode: 0
   deviceIndex: 0
   recordingFile: 
-  minDistance: 0.5
-  maxDistance: 10
+  minDepthDistance: 0.5
+  maxDepthDistance: 10
   pointCloudResolution: 0
   pointCloudVertexTexture: {fileID: 0}
   pointCloudColorTexture: {fileID: 0}
@@ -723,8 +729,8 @@ MonoBehaviour:
   deviceStreamingMode: 0
   deviceIndex: 0
   recordingFile: 
-  minDistance: 0.5
-  maxDistance: 10
+  minDepthDistance: 0.5
+  maxDepthDistance: 10
   pointCloudResolution: 0
   pointCloudVertexTexture: {fileID: 0}
   pointCloudColorTexture: {fileID: 0}
@@ -886,8 +892,8 @@ MonoBehaviour:
   deviceStreamingMode: 1
   deviceIndex: 0
   recordingFile: 
-  minDistance: 0.5
-  maxDistance: 10
+  minDepthDistance: 0.5
+  maxDepthDistance: 10
   pointCloudResolution: 0
   pointCloudVertexTexture: {fileID: 0}
   pointCloudColorTexture: {fileID: 0}
@@ -920,6 +926,7 @@ MonoBehaviour:
   playbackPosSeconds: -1
   loopPlayback: 0
   bodyTrackingSensorOrientation: 0
+  bodyTrackingProcessingMode: 2
   detectFloorForPoseEstimation: 1
 --- !u!1 &2132550428
 GameObject:

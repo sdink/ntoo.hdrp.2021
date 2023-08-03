@@ -77,11 +77,13 @@
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_anxiety.cs" />
     <Compile Include="Assets\DOTDOT\Utils\CircularBuffer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\PhotoShooter.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SalsaTextSync_ExampleTextSyncTester.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\DepthImageViewer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\AvatarScaler.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\MocapAnimatorDemo\Scripts\MocapPlayer.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\GestureDemo\Scripts\ModelGestureListener.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Samples\JointPositionView.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Plugins\Amplitude.cs" />
     <Compile Include="Assets\DOTDOT\Audio Utilities\Mic Manager\MicTesting.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\UserSkeletonCollider.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\VariousDemos\Scripts\SimpleHolographicCamera.cs" />
@@ -116,14 +118,17 @@
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\DepthSpriteViewerMulticam.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_stern.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\PoseDetectionDemo\Scripts\DynamicPoseDetector.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Examples\Scripts\AmplitudeSamplesUI.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\FittingRoomDemo\Scripts\UserBodyBlender.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\KinectUserBodyMerger.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\OverlayDemo\Scripts\JointOverlayer.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_sly.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Samples\RawDataTexture.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\BackgroundRemovalDemo\Scripts\UserImageMover.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Examples\Scripts\AmplitudeTester.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\ForegroundToRawImage.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\BallSpawner.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Addons\AmplitudeSALSA\AmplitudeSALSA.cs" />
     <Compile Include="Assets\DOTDOT\Scripts\MicLevelMonitor.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_erlenesurprise.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\SceneMeshRenderer.cs" />
@@ -177,9 +182,11 @@
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\PoseModelHelperClassic.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\FragmentLighting.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\KinectUserManager.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Addons\SalsaTextSync\SalsaTextSync.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_anger.cs" />
     <Compile Include="Assets\ntoo.live.bust\scripts\randomanim_idle.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\Interfaces\DepthSensorBase.cs" />
+    <Compile Include="Assets\ntoo.live.bust\scripts\blackpixel_postprocessing.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\UserMeshRendererGpu.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\HmdHeadMover.cs" />
     <Compile Include="Assets\DOTDOT\Network Managers\NetworkConnectionManager.cs" />
@@ -200,6 +207,7 @@
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\KinectInterop.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\MultiScene\LoadLevelWithDelay.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BackgroundDepthImage.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SalsaTextSync_ExampleBasicGUI.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\MultiCameraSetup\MultiCameraSetup.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BackgroundRemovalManager.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectDemos\ColliderDemo\Scripts\EggMover.cs" />
@@ -244,14 +252,9 @@
     <Compile Include="Assets\ntoo.live.bust\scripts\animcontroller_fear.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\BackgroundStaticImage.cs" />
     <Compile Include="Assets\AzureKinectExamples\KinectScripts\SceneBlendRenderer.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Examples\Scripts\AmplitudeSamplesUI.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SalsaTextSync_ExampleBasicGUI.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Examples\Scripts\SalsaTextSync_ExampleTextSyncTester.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Addons\SalsaTextSync\SalsaTextSync.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Plugins\Amplitude.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Examples\Scripts\AmplitudeTester.cs" />
-    <Compile Include="Assets\ntoo.live.bust\scripts\blackpixel_postprocessing.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Addons\AmplitudeSALSA\AmplitudeSALSA.cs" />
+    <Compile Include="Assets\AzureKinectExamples\KinectScripts\Filters\BodySpinFilter.cs" />
+    <Compile Include="Assets\AzureKinectExamples\KinectScripts\Samples\JointValuesSaver.cs" />
+    <Compile Include="Assets\AzureKinectExamples\KinectScripts\Samples\DisplayUserInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\AzureKinectExamples\Resources\UserHistImageShader.shader" />
@@ -295,6 +298,7 @@
     <None Include="Assets\AzureKinectExamples\Resources\ForegroundBlendShader.shader" />
     <None Include="Assets\AzureKinectExamples\Resources\SceneMeshShader.shader" />
     <None Include="Assets\AzureKinectExamples\Resources\PointCloudVertexShaderCRK2.compute" />
+    <None Include="Assets\AzureKinectExamples\Resources\TransformTexShader.shader" />
     <None Include="Assets\AzureKinectExamples\Resources\DepthHistImageShader.shader" />
     <None Include="Assets\AzureKinectExamples\Resources\PointCloudBodyVertexShaderCRK2.compute" />
     <None Include="Assets\AzureKinectExamples\Resources\UserBlendShader.shader" />

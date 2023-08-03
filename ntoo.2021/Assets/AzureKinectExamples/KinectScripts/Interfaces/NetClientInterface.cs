@@ -24,8 +24,23 @@ namespace com.rfilkov.kinect
         [Tooltip("The base port for all server frame streams (each frame stream listens on separate port).")]
         public int serverBasePort = 11000;
 
-        [Tooltip("Whether to get the body index frames from the server along with the body frames.")]
+        [Tooltip("Whether to get color frames from the server, if required by KinectManager.")]
+        public bool getColorFrames = true;
+
+        [Tooltip("Whether to get depth frames from the server, if required by KinectManager.")]
+        public bool getDepthFrames = true;
+
+        [Tooltip("Whether to get infrared frames from the server, if required by KinectManager.")]
+        public bool getInfraredFrames = true;
+
+        [Tooltip("Whether to get body-data frames from the server, if required by KinectManager.")]
+        public bool getBodyFrames = true;
+
+        [Tooltip("Whether to get body-index frames from the server, if required by KinectManager.")]
         public bool getBodyIndexFrames = true;
+
+        [Tooltip("Whether to get sensor-pose frames from the server, if required by KinectManager.")]
+        public bool getPoseFrames = true;
 
         [Tooltip("UI-Text to display client status messages.")]
         public UnityEngine.UI.Text clientStatusText;
@@ -241,12 +256,6 @@ namespace com.rfilkov.kinect
             sensorData.colorImageFormat = TextureFormat.RGB24;
             sensorData.colorImageStride = 3;  // 3 bytes per pixel
 
-            if(autoServerDiscovery)
-            {
-                // discover the 1st available net-server
-                BroadcastServerDiscovery();
-            }
-
             // init network clients
             InitNetClients(dwFlags);
 
@@ -268,6 +277,7 @@ namespace com.rfilkov.kinect
         {
             // close network clients
             CloseNetClients();
+            CleanupSyncMessageData();
 
             // close opened resources
             base.CloseSensor(sensorData);
@@ -344,6 +354,7 @@ namespace com.rfilkov.kinect
 
                 disconnectedAt = ulTimeNow;
                 CloseNetClients();
+                CleanupSyncMessageData();
                 return true;
             }
 
@@ -352,6 +363,7 @@ namespace com.rfilkov.kinect
             {
                 Debug.LogError("Server disconnection detected.");
                 CloseNetClients();
+                CleanupSyncMessageData();
                 disconnectedAt = ulTimeNow;
             }
 
@@ -362,6 +374,7 @@ namespace com.rfilkov.kinect
                     Debug.Log("Start reconnecting...");
 
                 CloseNetClients();
+                CleanupSyncMessageData();
                 InitNetClients(frameSourceFlags);
                 return true;
             }
@@ -563,8 +576,11 @@ namespace com.rfilkov.kinect
             if (sensorData == null)
                 return null;
 
-            if (depth2SpaceTable == null)
+            if (depth2SpaceTable == null || depth2SpaceWidth != sensorData.depthImageWidth || depth2SpaceHeight != sensorData.depthImageHeight)
             {
+                depth2SpaceWidth = sensorData.depthImageWidth;
+                depth2SpaceHeight = sensorData.depthImageHeight;
+
                 int depthImageLength = sensorData.depthImageWidth * sensorData.depthImageHeight;
                 depth2SpaceTable = new Vector3[depthImageLength];
                 //bNeedDST = true;
@@ -597,8 +613,11 @@ namespace com.rfilkov.kinect
             if (sensorData == null)
                 return null;
 
-            if (color2SpaceTable == null)
+            if (color2SpaceTable == null || color2SpaceWidth != sensorData.colorImageWidth || color2SpaceHeight != sensorData.colorImageHeight)
             {
+                color2SpaceWidth = sensorData.colorImageWidth;
+                color2SpaceHeight = sensorData.colorImageHeight;
+
                 int colorImageLength = sensorData.colorImageWidth * sensorData.colorImageHeight;
                 color2SpaceTable = new Vector3[colorImageLength];
                 //bNeedCST = true;
@@ -1039,6 +1058,12 @@ namespace com.rfilkov.kinect
         {
             try
             {
+                if (autoServerDiscovery)
+                {
+                    // discover the 1st available net-server
+                    BroadcastServerDiscovery();
+                }
+
                 // clear params
                 //bSensorDataMsgSent = false;
                 bGotNetSensorData = false;
@@ -1068,14 +1093,14 @@ namespace com.rfilkov.kinect
                 controlFrameClient.ConnectToServer(serverHost, serverBasePort + (int)NetMessageType.Control, "control", msgGetData);
                 controlFrameClient.ReceivedMessage += new ReceivedMessageEventHandler(ControlFrameReceived);
 
-                if ((dwFlags & KinectInterop.FrameSource.TypeColor) != 0)
+                if ((dwFlags & KinectInterop.FrameSource.TypeColor) != 0 && getColorFrames)
                 {
                     colorFrameClient = new TcpNetClient(sbConsole, null);
                     colorFrameClient.ConnectToServer(serverHost, serverBasePort + (int)NetMessageType.Color, "color", null);
                     colorFrameClient.ReceivedMessage += new ReceivedMessageEventHandler(ColorFrameReceived);
                 }
 
-                if ((dwFlags & KinectInterop.FrameSource.TypeDepth) != 0)
+                if ((dwFlags & KinectInterop.FrameSource.TypeDepth) != 0 && getDepthFrames)
                 {
                     depthFrameDecompressor = LZ4DecompressorFactory.CreateNew();
 
@@ -1084,14 +1109,14 @@ namespace com.rfilkov.kinect
                     depthFrameClient.ReceivedMessage += new ReceivedMessageEventHandler(DepthFrameReceived);
                 }
 
-                if ((dwFlags & KinectInterop.FrameSource.TypeInfrared) != 0)
+                if ((dwFlags & KinectInterop.FrameSource.TypeInfrared) != 0 && getInfraredFrames)
                 {
                     infraredFrameClient = new TcpNetClient(sbConsole, null);
                     infraredFrameClient.ConnectToServer(serverHost, serverBasePort + (int)NetMessageType.Infrared, "infrared", null);
                     infraredFrameClient.ReceivedMessage += new ReceivedMessageEventHandler(InfraredFrameReceived);
                 }
 
-                if ((dwFlags & KinectInterop.FrameSource.TypeBody) != 0)
+                if ((dwFlags & KinectInterop.FrameSource.TypeBody) != 0 && getBodyFrames)
                 {
                     bodyDataFrameClient = new TcpNetClient(sbConsole, null);
                     bodyDataFrameClient.ConnectToServer(serverHost, serverBasePort + (int)NetMessageType.BodyData, "body-data", null);
@@ -1107,7 +1132,7 @@ namespace com.rfilkov.kinect
                     bodyIndexFrameClient.ReceivedMessage += new ReceivedMessageEventHandler(BodyIndexFrameReceived);
                 }
 
-                if ((dwFlags & KinectInterop.FrameSource.TypePose) != 0)
+                if ((dwFlags & KinectInterop.FrameSource.TypePose) != 0 && getPoseFrames)
                 {
                     poseFrameClient = new TcpNetClient(sbConsole, null);
                     poseFrameClient.ConnectToServer(serverHost, serverBasePort + (int)NetMessageType.Pose, "pose", null);
@@ -1128,6 +1153,14 @@ namespace com.rfilkov.kinect
         {
             try
             {
+                // dispose coord mapping shaders
+                DisposePointCloudVertexShader(sensorData);
+                DisposePointCloudColorShader(sensorData);
+
+                DisposeColorDepthShader(sensorData);
+                DisposeColorInfraredShader(sensorData);
+                DisposeColorBodyIndexShader(sensorData);
+
                 if (controlFrameClient != null)
                 {
                     SendControlMessage(ControlMessageType.Disconnect);
@@ -1428,7 +1461,7 @@ namespace com.rfilkov.kinect
                     Matrix4x4 sensorToWorld = GetSensorToWorldMatrix();
 
                     string sBodyFrameData = System.Text.Encoding.UTF8.GetString(args.message.frameData);
-                    sensorData.trackedBodiesCount = KinectInterop.SetBodyFrameFromCsv(sBodyFrameData, "\t", ref sensorData.alTrackedBodies, 
+                    sensorData.trackedBodiesCount = KinectInterop.SetBodyFrameFromCsv(sBodyFrameData, "\t", sensorData, ref sensorData.alTrackedBodies, 
                         ref sensorToWorld, bIgnoreZcoords, out rawBodyTimestamp);
                     sensorData.lastBodyFrameTime = currentBodyTimestamp = rawBodyTimestamp = args.message.timestamp;
                     //Debug.Log("ReceivedBodyTimestamp: " + rawBodyTimestamp);
@@ -1646,51 +1679,138 @@ namespace com.rfilkov.kinect
             lock (syncMessageLock)
             {
                 ulong frameTime = message.timestamp / 10;
-                //Debug.Log("Synching " + message.msgType + " frame, entry: " + frameTime);
 
                 if (dictNetMessageData.ContainsKey(frameTime))
                 {
+                    // update the timestamp entry with this type of message 
                     Dictionary<NetMessageType, NetMessageData> dictTimeFrames = dictNetMessageData[frameTime];
                     dictTimeFrames[message.msgType] = message;
                     dictNetMessageData[frameTime] = dictTimeFrames;
+                    //Debug.Log("  updated " + frameTime + " - " + message.msgType + " frame, frame-count: " + dictNetMessageData[frameTime].Count + ", missing: " + GetMissingSyncFramesInfo(frameTime, dictTimeFrames));
 
-                    SyncCheckAllFramesPresent(frameTime, dictTimeFrames);
+                    SyncCheckIfAllFramesReady(frameTime, dictTimeFrames);
                 }
                 else
                 {
-                    // creates 1st time entry
-                    Dictionary<NetMessageType, NetMessageData> dictTimeFrames = new Dictionary<NetMessageType, NetMessageData>();
-                    dictTimeFrames[message.msgType] = message;
+                    // check for timeout of the oldest messages
+                    CheckSyncMessagesTimeout();
 
-                    dictNetMessageData[frameTime] = dictTimeFrames;
-                    alNetMessageTime.Add(frameTime);
-                    //Debug.Log("Added cache-entry: " + frameTime + ", cache-size: " + alNetMessageTime.Count);
-
-                    if (alNetMessageTime.Count > 1)
+                    // check if the message is before the oldest one in the list
+                    ulong minTime = alNetMessageTime.Count > 0 ? alNetMessageTime[0] : 0;
+                    if(frameTime >= minTime)
                     {
-                        alNetMessageTime.Sort();
-                    }
+                        // create 1st entry for timestamp
+                        Dictionary<NetMessageType, NetMessageData> dictTimeFrames = new Dictionary<NetMessageType, NetMessageData>();
+                        dictTimeFrames[message.msgType] = message;
 
-                    while (alNetMessageTime.Count > 10)
-                    {
-                        ulong msgTime = alNetMessageTime[0];
+                        dictNetMessageData[frameTime] = dictTimeFrames;
+                        alNetMessageTime.Add(frameTime);
+                        //Debug.Log("Added " + frameTime + " - " + message.msgType + " frame, cache-size: " + alNetMessageTime.Count + ", missing: " + GetMissingSyncFramesInfo(frameTime, dictTimeFrames));
 
-                        if (dictNetMessageData.ContainsKey(msgTime))
+                        if (alNetMessageTime.Count > 1)
                         {
-                            dictNetMessageData[msgTime].Clear();
-                            dictNetMessageData.Remove(msgTime);
+                            alNetMessageTime.Sort();
                         }
 
-                        alNetMessageTime.RemoveAt(0);
-                        if (consoleLogMessages)
-                            Debug.Log("Removed cache-entry: " + msgTime + ", cache-size: " + alNetMessageTime.Count);
+                        while (alNetMessageTime.Count > 20)
+                        {
+                            ulong msgTime = alNetMessageTime[0];
+
+                            int msgDataCount = 0;
+                            string missingFrames = string.Empty;
+                            if (dictNetMessageData.ContainsKey(msgTime))
+                            {
+                                msgDataCount = dictNetMessageData[msgTime].Count;
+                                missingFrames = GetMissingSyncFramesInfo(msgTime, dictNetMessageData[msgTime]);
+                                dictNetMessageData[msgTime].Clear();
+                                dictNetMessageData.Remove(msgTime);
+                            }
+
+                            alNetMessageTime.RemoveAt(0);
+                            if (consoleLogMessages)
+                                Debug.LogWarning("Removed entry: " + msgTime + ", frame-count: " + msgDataCount + ", cache-size: " + alNetMessageTime.Count + ", missing: " + missingFrames);
+                        }
                     }
+                    else
+                    {
+                        //Debug.Log("  skipping " + frameTime + " - " + message.msgType + " frame < " + minTime);
+                    }
+
                 }
             }
         }
 
-        // check if all needed frames are present in the dict
-        private void SyncCheckAllFramesPresent(ulong frameTime, Dictionary<NetMessageType, NetMessageData> dictTimeFrames)
+        // checks for timed out messages in the waiting list (> 5 seconds) and removes them, if found
+        private void CheckSyncMessagesTimeout()
+        {
+            long timeNow = System.DateTime.UtcNow.Ticks;
+            const long MESSAGE_TIMEOUT = 50000000;  // 5 seconds
+
+            for (int i = alNetMessageTime.Count - 1; i >= 0; i--)
+            {
+                ulong msgTime = alNetMessageTime[i];
+
+                if (dictNetMessageData.ContainsKey(msgTime))
+                {
+                    var dictTimeFrames = dictNetMessageData[msgTime];
+                    var listMessages = dictTimeFrames.Values.ToArray();
+
+                    foreach (NetMessageData message in listMessages)
+                    {
+                        if ((timeNow - message.timeCreated) > MESSAGE_TIMEOUT)
+                        {
+                            //Debug.Log("    removing timed-out message " + msgTime + "-" + message.msgType + ", duration: " + (timeNow - message.timeCreated));
+                            dictNetMessageData[msgTime].Remove(message.msgType);
+                        }
+                    }
+                }
+
+                if (!dictNetMessageData.ContainsKey(msgTime) || dictNetMessageData[msgTime].Count == 0)
+                {
+                    if(dictNetMessageData.ContainsKey(msgTime))
+                        dictNetMessageData.Remove(msgTime);
+                    alNetMessageTime.RemoveAt(i);
+
+                    if (consoleLogMessages)
+                        Debug.LogWarning("Removed timed-out entry: " + msgTime + ", cache-size: " + alNetMessageTime.Count);
+                }
+            }
+        }
+
+        // returns the list of missing frames as string
+        private string GetMissingSyncFramesInfo(ulong frameTime, Dictionary<NetMessageType, NetMessageData> dictTimeFrames)
+        {
+            System.Text.StringBuilder sbBuf = new System.Text.StringBuilder();
+
+            if (isSyncDepthAndColor && colorFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.Color))
+                sbBuf.Append("color ");
+            if (isFrameSyncNeeded && depthFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.Depth))
+                sbBuf.Append("depth ");
+            if (isFrameSyncNeeded && infraredFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.Infrared))
+                sbBuf.Append("ir ");
+            if (isSyncBodyAndDepth && bodyDataFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.BodyData))
+                sbBuf.Append("body ");
+            if (isSyncBodyAndDepth && bodyIndexFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.BodyIndex))
+                sbBuf.Append("bi ");
+            if (isSyncDepthAndColor && depth2colorFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.Depth2Color))
+                sbBuf.Append("d2c ");
+            if (isSyncDepthAndColor && color2depthFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.Color2Depth))
+                sbBuf.Append("c2d ");
+            if (isSyncDepthAndColor && color2infraredFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.Color2Infrared))
+                sbBuf.Append("c2i ");
+            if (isSyncBodyAndDepth && color2bodyIndexFrameClient != null && !dictTimeFrames.ContainsKey(NetMessageType.Color2BodyIndex))
+                sbBuf.Append("c2bi ");
+
+            if(sbBuf.Length == 0)
+            {
+                sbBuf.Append("<none>");
+            }
+
+            return sbBuf.ToString();
+        }
+
+        // check if all needed frames are ready
+        private void SyncCheckIfAllFramesReady(ulong frameTime, Dictionary<NetMessageType, NetMessageData> dictTimeFrames)
         {
             bool bAllFramesPresent = true;
 
@@ -1713,28 +1833,16 @@ namespace com.rfilkov.kinect
             if (isSyncBodyAndDepth && color2bodyIndexFrameClient != null)
                 bAllFramesPresent &= dictTimeFrames.ContainsKey(NetMessageType.Color2BodyIndex);
 
-            //Debug.Log(string.Format("Synched: c: {0}, d: {1}, ir: {2}, b: {3}, bi: {4}, d2c: {5}, c2d: {6}, c2i: {7}, c2bi: {8}, all: {9}, entry: {10}",
-            //    dictTimeFrames.ContainsKey(NetMessageType.Color) ? 't' : 'f',
-            //    dictTimeFrames.ContainsKey(NetMessageType.Depth) ? 't' : 'f',
-            //    dictTimeFrames.ContainsKey(NetMessageType.Infrared) ? 't' : 'f',
-            //    dictTimeFrames.ContainsKey(NetMessageType.BodyData) ? 't' : 'f',
-            //    dictTimeFrames.ContainsKey(NetMessageType.BodyIndex) ? 't' : 'f',
-            //    dictTimeFrames.ContainsKey(NetMessageType.Depth2Color) ? 't' : 'f',
-            //    dictTimeFrames.ContainsKey(NetMessageType.Color2Depth) ? 't' : 'f',
-            //    dictTimeFrames.ContainsKey(NetMessageType.Color2Infrared) ? 't' : 'f',
-            //    dictTimeFrames.ContainsKey(NetMessageType.Color2BodyIndex) ? 't' : 'f',
-            //    bAllFramesPresent ? 't' : 'f', frameTime));
-
             if (bAllFramesPresent)
             {
-                SyncResendSynchedFrames(frameTime, dictTimeFrames);
+                SyncSendSynchedFrames(frameTime, dictTimeFrames);
             }
         }
 
-        // re-sends the synched time frames
-        private void SyncResendSynchedFrames(ulong frameTime, Dictionary<NetMessageType, NetMessageData> dictTimeFrames)
+        // re-sends the synchronized frames
+        private void SyncSendSynchedFrames(ulong frameTime, Dictionary<NetMessageType, NetMessageData> dictTimeFrames)
         {
-            //Debug.Log("Resending synched frames at entry: " + frameTime);
+            //Debug.Log("Resending " + dictTimeFrames.Count + " synched frames at entry: " + frameTime);
 
             foreach (NetMessageData message in dictTimeFrames.Values)
             {
@@ -1791,20 +1899,45 @@ namespace com.rfilkov.kinect
                 {
                     ulong msgTime = alNetMessageTime[0];
 
+                    int msgDataCount = 0;
                     if (dictNetMessageData.ContainsKey(msgTime))
                     {
+                        msgDataCount = dictNetMessageData[msgTime].Count;
                         dictNetMessageData[msgTime].Clear();
                         dictNetMessageData.Remove(msgTime);
                     }
 
                     alNetMessageTime.RemoveAt(0);
-                    //Debug.Log("Removed cache-entry: " + msgTime + ", cache-size: " + alNetMessageTime.Count);
+                    //Debug.Log("Synched " + msgTime + ", frame-time: " + frameTime + ", frame-count: " + msgDataCount + ", cache-size: " + alNetMessageTime.Count);
 
                     if (msgTime == frameTime)
                         break;
                 }
             }
 
+        }
+
+        // cleans up the waiting for sync message data
+        private void CleanupSyncMessageData()
+        {
+            if (alNetMessageTime != null && dictNetMessageData != null)
+            {
+                for (int i = alNetMessageTime.Count - 1; i >= 0; i--)
+                {
+                    ulong msgTime = alNetMessageTime[i];
+
+                    if (dictNetMessageData.ContainsKey(msgTime))
+                    {
+                        dictNetMessageData[msgTime].Clear();
+                        dictNetMessageData.Remove(msgTime);
+                    }
+
+                    alNetMessageTime.RemoveAt(i);
+                }
+
+                //if (consoleLogMessages)
+                //    Debug.Log("Cleaned up the sync message data.");
+            }
         }
 
 
@@ -2132,6 +2265,10 @@ namespace com.rfilkov.kinect
                     Thread.Sleep(KinectInterop.THREAD_SLEEP_TIME_MS);
                 }
             }
+            catch(ThreadAbortException)
+            {
+                // do nothing
+            }
             catch (System.Exception ex)
             {
                 Debug.LogException(ex);
@@ -2202,6 +2339,7 @@ namespace com.rfilkov.kinect
                 NetMessageData message = new NetMessageData();
                 message.SetDecompressor(decompressor);
                 message.UnwrapMessage(conn.messageBuffer);
+                //Debug.Log("Received message: " + message.timestamp + " - " + message.msgType + " @ " + System.DateTime.Now.ToString("HH:mm:ss.fff"));
 
                 ReceivedMessage?.Invoke(conn, new ReceivedMessageEventArgs(message));
             }

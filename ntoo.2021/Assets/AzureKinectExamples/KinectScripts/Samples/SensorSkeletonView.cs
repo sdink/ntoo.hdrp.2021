@@ -187,12 +187,12 @@ namespace com.rfilkov.components
                         }
                         else
                         {
-                            if (joints[i] != null)
+                            if (joints != null && joints[i] != null)
                             {
                                 joints[i].SetActive(false);
                             }
 
-                            if (lines[i] != null)
+                            if (lines != null && lines[i] != null)
                             {
                                 lines[i].gameObject.SetActive(false);
                             }

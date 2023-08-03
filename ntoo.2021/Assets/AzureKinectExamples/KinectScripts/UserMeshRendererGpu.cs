@@ -35,6 +35,9 @@ namespace com.rfilkov.components
         public MeshTextureType meshTexture = MeshTextureType.ColorTexture;
         public enum MeshTextureType : int { ColorTexture = 0, InfraredTexture = 1 }
 
+        [Tooltip("If set, the mesh renderer will use this texture for the mesh, instead of the color or IR texture.")]
+        public Texture externalMeshTexture = null;
+
         [Tooltip("Time interval between scene mesh updates, in seconds. 0 means no wait.")]
         private float updateMeshInterval = 0f;
 
@@ -102,7 +105,8 @@ namespace com.rfilkov.components
             kinectManager = KinectManager.Instance;
             sensorData = (kinectManager != null && kinectManager.IsInitialized()) ? kinectManager.GetSensorData(sensorIndex) : null;
 
-            if (meshTexture == MeshTextureType.InfraredTexture && kinectManager && kinectManager.GetInfraredImageTex(sensorIndex) == null)
+            if (externalMeshTexture == null && meshTexture == MeshTextureType.InfraredTexture && 
+                kinectManager && kinectManager.GetInfraredImageTex(sensorIndex) == null)
             {
                 Debug.LogError("Please set the 'Get Infrared Frames'-setting of KinectManager to 'Infrared texture'.");
             }
@@ -260,7 +264,7 @@ namespace com.rfilkov.components
 
                 //meshShaderMat.SetBuffer("_DepthMap", sensorData.colorDepthBuffer);
 
-                if (meshTexture == MeshTextureType.InfraredTexture)
+                if (externalMeshTexture == null && meshTexture == MeshTextureType.InfraredTexture)
                 {
                     if (sensorData.colorInfraredBuffer == null || sensorData.colorInfraredBuffer.count != bufferLength)
                     {
@@ -478,7 +482,7 @@ namespace com.rfilkov.components
                 UpdateTexturesAndBuffers();
 
                 int paramsCache = coarseFactor + (showAsPointCloud ? 10 : 0);
-                if(meshParamsCache != paramsCache)
+                if (meshParamsCache != paramsCache)
                 {
                     //Debug.Log("Mesh params changed. Recreating...");
                     CreateMeshVertInd(imageWidth, imageHeight);
@@ -500,19 +504,27 @@ namespace com.rfilkov.components
                     KinectInterop.SetComputeBufferData(bodyIndexBuffer, bodyIndexCopy, bodyIndexBufferLength, sizeof(uint));
                 }
 
-                switch (meshTexture)
+                if (externalMeshTexture != null)
                 {
-                    case MeshTextureType.ColorTexture:
-                        if (colorTexture != null)
-                            Graphics.CopyTexture(colorTexture, colorTextureCopy);
-                        break;
+                    // use the external texture
+                    Graphics.Blit(externalMeshTexture, colorTextureCopy);
+                }
+                else
+                {
+                    switch (meshTexture)
+                    {
+                        case MeshTextureType.ColorTexture:
+                            if (colorTexture != null)
+                                Graphics.CopyTexture(colorTexture, colorTextureCopy);
+                            break;
 
-                    case MeshTextureType.InfraredTexture:
-                        Texture infraredTexture = sensorInt.pointCloudResolution == DepthSensorBase.PointCloudResolution.DepthCameraResolution ?
-                            sensorData.infraredImageTexture : sensorData.colorInfraredTexture;
-                        if (infraredTexture != null)
-                            Graphics.CopyTexture(infraredTexture, colorTextureCopy);
-                        break;
+                        case MeshTextureType.InfraredTexture:
+                            Texture infraredTexture = sensorInt.pointCloudResolution == DepthSensorBase.PointCloudResolution.DepthCameraResolution ?
+                                sensorData.infraredImageTexture : sensorData.colorInfraredTexture;
+                            if (infraredTexture != null)
+                                Graphics.CopyTexture(infraredTexture, colorTextureCopy);
+                            break;
+                    }
                 }
 
                 if (sourceImageResolution == DepthSensorBase.PointCloudResolution.DepthCameraResolution)
@@ -546,9 +558,15 @@ namespace com.rfilkov.components
                 // mesh bounds
                 if (kinectManager.GetUserBoundingBox(userId, null, sensorIndex, Rect.zero, out Vector3 posMin, out Vector3 posMax))
                 {
-                    Vector3 boundsCenter = new Vector3((posMax.x - posMin.x) / 2f, (posMax.y - posMin.y) / 2f, (posMax.z - posMin.z) / 2f);
-                    Vector3 boundsSize = new Vector3((posMax.x - posMin.x), (posMax.y - posMin.y), (posMax.z - posMin.z));
+                    Vector3 boundsCenter = new Vector3((posMax.x - posMin.x) / 2f, (posMax.y - posMin.y) / 2f, (posMax.z /**- posMin.z*/) / 2f);
+                    Vector3 boundsSize = new Vector3((posMax.x - posMin.x), (posMax.y - posMin.y), (posMax.z /**- posMin.z*/));
                     mesh.bounds = new Bounds(boundsCenter, boundsSize);
+                    //Debug.Log("Bounds center: " + mesh.bounds.center + ", size: " + mesh.bounds.size);
+                }
+                else if (mesh.bounds.size.z == 0f)
+                {
+                    mesh.bounds = new Bounds(Vector3.zero, new Vector3(10, 10, 10));
+                    //Debug.Log("Bounds center: " + mesh.bounds.center + ", size: " + mesh.bounds.size);
                 }
 
                 // update lighting parameters

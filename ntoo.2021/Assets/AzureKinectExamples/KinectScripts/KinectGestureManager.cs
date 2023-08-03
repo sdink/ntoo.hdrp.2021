@@ -490,6 +490,46 @@ namespace com.rfilkov.kinect
             return Vector3.zero;
         }
 
+        /// <summary>
+        /// Gets latest gesture timestamp.
+        /// </summary>
+        /// <param name="UserId">User ID</param>
+        /// <param name="gesture">Gesture type</param>
+        /// <returns>Latest timestamp</returns>
+        public float GetGestureTimestamp(ulong UserId, GestureType gesture)
+        {
+            List<GestureData> gesturesData = playerGesturesData.ContainsKey(UserId) ? playerGesturesData[UserId] : null;
+            int index = gesturesData != null ? GetGestureIndex(gesture, ref gesturesData) : -1;
+
+            if (index >= 0)
+            {
+                GestureData gestureData = gesturesData[index];
+                return gestureData.timestamp;
+            }
+
+            return 0f;
+        }
+
+        /// <summary>
+        /// Gets current gesture state.
+        /// </summary>
+        /// <param name="UserId">User ID</param>
+        /// <param name="gesture">Gesture type</param>
+        /// <returns>Current gesture state</returns>
+        public int GetGestureState(ulong UserId, GestureType gesture)
+        {
+            List<GestureData> gesturesData = playerGesturesData.ContainsKey(UserId) ? playerGesturesData[UserId] : null;
+            int index = gesturesData != null ? GetGestureIndex(gesture, ref gesturesData) : -1;
+
+            if (index >= 0)
+            {
+                GestureData gestureData = gesturesData[index];
+                return gestureData.state;
+            }
+
+            return 0;
+        }
+
 
         /// <summary>
         /// Locate the available gesture listeners.
@@ -1405,15 +1445,15 @@ namespace com.rfilkov.kinect
                     {
                         case 0:  // gesture detection - phase 1
                             if (jointsTracked[rightHandIndex] && jointsTracked[leftElbowIndex] && jointsTracked[leftShoulderIndex] &&
-                               (jointsPos[rightHandIndex].y - jointsPos[leftElbowIndex].y) > 0f &&
-                               (jointsPos[rightHandIndex].y - jointsPos[leftShoulderIndex].y) < 0f)
+                               (jointsPos[rightHandIndex].y - jointsPos[leftElbowIndex].y) < 0f &&
+                               (jointsPos[rightHandIndex].y - (jointsPos[leftElbowIndex].y + jointsPos[leftHandIndex].y) / 2f) > 0f)
                             {
                                 SetGestureJoint(ref gestureData, timestamp, rightHandIndex, jointsPos[rightHandIndex]);
                                 gestureData.progress = 0.5f;
                             }
                             else if (jointsTracked[leftHandIndex] && jointsTracked[rightElbowIndex] && jointsTracked[rightShoulderIndex] &&
-                                    (jointsPos[leftHandIndex].y - jointsPos[rightElbowIndex].y) > 0f &&
-                                    (jointsPos[leftHandIndex].y - jointsPos[rightShoulderIndex].y) < 0f)
+                                    (jointsPos[leftHandIndex].y - jointsPos[rightElbowIndex].y) < 0f &&
+                                    (jointsPos[leftHandIndex].y -( jointsPos[rightElbowIndex].y + jointsPos[rightHandIndex].y) / 2f) > 0f)
                             {
                                 SetGestureJoint(ref gestureData, timestamp, leftHandIndex, jointsPos[leftHandIndex]);
                                 gestureData.progress = 0.5f;

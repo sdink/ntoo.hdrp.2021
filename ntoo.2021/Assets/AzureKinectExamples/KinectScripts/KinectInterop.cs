@@ -14,10 +14,6 @@ namespace com.rfilkov.kinect
     /// </summary>
     public class KinectInterop
     {
-        // body tracking sdk's tools folder - used to copy the needed libraries and files.
-        // TODO - change it for other OS's or install folders. 
-        internal const string BODY_TRACKING_TOOLS_FOLDER = "C:/Program Files/Azure Kinect Body Tracking SDK/tools";
-
         // whether to persist the space tables to disk and then load them from there, or not.
         internal const bool SAVE_SPACE_TABLES_TO_DISK = true;
 
@@ -33,7 +29,7 @@ namespace com.rfilkov.kinect
         /// </summary>
         public static class Constants
         {
-            public const int MaxBodyCount = 100;
+            public const int MaxBodyCount = 50;
 
             public const float MinTimeBetweenSameGestures = 0.0f;
             public const float PoseCompleteDuration = 1.0f;
@@ -54,6 +50,8 @@ namespace com.rfilkov.kinect
             Kinect4Azure = 4,
             ARKit = 5,
 
+            WebCam = 50,
+
             DummyK2 = 102,
             DummyK4A = 104,
 
@@ -68,7 +66,7 @@ namespace com.rfilkov.kinect
             Disabled = 0,
             ConnectedSensor = 1,
             PlayRecording = 2,
-            // CreateRecording = 3
+            SaveRecording = 3
         }
 
         // Data structures for interfacing C# with the native wrappers
@@ -176,9 +174,9 @@ namespace com.rfilkov.kinect
             public Vector3 position;
             public Quaternion orientation;
 
-            //public Vector3 posPrev;
-            //public Vector3 posRel;
-            //public Vector3 posVel;
+            public Vector3 posPrev;
+            public Vector3 posRel;
+            public Vector3 posVel;
 
             // KM calculated parameters
             public Vector3 direction;
@@ -190,7 +188,7 @@ namespace com.rfilkov.kinect
 
             public override string ToString()
             {
-                return jointType.ToString();
+                return $"{jointType} @ {position}, rot: {normalRotation.eulerAngles.ToString("F0")}";
             }
 
             public void CopyTo(ref JointData toJoint)
@@ -198,17 +196,17 @@ namespace com.rfilkov.kinect
                 toJoint.jointType = jointType;
                 toJoint.trackingState = trackingState;
 
-                toJoint.kinectPos = kinectPos;
-                toJoint.position = position;
-                toJoint.orientation = orientation;
+                toJoint.kinectPos.Set(kinectPos.x, kinectPos.y, kinectPos.z);
+                toJoint.position.Set(position.x, position.y, position.z);
+                toJoint.orientation.Set(orientation.x, orientation.y, orientation.z, orientation.w);
 
-                //toJoint.posPrev = posPrev;
-                //toJoint.posRel = posRel;
-                //toJoint.posVel = posVel;
+                toJoint.posPrev.Set(posPrev.x, posPrev.y, posPrev.z);
+                toJoint.posRel.Set(posRel.x, posRel.y, posRel.z);
+                toJoint.posVel.Set(posVel.x, posVel.y, posVel.z);
 
-                toJoint.direction = direction;
-                toJoint.normalRotation = normalRotation;
-                toJoint.mirroredRotation = mirroredRotation;
+                toJoint.direction.Set(direction.x, direction.y, direction.z);
+                toJoint.normalRotation.Set(normalRotation.x, normalRotation.y, normalRotation.z, normalRotation.w);
+                toJoint.mirroredRotation.Set(mirroredRotation.x, mirroredRotation.y, mirroredRotation.z, mirroredRotation.w);
             }
 
             public void AverageTo(ref JointData toJoint)
@@ -246,7 +244,7 @@ namespace com.rfilkov.kinect
             public Vector3 position;
             public Quaternion orientation;
 
-            [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = (int)JointType.Count, ArraySubType = UnmanagedType.Struct)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)JointType.Count)]
             public JointData[] joint;
 
             // KM calculated parameters
@@ -256,7 +254,10 @@ namespace com.rfilkov.kinect
             // body merger parameter
             public int sensorIndex;
 
-            //// hand state parameters
+            // last body timestamp
+            public ulong bodyTimestamp;
+
+            // hand state parameters
             public HandState leftHandState;
             //public TrackingConfidence leftHandConfidence;
             public HandState rightHandState;
@@ -277,6 +278,7 @@ namespace com.rfilkov.kinect
                 mirroredRotation = Quaternion.identity;
 
                 sensorIndex = 0;
+                bodyTimestamp = 0;
 
                 leftHandState = HandState.NotTracked;
                 rightHandState = HandState.NotTracked;
@@ -297,7 +299,7 @@ namespace com.rfilkov.kinect
 
             public override string ToString()
             {
-                return "Body" + iBodyIndex + ": " + liTrackingID;
+                return $"Body{iBodyIndex} id: {liTrackingID} @ {position.ToString("F2")}, rot: {normalRotation.eulerAngles.ToString("F0")}";
             }
 
             public void CopyTo(ref BodyData toBody)
@@ -306,9 +308,9 @@ namespace com.rfilkov.kinect
                 toBody.iBodyIndex = iBodyIndex;
                 toBody.bIsTracked = bIsTracked;
 
-                toBody.kinectPos = kinectPos;
-                toBody.position = position;
-                toBody.orientation = orientation;
+                toBody.kinectPos.Set(kinectPos.x, kinectPos.y, kinectPos.z);
+                toBody.position.Set(position.x, position.y, position.z);
+                toBody.orientation.Set(orientation.x, orientation.y, orientation.z, orientation.w);
 
                 if (toBody.joint == null || toBody.joint.Length != joint.Length)
                 {
@@ -320,10 +322,11 @@ namespace com.rfilkov.kinect
                     joint[j].CopyTo(ref toBody.joint[j]);
                 }
 
-                toBody.normalRotation = normalRotation;
-                toBody.mirroredRotation = mirroredRotation;
+                toBody.normalRotation.Set(normalRotation.x, normalRotation.y, normalRotation.z, normalRotation.w);
+                toBody.mirroredRotation.Set(mirroredRotation.x, mirroredRotation.y, mirroredRotation.z, mirroredRotation.w);
 
                 toBody.sensorIndex = sensorIndex;
+                toBody.bodyTimestamp = bodyTimestamp;
 
                 toBody.leftHandState = leftHandState;
                 toBody.rightHandState = rightHandState;
@@ -645,6 +648,19 @@ namespace com.rfilkov.kinect
             return textRes.text;
         }
 
+        // returns the binary data contained in the given resource asset, or null if not found
+        public static byte[] GetResourceBytes(string resFileName)
+        {
+            TextAsset textRes = Resources.Load(resFileName, typeof(TextAsset)) as TextAsset;
+            if (textRes == null)
+            {
+                Debug.LogWarning("Resource not found: " + resFileName);
+                return null;
+            }
+
+            return textRes.bytes;
+        }
+
         // copy resource asset to the target file
         public static bool CopyResourceFile(string resFileName, string targetFilePath)
         {
@@ -707,7 +723,7 @@ namespace com.rfilkov.kinect
 
 
         // copy file from the source folder to the target folder
-        public static bool CopyFolderFile(string sourceFolderPath, string fileName, string targetFolderPath)
+        public static bool CopyFolderFile(string sourceFolderPath, string fileName, string targetFolderPath, bool hideWarning = false)
         {
             //if(!Directory.Exists(sourceFolderPath))
             //{
@@ -725,7 +741,8 @@ namespace com.rfilkov.kinect
 
             if (!sourceFile.Exists)
             {
-                Debug.LogWarning("File not found: " + sourceFilePath + ". Trying to find it in resources...");
+                if(!hideWarning)
+                    Debug.LogWarning("File not found: " + sourceFilePath /**+ ". Trying to find it in resources..."*/);
                 return false;
             }
 
@@ -987,8 +1004,8 @@ namespace com.rfilkov.kinect
 
                 bResult = sensorData.sensorInterface.UpdateSensorData(sensorData, kinectManager, isPlayMode);
 
-                if(sensorData.lastDepthFrameTime != sensorData.prevDepthFrameTime && 
-                    sensorData.lastColorFrameTime != sensorData.prevColorFrameTime && !isPlayMode)
+                if((sensorData.lastDepthFrameTime != sensorData.prevDepthFrameTime || 
+                    sensorData.lastColorFrameTime != sensorData.prevColorFrameTime) && !isPlayMode)
                 {
                     sensorData.sensorInterface.UpdateTransformedFrameTextures(sensorData, kinectManager);
                 }
@@ -1296,7 +1313,7 @@ namespace com.rfilkov.kinect
             {JointType.SpineNaval, JointType.SpineChest},
             {JointType.SpineChest, JointType.Neck},
             {JointType.Neck, JointType.Head},
-            {JointType.Head, JointType.Head},
+            {JointType.Head, JointType.Nose},
 
             {JointType.ClavicleLeft, JointType.ShoulderLeft},
             {JointType.ShoulderLeft, JointType.ElbowLeft},
@@ -1467,7 +1484,7 @@ namespace com.rfilkov.kinect
 
             int copyBytesCount = copyElemCount * dstElemSize;
             if (srcBlockSize < copyBytesCount)
-                throw new Exception("Copied " + copyBytesCount + " bytes are not available in the source memory. MemBlock size: " + srcBlockSize + " bytes");
+                throw new Exception(copyBytesCount + " bytes are not available in the source memory. Size: " + srcBlockSize);
 
             if (copyBytesCount > 0)
             {
@@ -1486,7 +1503,7 @@ namespace com.rfilkov.kinect
             if (dstArray == null)
                 throw new Exception("dstArray should not be null.");
             if ((srcArray.Length * srcElemSize) != (dstArray.Length * dstElemSize))
-                throw new Exception("srcArray and dstArray should have the same byte length.");
+                throw new Exception(string.Format("srcArray (L:{0}*{1}) and dstArray (L:{2}*{3}) should have the same byte length.", srcArray.Length, srcElemSize, dstArray.Length, dstElemSize));
 
             int copyBytesCount = dstArray.Length * dstElemSize;
             if (copyBytesCount > 0)
@@ -1924,13 +1941,13 @@ namespace com.rfilkov.kinect
         }
 
         // sets current body frame from the given csv line. returns the number of bodies
-        public static uint SetBodyFrameFromCsv(string sCsvLine, string sDelim, ref BodyData[] bodyData, 
+        public static uint SetBodyFrameFromCsv(string sCsvLine, string sDelim, SensorData sensorData, ref BodyData[] bodyData, 
             ref Matrix4x4 sensorToWorld, bool bIgnoreZCoords, out ulong liRelTime)
         {
             liRelTime = 0;
 
             // check for invalid sensor data and for same frame time
-            if (sCsvLine.Length == 0)
+            if (sCsvLine.Length == 0 || sensorData == null)
                 return 0;
 
             // split the csv line in parts
@@ -1954,6 +1971,7 @@ namespace com.rfilkov.kinect
             int.TryParse(alCsvParts[5], out int iSY);
             int.TryParse(alCsvParts[6], out int iSZ);
             Vector3 sensorSpaceScale = new Vector3(iSX, iSY, iSZ);
+            sensorData.sensorSpaceScale = sensorSpaceScale;
 
             ulong.TryParse(alCsvParts[1], out liRelTime);
 
@@ -1979,7 +1997,7 @@ namespace com.rfilkov.kinect
             for (int i = 0; i < bodyCount; i++)
             {
                 if (alCsvParts.Length < (iIndex + 1))
-                    return 0;
+                    continue;
 
                 // update the tracked-flag and body id
                 short bIsTracked = 0;
@@ -2045,6 +2063,7 @@ namespace com.rfilkov.kinect
                             else
                             {
                                 jointData.kinectPos = Vector3.zero;
+                                jointData.normalRotation = Quaternion.identity;
                             }
 
                             float jPosZ = (bIgnoreZCoords && j > 0) ? bodyData[i].joint[0].kinectPos.z : jointData.kinectPos.z;
@@ -2065,6 +2084,7 @@ namespace com.rfilkov.kinect
 
                                 bodyData[i].normalRotation = jointData.normalRotation;
                                 bodyData[i].mirroredRotation = jointData.mirroredRotation;
+                                //Debug.Log("User " + i + " kPos: " + jointData.kinectPos + ", pos: " + jointData.position);
                             }
                         }
 
@@ -2079,6 +2099,226 @@ namespace com.rfilkov.kinect
 
             return (uint)bodyCount;
         }
+
+        // sets current body frame from the given csv line. returns true on success, false otherwise
+        public static uint SetBodyFrameFromK2b(string sCsvLine, SensorData sensorData, KinectManager kinectManager, ref BodyData[] bodyData, 
+            ref Matrix4x4 kinectToWorld, bool bIgnoreZCoords, out ulong liRelTime)
+        {
+            liRelTime = 0;
+
+            // check for invalid sensor data and for same frame time
+            if (sensorData == null || kinectManager == null)
+                return 0;
+            if (sCsvLine.Length == 0)
+                return 0;
+
+            // split the csv line in parts
+            char[] delimiters = { ',' };
+            string[] alCsvParts = sCsvLine.Split(delimiters);
+
+            if (alCsvParts.Length < 4)
+                return 0;
+
+            System.Globalization.CultureInfo invCulture = System.Globalization.CultureInfo.InvariantCulture;
+            System.Globalization.NumberStyles numFloat = System.Globalization.NumberStyles.Float;
+
+            // check the id, body count & joint count
+            int bodyCount = 0, jointCount = 0;
+            int.TryParse(alCsvParts[2], out bodyCount);
+            int.TryParse(alCsvParts[3], out jointCount);
+
+            ulong.TryParse(alCsvParts[1], out liRelTime);
+            sensorData.sensorSpaceScale = Vector3.one;  // the space scale of K2
+
+            if (alCsvParts[0] != "kb" || bodyCount == 0 || jointCount == 0 || liRelTime == 0)
+                return 0;
+            //		if(bodyCount != sensorData.bodyCount || jointCount != sensorData.jointCount)
+            //			return false;
+
+            //// update body frame data
+            //bodyFrame.liPreviousTime = bodyFrame.liRelativeTime;
+            //bodyFrame.liRelativeTime = liRelTime;
+
+            if (bodyData.Length < bodyCount)
+            {
+                Array.Resize<BodyData>(ref bodyData, bodyCount);
+                for (int i = 0; i < bodyCount; i++)
+                {
+                    bodyData[i] = new BodyData((int)JointType.Count);
+                }
+            }
+
+            int iIndex = 4;
+            for (int i = 0; i < bodyCount; i++)
+            {
+                if (alCsvParts.Length < (iIndex + 1))
+                    continue;
+
+                // update the tracked-flag and body id
+                short bIsTracked = 0;
+                ulong liTrackingID = 0;
+
+                short.TryParse(alCsvParts[iIndex], out bIsTracked);
+                iIndex++;
+
+                if (bIsTracked != 0 && alCsvParts.Length >= (iIndex + 1))
+                {
+                    ulong.TryParse(alCsvParts[iIndex], out liTrackingID);
+                    iIndex++;
+
+                    if (liTrackingID == 0)
+                    {
+                        bIsTracked = 0;
+                    }
+                }
+
+                bodyData[i].bIsTracked = (bIsTracked != 0);
+                bodyData[i].liTrackingID = liTrackingID;
+
+                if (bIsTracked != 0)
+                {
+                    // set all joints as not tracked
+                    for (int j = 0; j < (int)JointType.Count; j++)
+                    {
+                        bodyData[i].joint[j].trackingState = TrackingState.NotTracked;
+                    }
+
+                    // update joints' data
+                    for (int j2b = 0; j2b < jointCount; j2b++)
+                    {
+                        int j = K2bJoint2JointType[j2b];
+
+                        JointData jointData = bodyData[i].joint[j];
+                        int iTrackingState = 0;
+
+                        if (alCsvParts.Length >= (iIndex + 1))
+                        {
+                            int.TryParse(alCsvParts[iIndex], out iTrackingState);
+                            iIndex++;
+
+                            jointData.trackingState = (KinectInterop.TrackingState)iTrackingState;
+
+                            if (iTrackingState != (int)TrackingState.NotTracked && alCsvParts.Length >= (iIndex + 3))
+                            {
+                                float x = 0f, y = 0f, z = 0f;
+
+                                float.TryParse(alCsvParts[iIndex], numFloat, invCulture, out x);
+                                float.TryParse(alCsvParts[iIndex + 1], numFloat, invCulture, out y);
+                                float.TryParse(alCsvParts[iIndex + 2], numFloat, invCulture, out z);
+                                iIndex += 3;
+
+                                jointData.kinectPos = new Vector3(x, y, z);
+                            }
+                            else
+                            {
+                                jointData.kinectPos = Vector3.zero;
+                            }
+
+                            jointData.position = kinectToWorld.MultiplyPoint3x4(jointData.kinectPos);
+                            jointData.kinectPos = new Vector3(jointData.kinectPos.x, jointData.kinectPos.y, jointData.kinectPos.z);
+                            jointData.orientation = Quaternion.identity;
+
+                            if (j == 0)
+                            {
+                                // set body position
+                                bodyData[i].kinectPos = jointData.kinectPos;
+                                bodyData[i].position = jointData.position;
+                                bodyData[i].orientation = jointData.orientation;
+                            }
+                        }
+
+                        bodyData[i].joint[j] = jointData;
+
+                        if(j == (int)JointType.ClavicleLeft)
+                        {
+                            // clavicle right = clavicle left
+                            int j2 = (int)JointType.ClavicleRight;
+
+                            bodyData[i].joint[j2].trackingState = jointData.trackingState;
+                            bodyData[i].joint[j2].kinectPos = jointData.kinectPos;
+                            bodyData[i].joint[j2].position = jointData.position;
+                            bodyData[i].joint[j2].orientation = jointData.orientation;
+                        }
+                    }
+
+                    // spine naval
+                    {
+                        int p = (int)JointType.Pelvis;
+                        int sc = (int)JointType.SpineChest;
+                        int sn = (int)JointType.SpineNaval;
+
+                        JointData jointData = bodyData[i].joint[sn];
+                        jointData.trackingState = bodyData[i].joint[sc].trackingState;
+                        jointData.orientation = bodyData[i].joint[sc].orientation;
+
+                        Vector3 posChest = bodyData[i].joint[sc].kinectPos;
+                        Vector3 posPelvis = bodyData[i].joint[p].kinectPos;
+                        jointData.kinectPos = (posPelvis + posChest) * 0.5f;
+
+                        posChest = bodyData[i].joint[sc].position;
+                        posPelvis = bodyData[i].joint[p].position;
+                        jointData.position = (posPelvis + posChest) * 0.5f;
+
+                        bodyData[i].joint[sn] = jointData;
+                    }
+
+                    // calculate bone directions
+                    CalcBodyJointDirs(ref bodyData[i]);
+
+                    // calculate joint orients
+                    if (kinectManager.ignoreZCoordinates)
+                    {
+                        DepthSensorBase.DoCalcBodyJointOrients2D(ref bodyData[i], kinectManager.ignoreInferredJoints);
+                    }
+                    else
+                    {
+                        DepthSensorBase.DoCalcBodyJointOrients(ref bodyData[i], kinectManager.ignoreInferredJoints);
+                    }
+
+                    // body orientation
+                    bodyData[i].normalRotation = bodyData[i].joint[0].normalRotation;
+                    bodyData[i].mirroredRotation = bodyData[i].joint[0].mirroredRotation;
+                }
+            }
+
+            return (uint)bodyCount;
+        }
+
+        // k2b joint to k4a joint
+        private static readonly int[] K2bJoint2JointType =
+        {
+            (int)JointType.Pelvis,
+            (int)JointType.SpineChest,
+            (int)JointType.Neck,
+            (int)JointType.Head,
+
+            (int)JointType.ShoulderLeft,
+            (int)JointType.ElbowLeft,
+            (int)JointType.WristLeft,
+            (int)JointType.HandLeft,
+
+            (int)JointType.ShoulderRight,
+            (int)JointType.ElbowRight,
+            (int)JointType.WristRight,
+            (int)JointType.HandRight,
+
+            (int)JointType.HipLeft,
+            (int)JointType.KneeLeft,
+            (int)JointType.AnkleLeft,
+            (int)JointType.FootLeft,
+
+            (int)JointType.HipRight,
+            (int)JointType.KneeRight,
+            (int)JointType.AnkleRight,
+            (int)JointType.FootRight,
+
+            (int)JointType.ClavicleLeft,
+
+            (int)JointType.HandtipLeft,
+            (int)JointType.ThumbLeft,
+            (int)JointType.HandtipRight,
+            (int)JointType.ThumbRight
+        };
 
         // calculates all bone directions for the given body
         public static void CalcBodyJointDirs(ref BodyData bodyData)
@@ -2103,6 +2343,36 @@ namespace com.rfilkov.kinect
                     }
                 }
             }
+        }
+
+        // calculates all joint velocities for the given body
+        public static void CalcBodyFrameJointVels(ref BodyData bodyData, long lastBodyFrameTcks, long prevBodyFrameTcks)
+        {
+            // calculate the inter-frame time
+            float frameTime = (float)(lastBodyFrameTcks - prevBodyFrameTcks) / 10000000f;  // 100000000000f
+            //Debug.Log("  calcJointVels - bodyId: " + bodyData.liTrackingID + ", frameTime: " + frameTime);
+
+            if (bodyData.bIsTracked)
+            {
+                for (int j = 0; j < (int)JointType.Count; j++)
+                {
+                    JointData jointData = bodyData.joint[j];
+
+                    int p = (int)GetParentJoint((JointType)j);
+                    Vector3 parentPos = bodyData.joint[p].position;
+
+                    if(jointData.trackingState != TrackingState.NotTracked &&
+                        bodyData.joint[p].trackingState != TrackingState.NotTracked)
+                    {
+                        jointData.posRel = jointData.position - parentPos;
+                        jointData.posVel = frameTime > 0f ? (jointData.position - jointData.posPrev) / frameTime : Vector3.zero;
+                        jointData.posPrev = jointData.position;
+
+                        bodyData.joint[j] = jointData;
+                    }
+                }
+            }
+
         }
 
         // tries to loads the space table from a file. returns the space table as array, or null if the file is not found
@@ -2390,6 +2660,111 @@ namespace com.rfilkov.kinect
         {
             float dot = Quaternion.Dot(q1, q2);
             return dot >= 0f;
+        }
+
+
+        // transforms the source texture to target texture, by applying the needed resize, rotation and flip
+        public static void TransformTexture(Texture srcTex, RenderTexture tgtTex, int rotationAngle = 0, bool flipX = false, bool flipY = false)
+        {
+            if (srcTex == null || tgtTex == null)
+                return;
+
+            int srcWidth = srcTex.width;
+            int srcHeight = srcTex.height;
+
+            bool isPortraitMode = rotationAngle == 90 || rotationAngle == 270;
+
+            if (isPortraitMode)
+            {
+                // swap width and height
+                (srcWidth, srcHeight) = (srcHeight, srcWidth);
+            }
+
+            float camAspect = (float)srcWidth / srcHeight;
+            float tgtAspect = (float)tgtTex.width / tgtTex.height;
+
+            //// fix bug on Android
+            //if (Application.platform == RuntimePlatform.Android)
+            //{
+            //    rotationAngle = -rotationAngle;
+            //}
+
+            Matrix4x4 transMat = Matrix4x4.identity;
+            Vector4 texST = Vector4.zero;
+
+            if (isPortraitMode)
+            {
+                transMat = GetTransformMat(rotationAngle, flipY, flipX);
+                texST = GetTexST(tgtAspect, camAspect);
+            }
+            else
+            {
+                transMat = GetTransformMat(rotationAngle, flipX, flipY);
+                texST = GetTexST(camAspect, tgtAspect);
+            }
+
+            if(_textureMat == null)
+            {
+                _textureMat = new Material(Shader.Find("Kinect/TransformTexShader"));
+            }
+
+            // blit the texture
+            if(_textureMat != null)
+            {
+                _textureMat.SetMatrix(_TransformMatParam, transMat);
+                _textureMat.SetVector(_TexSTParam, texST);
+
+                Graphics.Blit(srcTex, tgtTex, _textureMat, 0);
+            }
+        }
+
+        private static Material _textureMat = null;
+        private static readonly int _TransformMatParam = Shader.PropertyToID("_TransformMat");
+        private static readonly int _TexSTParam = Shader.PropertyToID("_TexST");
+
+        // returns the camera transform matrix
+        private static Matrix4x4 GetTransformMat(float rotation, bool mirrorHorizontal, bool mirrorVertical)
+        {
+            Vector3 scale = new Vector3(mirrorHorizontal ? -1f : 1f, mirrorVertical ? -1f : 1f, 1f);
+            Matrix4x4 mat = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, rotation), scale);
+
+            return PUSH_MATRIX * mat * POP_MATRIX;
+        }
+
+        private static readonly Matrix4x4 PUSH_MATRIX = Matrix4x4.Translate(new Vector3(0.5f, 0.5f, 0));
+        private static readonly Matrix4x4 POP_MATRIX = Matrix4x4.Translate(new Vector3(-0.5f, -0.5f, 0));
+
+        // returns the camera texture offsets
+        private static Vector4 GetTexST(float srcAspect, float dstAspect)
+        {
+            if (srcAspect > dstAspect)
+            {
+                float s = dstAspect / srcAspect;
+                return new Vector4(s, 1, (1 - s) / 2, 0);
+            }
+            else
+            {
+                float s = srcAspect / dstAspect;
+                return new Vector4(1, s, 0, (1 - s) / 2);
+            }
+        }
+
+
+        // destroys the given object
+        public static void Destroy(UnityEngine.Object o)
+        {
+            if (o == null)
+                return;
+
+            if (o is RenderTexture)
+            {
+                ((RenderTexture)o).Release();
+            }
+
+            if (Application.isPlaying)
+                UnityEngine.Object.Destroy(o);
+            else
+                UnityEngine.Object.DestroyImmediate(o);
         }
 
     }

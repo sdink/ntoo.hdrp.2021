@@ -21,33 +21,39 @@ namespace com.rfilkov.kinect
 
         [Header("Sensor Data")]
 
-        [Tooltip("Whether to get depth frames from the sensor(s).")]
+        [Tooltip("Whether or not to start the depth sensor(s), when the scene starts.")]
+        public bool startDepthSensors = true;
+
+        [Tooltip("Whether or not to keep the KinectManager instance across scenes.")]
+        public bool dontDestroyAcrossScenes = false;
+
+        [Tooltip("Whether or not to get depth frames from the sensor(s).")]
         public DepthTextureType getDepthFrames = DepthTextureType.RawDepthData;
         public enum DepthTextureType : int { None = 0, RawDepthData = 1, DepthTexture = 2 }
 
-        [Tooltip("Whether to get color frames from the sensor(s).")]
+        [Tooltip("Whether or not to get color frames from the sensor(s).")]
         public ColorTextureType getColorFrames = ColorTextureType.None;
         public enum ColorTextureType : int { None = 0, ColorTexture = 2 }
 
-        [Tooltip("Whether to get infrared frames from the sensor(s).")]
+        [Tooltip("Whether or not to get infrared frames from the sensor(s).")]
         public InfraredTextureType getInfraredFrames = InfraredTextureType.None;
         public enum InfraredTextureType : int { None = 0, RawInfraredData = 1, InfraredTexture = 2 }
 
-        [Tooltip("Whether to get pose frames from the sensor(s).")]
+        [Tooltip("Whether or not to get pose frames from the sensor(s).")]
         public PoseUsageType getPoseFrames = PoseUsageType.None;
         public enum PoseUsageType : int { None = 0, RawPoseData = 1, DisplayInfo = 10, UpdateTransform = 20 }
 
-        [Tooltip("Whether to get body frames from the body tracker.")]
+        [Tooltip("Whether or not to get body frames from the body tracker.")]
         public BodyTextureType getBodyFrames = BodyTextureType.BodyAndBodyIndexData;
         public enum BodyTextureType : int { None = 0, BodyAndBodyIndexData = 1, BodyTexture = 2, UserTexture = 3, BodyDataOnly = 4, BodyIndexDataOnly = 5 }
 
-        [Tooltip("Whether to poll the sensor frames in separate threads or in the Update-method.")]
+        [Tooltip("Whether to poll the sensor frames in separate threads, or in the Update-method.")]
         private bool pollFramesInThread = true;
 
-        [Tooltip("Whether to synchronize depth and color frames.")]
+        [Tooltip("Whether or not to synchronize depth and color frames.")]
         public bool syncDepthAndColor = false;
 
-        [Tooltip("Whether to synchronize body and depth frames.")]
+        [Tooltip("Whether or not to synchronize body and depth frames.")]
         public bool syncBodyAndDepth = false;
 
         //[Tooltip("List of additional data frames to be computed from the latest depth and color frames. Please note, these data frames require getting both depth & color frames, as well as sync between them.")]
@@ -74,8 +80,8 @@ namespace com.rfilkov.kinect
         [Tooltip("Whether to display only the users within the allowed distances, or all users.")]
         public bool showAllowedUsersOnly = false;
 
-        public enum UserDetectionOrder : int { Appearance = 0, Distance = 1, LeftToRight = 2 }
-        [Tooltip("How to assign users to player indices - by order of appearance, distance or left-to-right.")]
+        public enum UserDetectionOrder : int { Appearance = 0, Distance = 1, LeftToRight = 2, FixedStepIndices = 3 }
+        [Tooltip("How to assign users to player indices - by order of appearance, distance, left to right, or fixed step left to right.")]
         public UserDetectionOrder userDetectionOrder = UserDetectionOrder.Appearance;
 
         [Tooltip("Whether to ignore the inferred joints, or consider them as tracked joints.")]
@@ -84,11 +90,23 @@ namespace com.rfilkov.kinect
         [Tooltip("Whether to ignore the Z-coordinates of the joints (for 2D-scenes) or not.")]
         public bool ignoreZCoordinates = false;
 
+        [Tooltip("Set of joint position smoothing parameters.")]
+        public SmoothingType jointPositionSmoothing = SmoothingType.Default;
+
+        [Tooltip("Whether to estimate the body joints velocities.")]
+        public bool estimateJointVelocities = false;
+
+        [Tooltip("Set of joint velocity smoothing parameters.")]
+        public SmoothingType jointVelocitySmoothing = SmoothingType.Light;
+
         [Tooltip("Whether to apply the bone orientation constraints.")]
         public bool boneOrientationConstraints = true;
 
+        [Tooltip("Whether to filter out the body spins. Feel free to disable it, if the users need to turn around.")]
+        public BodySpinType bodySpinFilter = BodySpinType.None;
+
         [Tooltip("Wait time in seconds, before a lost user gets removed. This is to prevent sporadical user switches.")]
-        protected float waitTimeBeforeRemove = 0f;
+        protected float waitTimeBeforeRemove = 0.25f;
 
         [Tooltip("Calibration pose required, to start tracking the respective user.")]
         public GestureType playerCalibrationPose = GestureType.None;
@@ -123,7 +141,7 @@ namespace com.rfilkov.kinect
             Sensor0ColorImage = 0x01, Sensor0DepthImage = 0x02, Sensor0InfraredImage = 0x03,
             Sensor1ColorImage = 0x11, Sensor1DepthImage = 0x12, Sensor1InfraredImage = 0x13,
             Sensor2ColorImage = 0x21, Sensor2DepthImage = 0x22, Sensor2InfraredImage = 0x23,
-            UserBodyImage = 0x101
+            UserBodyImageS0 = 0x101, UserBodyImageS1 = 0x102, UserBodyImageS2 = 0x103
         }
 
         [Tooltip("Single image width, as percent of the screen width. The height is estimated according to the image's aspect ratio.")]
@@ -170,12 +188,19 @@ namespace com.rfilkov.kinect
         protected uint trackedBodiesCount = 0;
         protected KinectInterop.BodyData[] alTrackedBodies = new KinectInterop.BodyData[0];  // new List<KinectInterop.BodyData>();
 
+        protected long lastBodyFrameTicks = 0;
+        protected long prevBodyFrameTicks = 0;
+
         protected int btSensorIndex = -1;
         protected int selectedBodyIndex = 255;
         protected bool bLimitedUsers = false;
 
+        // filters & body merger
         protected BoneOrientationConstraints boneConstraints = null;
         protected KinectUserBodyMerger userBodyMerger = null;
+
+        //protected JointPositionsFilter jointPositionFilter = null;
+        protected JointVelocitiesFilter jointVelocityFilter = null;
 
         // play mode
         protected bool isPlayModeEnabled = false;
@@ -217,6 +242,24 @@ namespace com.rfilkov.kinect
             }
 
             return false;
+        }
+
+        ///// <summary>
+        ///// Gets the joint position filter, if available.
+        ///// </summary>
+        ///// <returns></returns>
+        //public JointPositionsFilter GetJointPositionFilter()
+        //{
+        //    return jointPositionFilter;
+        //}
+
+        /// <summary>
+        /// Gets the joint velocity filter, if available.
+        /// </summary>
+        /// <returns></returns>
+        public JointVelocitiesFilter GetJointVelocityFilter()
+        {
+            return jointVelocityFilter;
         }
 
         /// <summary>
@@ -322,7 +365,7 @@ namespace com.rfilkov.kinect
             KinectInterop.SensorData sensorData = GetSensorData(sensorIndex);
             if(sensorData != null && sensorData.sensorInterface != null)
             {
-                return ((DepthSensorBase)sensorData.sensorInterface).minDistance;
+                return ((DepthSensorBase)sensorData.sensorInterface).minDepthDistance;
             }
 
             return 0f;
@@ -338,7 +381,7 @@ namespace com.rfilkov.kinect
             KinectInterop.SensorData sensorData = GetSensorData(sensorIndex);
             if (sensorData != null && sensorData.sensorInterface != null)
             {
-                return ((DepthSensorBase)sensorData.sensorInterface).maxDistance;
+                return ((DepthSensorBase)sensorData.sensorInterface).maxDepthDistance;
             }
 
             return 0f;
@@ -1396,6 +1439,16 @@ namespace com.rfilkov.kinect
 
         // do not change the data in the structure directly
         /// <summary>
+        /// Gets all user body data (for internal use only)
+        /// </summary>
+        /// <returns>Array of the available user body data</returns>
+        internal KinectInterop.BodyData[] GetAllUserBodyData()
+        {
+            return alTrackedBodies;
+        }
+
+        // do not change the data in the structure directly
+        /// <summary>
         /// Gets the user body data (for internal purposes only).
         /// </summary>
         /// <returns>The user body data.</returns>
@@ -1413,6 +1466,26 @@ namespace com.rfilkov.kinect
             }
 
             return new KinectInterop.BodyData((int)KinectInterop.JointType.Count);
+        }
+
+        /// <summary>
+        /// Gets the user body timestamp.
+        /// </summary>
+        /// <returns>User body timestamp.</returns>
+        /// <param name="userId">User ID</param>
+        public ulong GetUserTimestamp(ulong userId)
+        {
+            if (userManager.dictUserIdToIndex.ContainsKey(userId))
+            {
+                int index = userManager.dictUserIdToIndex[userId];
+
+                if (index >= 0 && index < trackedBodiesCount)
+                {
+                    return alTrackedBodies[index].bodyTimestamp;
+                }
+            }
+
+            return 0;
         }
 
         /// <summary>
@@ -1722,30 +1795,40 @@ namespace com.rfilkov.kinect
             return Vector3.zero;
         }
 
+        /// <summary>
+        /// Gets the joint velocity for the specified user and joint, in meters/s.
+        /// </summary>
+        /// <returns>The joint velocity.</returns>
+        /// <param name="userId">User ID</param>
+        /// <param name="joint">Joint index.</param>
+        public Vector3 GetJointVelocity(ulong userId, KinectInterop.JointType joint)
+        {
+            return GetJointVelocity(userId, (int)joint);
+        }
 
-        ///// <summary>
-        ///// Gets the joint velocity for the specified user and joint, in meters/s.
-        ///// </summary>
-        ///// <returns>The joint velocity.</returns>
-        ///// <param name="userId">User ID.</param>
-        ///// <param name="joint">Joint index.</param>
-        //public Vector3 GetJointVelocity(ulong userId, int joint)
-        //{
-        //    if (userManager.dictUserIdToIndex.ContainsKey(userId))
-        //    {
-        //        int index = userManager.dictUserIdToIndex[userId];
+        /// <summary>
+        /// Gets the joint velocity for the specified user and joint, in meters/s.
+        /// </summary>
+        /// <returns>The joint velocity.</returns>
+        /// <param name="userId">User ID</param>
+        /// <param name="joint">Joint index.</param>
+        public Vector3 GetJointVelocity(ulong userId, int joint)
+        {
+            if (userManager.dictUserIdToIndex.ContainsKey(userId))
+            {
+                int index = userManager.dictUserIdToIndex[userId];
 
-        //        if (index >= 0 && index < trackedBodiesCount && alTrackedBodies[index].bIsTracked)
-        //        {
-        //            if (joint >= 0 && joint < (int)KinectInterop.JointType.Count)
-        //            {
-        //                return alTrackedBodies[index].joint[joint].posVel;
-        //            }
-        //        }
-        //    }
+                if (index >= 0 && index < trackedBodiesCount && alTrackedBodies[index].bIsTracked)
+                {
+                    if (joint >= 0 && joint < (int)KinectInterop.JointType.Count)
+                    {
+                        return alTrackedBodies[index].joint[joint].posVel;
+                    }
+                }
+            }
 
-        //    return Vector3.zero;
-        //}
+            return Vector3.zero;
+        }
 
 
         /// <summary>
@@ -2383,8 +2466,25 @@ namespace com.rfilkov.kinect
                 {
                     if (joint >= 0 && joint < (int)KinectInterop.JointType.Count)
                     {
-                        KinectInterop.JointData jointData = alTrackedBodies[index].joint[joint];
-                        Vector3 posJointRaw = jointData.kinectPos;
+                        Vector3 posJointRaw = Vector3.zero;
+
+                        if (sensorDatas.Count == 1)
+                        {
+                            KinectInterop.JointData jointData = alTrackedBodies[index].joint[joint];
+                            posJointRaw = jointData.kinectPos;
+                        }
+                        else
+                        {
+                            ulong bodyId = GetSensorBodyId(sensorIndex, userId);
+                            int bodyIndex = GetSensorBodyIndex(sensorIndex, bodyId);
+                            KinectInterop.SensorData sensorData = sensorIndex >= 0 && sensorIndex < sensorDatas.Count ? sensorDatas[sensorIndex] : null;
+
+                            if (sensorData != null && bodyIndex >= 0 && bodyIndex < sensorData.trackedBodiesCount)
+                            {
+                                KinectInterop.JointData jointData = sensorData.alTrackedBodies[bodyIndex].joint[joint];
+                                posJointRaw = jointData.kinectPos;
+                            }
+                        }
 
                         return GetJointPosDepthOverlay(posJointRaw, sensorIndex, camera, imageRect);
                     }
@@ -2466,8 +2566,25 @@ namespace com.rfilkov.kinect
                 {
                     if (joint >= 0 && joint < (int)KinectInterop.JointType.Count)
                     {
-                        KinectInterop.JointData jointData = alTrackedBodies[index].joint[joint];
-                        Vector3 posJointRaw = jointData.kinectPos;
+                        Vector3 posJointRaw = Vector3.zero;
+
+                        if (sensorDatas.Count == 1)
+                        {
+                            KinectInterop.JointData jointData = alTrackedBodies[index].joint[joint];
+                            posJointRaw = jointData.kinectPos;
+                        }
+                        else
+                        {
+                            ulong bodyId = GetSensorBodyId(sensorIndex, userId);
+                            int bodyIndex = GetSensorBodyIndex(sensorIndex, bodyId);
+                            KinectInterop.SensorData sensorData = sensorIndex >= 0 && sensorIndex < sensorDatas.Count ? sensorDatas[sensorIndex] : null;
+
+                            if (sensorData != null && bodyIndex >= 0 && bodyIndex < sensorData.trackedBodiesCount)
+                            {
+                                KinectInterop.JointData jointData = sensorData.alTrackedBodies[bodyIndex].joint[joint];
+                                posJointRaw = jointData.kinectPos;
+                            }
+                        }
 
                         return GetJointPosColorOverlay(posJointRaw, sensorIndex, camera, imageRect);
                     }
@@ -2496,6 +2613,12 @@ namespace com.rfilkov.kinect
                 if (posDepth != Vector2.zero && depthValue > 0)
                 {
                     // depth pos to color pos
+                    posColor = MapDepthPointToColorCoords(sensorIndex, posDepth, depthValue);
+                }
+                else if (posDepth != Vector2.zero && posSensorSpace.z > 0f)
+                {
+                    // workaround - depth pos to color pos (use the sensor-pos-z instead)
+                    depthValue = (ushort)(posSensorSpace.z * 1000f);
                     posColor = MapDepthPointToColorCoords(sensorIndex, posDepth, depthValue);
                 }
                 else
@@ -2578,6 +2701,12 @@ namespace com.rfilkov.kinect
                                 // depth pos to color pos
                                 posColor = MapDepthPointToColorCoords(sensorIndex, posDepth, depthValue);
                             }
+                            else if (posDepth != Vector2.zero && posJointRaw.z > 0f)
+                            {
+                                // workaround - depth pos to color pos (use the sensor-pos-z instead)
+                                depthValue = (ushort)(posJointRaw.z * 1000f);
+                                posColor = MapDepthPointToColorCoords(sensorIndex, posDepth, depthValue);
+                            }
                             else
                             {
                                 // workaround - try to use the color camera space, if depth is not available
@@ -2633,6 +2762,11 @@ namespace com.rfilkov.kinect
                             // 3d position to depth
                             Vector2 posDepth = MapSpacePointToDepthCoords(sensorIndex, posJointRaw);
                             ushort depthValue = GetDepthForPixel(sensorIndex, (int)posDepth.x, (int)posDepth.y);
+
+                            if(depthValue == 0 && posJointRaw.z > 0f)
+                            {
+                                depthValue = (ushort)(posJointRaw.z * 1000f);
+                            }
 
                             if (posDepth != Vector2.zero && depthValue > 0)
                             {
@@ -2764,6 +2898,14 @@ namespace com.rfilkov.kinect
         /// <returns>Array of body index colors.</returns>
         public Color[] GetBodyIndexColors()
         {
+            if(_initialBodyIndexColors == null)
+            {
+                _initialBodyIndexColors = new Color[KinectInterop.Constants.MaxBodyCount];
+                for(int i = 0; i < _initialBodyIndexColors.Length; i++)
+                    _initialBodyIndexColors[i] = showAllowedUsersOnly ? _bodyColorNone : Color.white;
+            }
+
+            KinectInterop.CopyBytes(_initialBodyIndexColors, 4 * sizeof(float), clrUsers, 4 * sizeof(float));
             int numUserIndices = userManager.aUserIndexIds.Length;
 
             for (int i = 0; i < numUserIndices; i++)
@@ -2778,33 +2920,55 @@ namespace com.rfilkov.kinect
                     {
                         int bi = alTrackedBodies[index].iBodyIndex;
                         clrUsers[bi] = (i == 0) ? Color.yellow : _bodyIndexColors[i % _bodyIndexColors.Length];
-                        //Debug.Log(string.Format("{0} - id: {1}, bi: {2}, clr: {3}", i, userId, bi, clrUsers[bi]));
+                        //Debug.Log(string.Format("{0} - id: {1}, bi: {2}, pos: {3}, clr: {4}", index, userId, bi, alTrackedBodies[index].position, clrUsers[bi]));
                     }
                 }
+                //else
+                //{
+                //    clrUsers[i] = showAllowedUsersOnly ? _bodyColorNone : Color.white; // 
+                //    //Debug.Log(string.Format("{0} - id: {1}, bi: {2}, clr: {3}", i, userId, -1, clrUsers[i]));
+                //}
             }
 
             return clrUsers;
         }
 
         // user colors
+        private static Color _bodyColorNone = new Color(0f, 0f, 0f, 0f);
         private static readonly Color[] _bodyIndexColors = { Color.red, Color.green, Color.blue, Color.magenta };
         private Color[] clrUsers = new Color[KinectInterop.Constants.MaxBodyCount];
+
+        // initial body index color array
+        private static Color[] _initialBodyIndexColors = null;
 
 
         /// <summary>
         /// Resets the joint data filters.
         /// </summary>
-        public void ResetJointFilters()
+        public void ResetJointFilters(ulong userId = 0)
         {
-            //if (jointPositionFilter != null)
-            //{
-            //    jointPositionFilter.Reset();
-            //}
+            foreach(var sensorData in sensorDatas)
+            {
+                if(sensorData.sensorInterface != null)
+                {
+                    JointPositionsFilter jointPosFilter = ((DepthSensorBase)sensorData.sensorInterface).jointPositionFilter;
+                    if (jointPosFilter != null)
+                    {
+                        jointPosFilter.Reset(userId);
+                    }
 
-            //if (jointVelocityFilter != null)
-            //{
-            //    jointVelocityFilter.Reset();
-            //}
+                    BodySpinFilter bodySpinFilter = ((DepthSensorBase)sensorData.sensorInterface).bodySpinFilter;
+                    if (bodySpinFilter != null)
+                    {
+                        bodySpinFilter.Reset(userId);
+                    }
+                }
+            }
+
+            if (jointVelocityFilter != null)
+            {
+                jointVelocityFilter.Reset();
+            }
         }
 
 
@@ -2885,6 +3049,24 @@ namespace com.rfilkov.kinect
             return userBodyMerger;
         }
 
+        /// <summary>
+        /// Gets the sensor-specific bodyId for the given sensor and user
+        /// </summary>
+        /// <param name="sensorIndex">Sensor index</param>
+        /// <param name="userId">User Id</param>
+        /// <returns>Sensor-specific body Id</returns>
+        public ulong GetSensorBodyId(int sensorIndex, ulong userId)
+        {
+            if(userBodyMerger != null)
+            {
+                return userBodyMerger.GetSensorTrackingId(sensorIndex, userId);
+            }
+            else
+            {
+                return userId;
+            }
+        }
+
         // internal methods
 
         void Awake()
@@ -2893,7 +3075,11 @@ namespace com.rfilkov.kinect
             if (instance == null)
             {
                 instance = this;
-                DontDestroyOnLoad(this);
+
+                if(dontDestroyAcrossScenes)
+                {
+                    DontDestroyOnLoad(this);
+                }
             }
             else if (instance != this)
             {
@@ -2934,8 +3120,24 @@ namespace com.rfilkov.kinect
                 boneConstraints.SetDebugText(statusInfoText);
             }
 
+            // init joint filters
+            //if(jointSmoothing != SmoothingType.None)
+            //{
+            //    jointPositionFilter = new JointPositionsFilter();
+            //    jointPositionFilter.Init(jointSmoothing);
+            //}
+
+            if(jointVelocitySmoothing != SmoothingType.None)
+            {
+                jointVelocityFilter = new JointVelocitiesFilter();
+                jointVelocityFilter.Init(jointVelocitySmoothing);
+            }
+
             // locate and start the available depth-sensors
-            StartDepthSensors();
+            if(startDepthSensors)
+            {
+                StartDepthSensors();
+            }
         }
 
 
@@ -3087,7 +3289,7 @@ namespace com.rfilkov.kinect
                 // check for multi-camera config
                 if (useMultiCamConfig)
                 {
-                    if(!KinectInterop.IsFileExist(KinectInterop.LoadTextFile(KinectInterop.MULTI_CAM_CONFIG_FILE_NAME)))
+                    if(!KinectInterop.IsFileExist(KinectInterop.MULTI_CAM_CONFIG_FILE_NAME))
                     {
                         // copy the file from Resources-folder, if not found in the root folder
                         KinectInterop.CopyResourceFile(KinectInterop.MULTI_CAM_CONFIG_FILE_NAME, KinectInterop.MULTI_CAM_CONFIG_FILE_NAME);
@@ -3181,6 +3383,12 @@ namespace com.rfilkov.kinect
 
                             // try to open the by-default sensor interface
                             TryOpenSensors(sensorInts, dwFlags);
+
+                            //if (sensorDatas.Count == 0)
+                            //{
+                            //    sensorInts.Clear();
+                            //    Destroy(sensorInt.gameObject);
+                            //}
                         }
                     }
                 }
@@ -3508,8 +3716,10 @@ namespace com.rfilkov.kinect
                         }
                         break;
 
-                    case DisplayImageType.UserBodyImage:
-                        si = 0;  // sensor 0
+                    case DisplayImageType.UserBodyImageS0:
+                    case DisplayImageType.UserBodyImageS1:
+                    case DisplayImageType.UserBodyImageS2:
+                        si = imageType == DisplayImageType.UserBodyImageS0 ? 0 : imageType == DisplayImageType.UserBodyImageS1 ? 1 : imageType == DisplayImageType.UserBodyImageS2 ? 2 : -1;
                         if (si >= 0 && si < sensorDatas.Count)
                         {
                             KinectInterop.SensorData sensorData = sensorDatas[si];
@@ -3535,11 +3745,17 @@ namespace com.rfilkov.kinect
             {
                 if(!string.IsNullOrEmpty(playModeData))
                 {
-                    // use the 1st sensor
-                    Matrix4x4 sensorToWorld = GetSensorToWorldMatrix(0);
+                    // processed by the 1st sensor only
+                    Matrix4x4 sensorToWorld = GetSensorToWorldMatrix(sensorIndex);
 
-                    trackedBodiesCount = KinectInterop.SetBodyFrameFromCsv(playModeData, ";", ref alTrackedBodies, ref sensorToWorld, 
-                        ignoreZCoordinates, out lastBodyFrameTime);
+                    if (playModeData.StartsWith("k4b"))
+                        trackedBodiesCount = KinectInterop.SetBodyFrameFromCsv(playModeData, ";", sensorData, ref alTrackedBodies, ref sensorToWorld, ignoreZCoordinates, out lastBodyFrameTime);
+                    else
+                        trackedBodiesCount = KinectInterop.SetBodyFrameFromK2b(playModeData, sensorData, this, ref alTrackedBodies, ref sensorToWorld, ignoreZCoordinates, out lastBodyFrameTime);
+
+                    prevBodyFrameTicks = lastBodyFrameTicks;
+                    lastBodyFrameTicks = DateTime.Now.Ticks;
+
                     playModeData = string.Empty;
                 }
             }
@@ -3548,6 +3764,9 @@ namespace com.rfilkov.kinect
                 // first sensor
                 btSensorIndex = sensorIndex;
                 lastBodyFrameTime = sensorData.lastBodyFrameTime;
+
+                prevBodyFrameTicks = lastBodyFrameTicks;
+                lastBodyFrameTicks = DateTime.Now.Ticks;
 
                 // take the tracked bodies from sensor 0
                 trackedBodiesCount = sensorData.trackedBodiesCount;
@@ -3612,6 +3831,9 @@ namespace com.rfilkov.kinect
                 btSensorIndex = sensorIndex;
                 List<KinectInterop.BodyData> alMergedBodies = userBodyMerger.MergeUserBodies(ref lastBodyFrameTime, boneOrientationConstraints ? boneConstraints : null);
 
+                prevBodyFrameTicks = lastBodyFrameTicks;
+                lastBodyFrameTicks = DateTime.Now.Ticks;
+
                 trackedBodiesCount = (uint)alMergedBodies.Count;
                 if (alTrackedBodies.Length < trackedBodiesCount)
                 {
@@ -3622,6 +3844,7 @@ namespace com.rfilkov.kinect
                 {
                     alTrackedBodies[i] = alMergedBodies[i];
                     //alMergedBodies[i].CopyTo(ref alTrackedBodies[i]);
+                    alTrackedBodies[i].bIsTracked = true;
 
                     //{
                     //    int j = (int)KinectInterop.JointType.WristLeft;
@@ -3637,6 +3860,25 @@ namespace com.rfilkov.kinect
             else
             {
                 return;
+            }
+
+            // estimate and filter joint velocities, if needed
+            if (estimateJointVelocities && prevBodyFrameTicks > 0)
+            {
+                for (int i = 0; i < trackedBodiesCount; i++)
+                {
+                    KinectInterop.CalcBodyFrameJointVels(ref alTrackedBodies[i], lastBodyFrameTicks, prevBodyFrameTicks);
+
+                    if (jointVelocityFilter != null)
+                    {
+                        jointVelocityFilter.UpdateFilter(ref alTrackedBodies[i]);
+                    }
+                }
+
+                if (jointVelocityFilter != null)
+                {
+                    jointVelocityFilter.CleanUpUserHistory();
+                }
             }
 
             // process the tracked bodies
@@ -3718,8 +3960,6 @@ namespace com.rfilkov.kinect
                 KinectInterop.BodyData bodyData = alTrackedBodies[i];
                 ulong userId = bodyData.liTrackingID;
 
-                //Debug.Log("  (M)User ID: " + userId + ", body: " + i + ", bi: " + bodyData.iBodyIndex + ", pos: " + bodyData.joint[0].kinectPos + ", rot: " + bodyData.joint[0].normalRotation.eulerAngles);
-
                 if (bodyData.bIsTracked && userId != 0 && Mathf.Abs(bodyData.position.z) >= minUserDistance &&
                    (maxUserDistance < 0.01f || Mathf.Abs(bodyData.position.z) <= maxUserDistance) &&
                    (maxLeftRightDistance < 0.01f || Mathf.Abs(bodyData.position.x) <= maxLeftRightDistance))
@@ -3740,6 +3980,8 @@ namespace com.rfilkov.kinect
                     bodyData.bIsTracked = false;
                     alTrackedBodies[i] = bodyData;
                 }
+
+                //Debug.Log("  (M)User ID: " + userId + ", body: " + i + ", bi: " + bodyData.iBodyIndex + ", pos: " + bodyData.position + ", tracked: " + bodyData.bIsTracked);
             }
 
             // remove the lost users, if any
@@ -3786,13 +4028,19 @@ namespace com.rfilkov.kinect
                         // update body index if needed
                         userManager.dictUserIdToIndex[userId] = userIndex;
 
-                        int uidIndex = Array.IndexOf(userManager.aUserIndexIds, userId);
+                        //int uidIndex = Array.IndexOf(userManager.aUserIndexIds, userId);
                         //if (consoleLogMessages)
                         //    Debug.Log("Updating user " + uidIndex + ", ID: " + userId + ", Body: " + userIndex + ", Time: " + Time.time);
 
                         // re-arrange user indices if needed
                         userManager.RearrangeUserIndices(userDetectionOrder);
                     }
+                }
+
+                if(addedUsers.Count > 0)
+                {
+                    // update user indices, as needed
+                    userManager.UpdateUserIndices(userDetectionOrder);
                 }
 
                 addedUsers.Clear();
@@ -3818,7 +4066,7 @@ namespace com.rfilkov.kinect
                 gestureManager.UserWasAdded(userId, uidIndex);
 
                 // reset filters
-                ResetJointFilters();
+                ResetJointFilters(userId);
 
                 // fire event
                 userManager.FireOnUserAdded(userId, uidIndex);

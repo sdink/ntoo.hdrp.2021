@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using com.rfilkov.kinect;
-
 
 namespace com.rfilkov.components
 {
@@ -31,20 +31,24 @@ namespace com.rfilkov.components
 
         //public UnityEngine.UI.Text debugText;
 
-        private GameObject[] joints = null;
-        private LineRenderer[] lines = null;
+        // list of filtered-out joints
+        protected List<int> filteredOutJoints = new List<int>();
+
+        // joints & lines
+        protected GameObject[] joints = null;
+        protected LineRenderer[] lines = null;
 
         // initial body rotation
-        private Quaternion initialRotation = Quaternion.identity;
+        protected Quaternion initialRotation = Quaternion.identity;
 
         // reference to KM
-        private KinectManager kinectManager = null;
+        protected KinectManager kinectManager = null;
 
         // background rectangle
-        private Rect backgroundRect = Rect.zero;
+        protected Rect backgroundRect = Rect.zero;
 
 
-        void Start()
+        protected virtual void Start()
         {
             kinectManager = KinectManager.Instance;
 
@@ -80,7 +84,7 @@ namespace com.rfilkov.components
             //}
         }
 
-        void Update()
+        protected virtual void Update()
         {
             if (kinectManager && kinectManager.IsInitialized())
             {
@@ -108,6 +112,10 @@ namespace com.rfilkov.components
                     for (int i = 0; i < jointsCount; i++)
                     {
                         int joint = i;
+                        if (filteredOutJoints.Contains(joint))
+                        {
+                            continue;
+                        }
 
                         if (kinectManager.IsJointTracked(userId, joint))
                         {

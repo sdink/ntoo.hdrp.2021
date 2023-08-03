@@ -18,12 +18,14 @@ namespace com.rfilkov.kinect
         /// <summary>
         /// Fired when new user gets detected.
         /// </summary>
+        [Tooltip("This event is fired, when new user gets detected.")]
         //public event System.Action<ulong, int> OnUserAdded;
         public KinectUserEvent OnUserAdded = new KinectUserEvent();
 
         /// <summary>
         /// Fired when user gets removed.
         /// </summary>
+        [Tooltip("This event is fired, when user gets removed.")]
         //public event System.Action<ulong, int> OnUserRemoved;
         public KinectUserEvent OnUserRemoved = new KinectUserEvent();
 
@@ -46,10 +48,67 @@ namespace com.rfilkov.kinect
         // transformation matrix of the primary body sensor (used to apply the sensor orientation transformation)
         //protected Matrix4x4 matBodySensor = Matrix4x4.identity;
 
+        // parameters used by the FixedStepIndices order
+        [Tooltip("Minimum (leftmost) position, used by the FixedStepIndices-order, in meters.")]
+        public float fixedPosMin = -2f;  // minimum (leftmost) fixed position, in meters
+        [Tooltip("Maximum (rightmost) position, used by the FixedStepIndices-order, in meters.")]
+        public float fixedPosMax = 2f;   // maximum (rightmost) fixed position, in meters
+        [Tooltip("Fixed step between indices, used by the FixedStepIndices-order, in meters.")]
+        public float fixedPosStep = 1f;  // fixed step between indices, in meters
+
+        [Tooltip("Central position (in meters from the sensor), used by the Distance-user detection order.")]
+        public Vector3 centralPosition = Vector3.zero;
+
 
         protected virtual void Start()
         {
             kinectManager = KinectManager.Instance;
+        }
+
+
+        // returns the fixed step user index, according to the user position in space.
+        private int GetFixedStepUserIndex(Vector3 userPos)
+        {
+            float xDist = Mathf.Clamp(userPos.x, fixedPosMin, fixedPosMax);
+            int userIndex = Mathf.FloorToInt((xDist - fixedPosMin) / fixedPosStep);
+
+            return userIndex;
+        }
+
+
+        /// <summary>
+        /// Updates the user indices as needed, according to the detection order
+        /// </summary>
+        /// <param name="userDetectionOrder"></param>
+        public virtual void UpdateUserIndices(KinectManager.UserDetectionOrder userDetectionOrder)
+        {
+            switch(userDetectionOrder)
+            {
+                case KinectManager.UserDetectionOrder.Appearance:
+                    break;
+                case KinectManager.UserDetectionOrder.Distance:
+                case KinectManager.UserDetectionOrder.LeftToRight:
+                    RearrangeUserIndices(userDetectionOrder);
+                    break;
+                case KinectManager.UserDetectionOrder.FixedStepIndices:
+                    // clear all indices
+                    System.Array.Clear(aUserIndexIds, 0, aUserIndexIds.Length);
+
+                    // set current user indices
+                    for (int i = 0; i < alUserIds.Count; i++)
+                    {
+                        ulong userId = alUserIds[i];
+
+                        if (userId != 0)
+                        {
+                            Vector3 userPos = kinectManager.GetUserPosition(userId);
+                            int userIndex = GetFixedStepUserIndex(userPos);
+                            //Debug.Log(string.Format("  UpdateUserIndices - UserId: {0}, xPos: {1:F2}, index: {2}", userId, userPos.x, userIndex));
+                            aUserIndexIds[userIndex] = userId;
+                        }
+                    }
+                    break;
+            }
         }
 
 
@@ -58,7 +117,8 @@ namespace com.rfilkov.kinect
         /// </summary>
         public virtual void RearrangeUserIndices(KinectManager.UserDetectionOrder userDetectionOrder)
         {
-            if (userDetectionOrder != KinectManager.UserDetectionOrder.Appearance)
+            if (userDetectionOrder != KinectManager.UserDetectionOrder.Appearance &&
+                userDetectionOrder != KinectManager.UserDetectionOrder.FixedStepIndices)
             {
                 // get current user positions
                 Vector3[] userPos = new Vector3[aUserIndexIds.Length];
@@ -76,9 +136,12 @@ namespace com.rfilkov.kinect
 
                     for (int j = 0; j < i; j++)
                     {
+                        if (userPos[j] == Vector3.zero || userPos[j + 1] == Vector3.zero)
+                            continue;
+
                         float userDist1 = 0f;
                         if (userDetectionOrder == KinectManager.UserDetectionOrder.Distance)
-                            userDist1 = Mathf.Abs(userPos[j].x) + Mathf.Abs(userPos[j].z);
+                            userDist1 = Mathf.Abs(userPos[j].x - centralPosition.x) + Mathf.Abs(userPos[j].z - centralPosition.z);
                         else if (userDetectionOrder == KinectManager.UserDetectionOrder.LeftToRight)
                             userDist1 = userPos[j].x;
 
@@ -87,7 +150,7 @@ namespace com.rfilkov.kinect
 
                         float userDist2 = 0f;
                         if (userDetectionOrder == KinectManager.UserDetectionOrder.Distance)
-                            userDist2 = Mathf.Abs(userPos[j + 1].x) + Mathf.Abs(userPos[j + 1].z);
+                            userDist2 = Mathf.Abs(userPos[j + 1].x - centralPosition.x) + Mathf.Abs(userPos[j + 1].z - centralPosition.z);
                         else if (userDetectionOrder == KinectManager.UserDetectionOrder.LeftToRight)
                             userDist2 = userPos[j + 1].x;
 
@@ -111,18 +174,18 @@ namespace com.rfilkov.kinect
 
                 if (reorderDone)
                 {
-                    System.Text.StringBuilder sbUsersOrder = new System.Text.StringBuilder();
-                    sbUsersOrder.Append("Users reindexed: ");
+                    //System.Text.StringBuilder sbUsersOrder = new System.Text.StringBuilder();
+                    //sbUsersOrder.Append("Users rearranged: ");
 
-                    for (int i = 0; i < aUserIndexIds.Length; i++)
-                    {
-                        if (aUserIndexIds[i] != 0)
-                        {
-                            sbUsersOrder.Append(i).Append(":").Append(aUserIndexIds[i]).Append("  ");
-                        }
-                    }
+                    //for (int i = 0; i < aUserIndexIds.Length; i++)
+                    //{
+                    //    if (aUserIndexIds[i] != 0)
+                    //    {
+                    //        sbUsersOrder.Append(i).Append(":").Append(aUserIndexIds[i]).Append("  ");
+                    //    }
+                    //}
 
-                    Debug.Log(sbUsersOrder.ToString());
+                    //Debug.Log(sbUsersOrder.ToString());
                 }
             }
         }
@@ -135,14 +198,25 @@ namespace com.rfilkov.kinect
             RearrangeUserIndices(userDetectionOrder);
             int uidIndex = -1;
 
-            if (userDetectionOrder != KinectManager.UserDetectionOrder.Appearance)
+            if(userDetectionOrder == KinectManager.UserDetectionOrder.FixedStepIndices)
+            {
+                Vector3 userPos = alTrackedBodies[bodyIndex].position;
+                int userIndex = GetFixedStepUserIndex(userPos);
+                //Debug.Log(string.Format("GetEmptyUserSlot - UserId: {0}, xPos: {1:F2}, index: {2}, IndexId: {3}", userId, userPos.x, userIndex, aUserIndexIds[userIndex]));
+
+                if (aUserIndexIds[userIndex] == 0)
+                {
+                    uidIndex = userIndex;
+                }
+            }
+            else if (userDetectionOrder != KinectManager.UserDetectionOrder.Appearance)
             {
                 // add the new user, depending on the distance
                 Vector3 userPos = alTrackedBodies[bodyIndex].position;
 
                 float userDist = 0f;
                 if (userDetectionOrder == KinectManager.UserDetectionOrder.Distance)
-                    userDist = Mathf.Abs(userPos.x) + Mathf.Abs(userPos.z);
+                    userDist = Mathf.Abs(userPos.x - centralPosition.x) + Mathf.Abs(userPos.z - centralPosition.z);
                 else if (userDetectionOrder == KinectManager.UserDetectionOrder.LeftToRight)
                     userDist = userPos.x;
 
@@ -161,7 +235,7 @@ namespace com.rfilkov.kinect
 
                         float uidUserDist = 0;
                         if (userDetectionOrder == KinectManager.UserDetectionOrder.Distance)
-                            uidUserDist = Mathf.Abs(uidUserPos.x) + Mathf.Abs(uidUserPos.z);
+                            uidUserDist = Mathf.Abs(uidUserPos.x - centralPosition.x) + Mathf.Abs(uidUserPos.z - centralPosition.z);
                         else if (userDetectionOrder == KinectManager.UserDetectionOrder.LeftToRight)
                             uidUserDist = uidUserPos.x;
 
@@ -208,7 +282,8 @@ namespace com.rfilkov.kinect
         {
             aUserIndexIds[uidIndex] = 0;
 
-            if (userDetectionOrder != KinectManager.UserDetectionOrder.Appearance)
+            if (userDetectionOrder != KinectManager.UserDetectionOrder.Appearance &&
+                userDetectionOrder != KinectManager.UserDetectionOrder.FixedStepIndices)
             {
                 // rearrange the remaining users
                 for (int u = uidIndex; u < (aUserIndexIds.Length - 1); u++)

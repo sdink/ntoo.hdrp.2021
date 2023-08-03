@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using com.rfilkov.kinect;
+using static com.rfilkov.kinect.KinectInterop;
 
 
 namespace com.rfilkov.components
@@ -65,8 +66,13 @@ namespace com.rfilkov.components
         public GameObject HandtipRight;
         public GameObject ThumbRight;
 
+        [Tooltip("Line renderer to draw the skeleton lines.")]
         public LineRenderer skeletonLine;
         //public LineRenderer debugLine;
+
+        [Tooltip("UI Text to display debug information.")]
+        public UnityEngine.UI.Text debugInfo;
+
 
         private GameObject[] bones;
         private LineRenderer[] lines;
@@ -82,6 +88,7 @@ namespace com.rfilkov.components
         private Vector3 initialPosUser = Vector3.zero;
         private Vector3 initialPosOffset = Vector3.zero;
         private ulong initialPosUserID = 0;
+        private ulong lastBodyTimestamp = 0;
 
 
         void Start()
@@ -207,6 +214,26 @@ namespace com.rfilkov.components
 
             //Debug.Log (userID + ", pos: " + posPointMan + ", ipos: " + initialPosUser + ", rpos: " + posPointManMP + ", tpos: " + transform.position);
 
+            //Vector3 rotPelvis = kinectManager.GetJointOrientation(userID, (int)KinectInterop.JointType.Pelvis, true).eulerAngles;
+            //if(rotPelvis.y > 90 && rotPelvis.y < 270)
+            //    Debug.Log($"Time: {DateTime.Now.ToString("HH.mm.ss.fff")} - pelRot: {rotPelvis}");
+
+            ulong bodyTimestamp = kinectManager.GetBodyFrameTime(0);
+            if (lastBodyTimestamp != bodyTimestamp)
+            {
+                BodyData bodyData = kinectManager.GetUserBodyData(userID);
+
+                JointData pelvis = bodyData.joint[(int)JointType.Pelvis];
+                JointData neck = bodyData.joint[(int)JointType.Neck];
+
+                if (debugInfo != null)
+                {
+                    debugInfo.text = $"Pelvis: {GetJointDataString(pelvis)}, Neck: {GetJointDataString(neck)}";
+                }
+
+                lastBodyTimestamp = bodyTimestamp;
+            }
+
             // update the local positions of the bones
             for (int i = 0; i < bones.Length; i++)
             {
@@ -288,6 +315,13 @@ namespace com.rfilkov.components
                     }
                 }
             }
+        }
+
+
+        // returns the joint data string
+        private string GetJointDataString(JointData jd)
+        {
+            return $"{jd.trackingState.ToString()[0]} {jd.position.ToString("F2")}";
         }
 
     }

@@ -173,6 +173,14 @@ namespace com.rfilkov.components
                 //    }
                 //}
             }
+            else
+            {
+                // reset the background texture, if needed
+                if (backgroundImage && backgroundImage.texture != null)
+                {
+                    backgroundImage.texture = null;
+                }
+            }
 
             //RectTransform rectTransform = backgroundImage.rectTransform;
             //Debug.Log("pivot: " + rectTransform.pivot + ", anchorPos: " + rectTransform.anchoredPosition + ", \nanchorMin: " + rectTransform.anchorMin + ", anchorMax: " + rectTransform.anchorMax);
@@ -200,8 +208,8 @@ namespace com.rfilkov.components
                 depthHistTotalPoints = 0;
 
                 // get configured min & max distances 
-                float minDistance = ((DepthSensorBase)sensorData.sensorInterface).minDistance;
-                float maxDistance = ((DepthSensorBase)sensorData.sensorInterface).maxDistance;
+                float minDistance = ((DepthSensorBase)sensorData.sensorInterface).minDepthDistance;
+                float maxDistance = ((DepthSensorBase)sensorData.sensorInterface).maxDepthDistance;
 
                 int depthMinDistance = (int)(minDistance * 1000f);
                 int depthMaxDistance = (int)(maxDistance * 1000f);

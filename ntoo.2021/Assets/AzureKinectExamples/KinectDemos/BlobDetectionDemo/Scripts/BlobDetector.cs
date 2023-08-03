@@ -172,7 +172,7 @@ namespace com.rfilkov.components
         {
             if (sensorData != null && sensorData.sensorInterface != null)
             {
-                ((DepthSensorBase)sensorData.sensorInterface).minDistance = fMinDist;
+                ((DepthSensorBase)sensorData.sensorInterface).minDepthDistance = fMinDist;
             }
         }
 
@@ -185,7 +185,7 @@ namespace com.rfilkov.components
         {
             if(sensorData != null && sensorData.sensorInterface != null)
             {
-                ((DepthSensorBase)sensorData.sensorInterface).maxDistance = fMaxDist;
+                ((DepthSensorBase)sensorData.sensorInterface).maxDepthDistance = fMaxDist;
             }
         }
 
@@ -274,8 +274,8 @@ namespace com.rfilkov.components
             if (rawDepth == null)
                 return;
 
-            minDistance = ((DepthSensorBase)sensorData.sensorInterface).minDistance;  // kinectManager.GetSensorMinDistance(sensorIndex);
-            maxDistance = ((DepthSensorBase)sensorData.sensorInterface).maxDistance;  // kinectManager.GetSensorMaxDistance(sensorIndex);
+            minDistance = ((DepthSensorBase)sensorData.sensorInterface).minDepthDistance;  // kinectManager.GetSensorMinDistance(sensorIndex);
+            maxDistance = ((DepthSensorBase)sensorData.sensorInterface).maxDepthDistance;  // kinectManager.GetSensorMaxDistance(sensorIndex);
 
             if(maxDistanceText)
             {

@@ -45,7 +45,7 @@ namespace com.rfilkov.kinect
 
         public bool isActive = false;
 
-        public const int MaxMessageQueueLength = 2;  // 50
+        public const int MaxMessageQueueLength = 10;  // 50;  2;
         public Queue<NetMessageData> messageQueue = new Queue<NetMessageData>(MaxMessageQueueLength);
 
         public byte[] messageBuffer = null;
@@ -96,15 +96,19 @@ namespace com.rfilkov.kinect
         private ILZ4Compressor compressor = null;
         private ILZ4Decompressor decompressor = null;
 
+        public long timeCreated;
+
 
         public NetMessageData()
         {
+            timeCreated = System.DateTime.UtcNow.Ticks;
         }
 
         public NetMessageData(NetMessageType msgType, FrameEncodeType encType)
         {
             this.msgType = msgType;
             this.encType = encType;
+            this.timeCreated = System.DateTime.UtcNow.Ticks;
         }
 
         public NetMessageData(NetMessageType msgType, FrameEncodeType encType, int frameWidth, int frameHeight, ulong timestamp)
@@ -142,7 +146,7 @@ namespace com.rfilkov.kinect
 
         public void CompressData()
         {
-            if (compressor != null && frameData != null)
+            if (compressor != null && frameData != null && encType != FrameEncodeType.Compressed)
             {
                 byte[] compressBuffer = new byte[frameData.Length + compHeaderSize];
 
@@ -151,7 +155,8 @@ namespace com.rfilkov.kinect
                 elemBytes.CopyTo(compressBuffer, 1);
 
                 int compSize = compressor.Compress(frameData, 0, frameData.Length, compressBuffer, compHeaderSize) + compHeaderSize;
-
+                //if (msgType == NetMessageType.Depth)
+                //    Debug.Log("  compress: " + msgType + " - " + encType + ", ts: " + timestamp + ", frameLen: " + frameData.Length + ", compLen: " + compSize);
                 encType = FrameEncodeType.Compressed;
                 frameData = new byte[compSize];
                 System.Buffer.BlockCopy(compressBuffer, 0, frameData, 0, compSize);

@@ -132,6 +132,14 @@ namespace com.rfilkov.components
         private Rect planeRect = new Rect();
         private bool planeRectSet = false;
 
+        // user body lengths
+        private bool gotUserBodySize = false;
+        private bool gotUserArmsSize = false;
+        private bool gotUserLegsSize = false;
+
+        // mesh renderer
+        private SkinnedMeshRenderer meshRenderer = null;
+
 
         public void Start()
         {
@@ -142,6 +150,9 @@ namespace com.rfilkov.components
             // get model transforms
             Animator animatorComponent = GetComponent<Animator>();
             AvatarController avatarController = GetComponent<AvatarController>();
+
+            // get mesh renderer
+            meshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
 
             // use the root transform for body scale
             bodyScaleTransform = transform;
@@ -227,6 +238,9 @@ namespace com.rfilkov.components
 
                 scalerInited = true;
             }
+
+            // update the scale immediately
+            Update();
         }
 
         public void Update()
@@ -251,15 +265,15 @@ namespace com.rfilkov.components
                 {
                     Vector3 userPos = kinectManager.GetUserPosition(userId);
 
-                    bool lHandTracked = kinectManager.IsJointTracked(userId, (int)KinectInterop.JointType.WristLeft);
-                    Vector3 lHandPos = lHandTracked ? kinectManager.GetJointPosition(userId, (int)KinectInterop.JointType.WristLeft) : Vector3.zero;
+                    //bool lHandTracked = kinectManager.IsJointTracked(userId, (int)KinectInterop.JointType.WristLeft);
+                    //Vector3 lHandPos = lHandTracked ? kinectManager.GetJointPosition(userId, (int)KinectInterop.JointType.WristLeft) : Vector3.zero;
 
-                    bool rHandTracked = kinectManager.IsJointTracked(userId, (int)KinectInterop.JointType.WristRight);
-                    Vector3 rHandPos = rHandTracked ? kinectManager.GetJointPosition(userId, (int)KinectInterop.JointType.WristRight) : Vector3.zero;
+                    //bool rHandTracked = kinectManager.IsJointTracked(userId, (int)KinectInterop.JointType.WristRight);
+                    //Vector3 rHandPos = rHandTracked ? kinectManager.GetJointPosition(userId, (int)KinectInterop.JointType.WristRight) : Vector3.zero;
 
-                    if (userPos.z < minUserDistance ||
-                        !lHandTracked || (lHandPos.z - userPos.z) <= -0.3f ||
-                        !rHandTracked || (rHandPos.z - userPos.z) <= -0.3f)
+                    if (userPos.z < minUserDistance) // ||
+                        //!lHandTracked || (lHandPos.z - userPos.z) <= -0.3f ||
+                        //!rHandTracked || (rHandPos.z - userPos.z) <= -0.3f)
                     {
                         // don't scale the model
                         userId = 0;
@@ -275,13 +289,37 @@ namespace com.rfilkov.components
                     if (userId != 0)
                     {
                         GetUserBodySize(true, true, true);
-                        ScaleAvatar(0f, true);
+
+                        if (gotUserBodySize)
+                        {
+                            // show the mesh
+                            if (meshRenderer && !meshRenderer.gameObject.activeSelf)
+                                meshRenderer.gameObject.SetActive(true);
+
+                            // scale avatar initially
+                            ScaleAvatar(0f, true);
+                        }
+                        else
+                        {
+                            // hide the mesh
+                            if (meshRenderer && meshRenderer.gameObject.activeSelf)
+                                meshRenderer.gameObject.SetActive(false);
+
+                            // consider the user as not tracked
+                            currentUserId = 0;
+                        }
+                    }
+                    else
+                    {
+                        // user not tracked
+                        gotUserBodySize = gotUserArmsSize = gotUserLegsSize = false;
                     }
                 }
             }
 
             if (currentUserId != 0 && continuousScaling)
             {
+                // scale avatar continuously
                 GetUserBodySize(true, true, true);
                 ScaleAvatar(smoothFactor, false);
             }
@@ -296,29 +334,37 @@ namespace com.rfilkov.components
 
             if (bBody)
             {
-                GetUserBodyHeight(kinectManager, bodyScaleFactor, bodyWidthFactor, ref userBodyHeight, ref userBodyWidth);
+                gotUserBodySize = GetUserBodyHeight(kinectManager, bodyScaleFactor, bodyWidthFactor, ref userBodyHeight, ref userBodyWidth);
             }
 
             if (bArms)
             {
-                GetUserBoneLength(kinectManager, KinectInterop.JointType.ShoulderLeft, KinectInterop.JointType.ElbowLeft, armScaleFactor, ref leftUpperArmLength);
-                GetUserBoneLength(kinectManager, KinectInterop.JointType.ElbowLeft, KinectInterop.JointType.WristLeft, armScaleFactor, ref leftLowerArmLength);
-                GetUserBoneLength(kinectManager, KinectInterop.JointType.ShoulderRight, KinectInterop.JointType.ElbowRight, armScaleFactor, ref rightUpperArmLength);
-                GetUserBoneLength(kinectManager, KinectInterop.JointType.ElbowRight, KinectInterop.JointType.WristRight, armScaleFactor, ref rightLowerArmLength);
+                bool gotLeftArmSize = GetUserBoneLength(kinectManager, KinectInterop.JointType.ShoulderLeft, KinectInterop.JointType.ElbowLeft, armScaleFactor, ref leftUpperArmLength);
+                gotLeftArmSize &= GetUserBoneLength(kinectManager, KinectInterop.JointType.ElbowLeft, KinectInterop.JointType.WristLeft, armScaleFactor, ref leftLowerArmLength);
+                bool gotRightArmSize = GetUserBoneLength(kinectManager, KinectInterop.JointType.ShoulderRight, KinectInterop.JointType.ElbowRight, armScaleFactor, ref rightUpperArmLength);
+                gotRightArmSize &= GetUserBoneLength(kinectManager, KinectInterop.JointType.ElbowRight, KinectInterop.JointType.WristRight, armScaleFactor, ref rightLowerArmLength);
 
-                EqualizeBoneLength(ref leftUpperArmLength, ref rightUpperArmLength);
-                EqualizeBoneLength(ref leftLowerArmLength, ref rightLowerArmLength);
+                gotUserArmsSize = gotLeftArmSize | gotRightArmSize;
+                if(gotUserArmsSize)
+                {
+                    EqualizeBoneLength(ref leftUpperArmLength, ref rightUpperArmLength);
+                    EqualizeBoneLength(ref leftLowerArmLength, ref rightLowerArmLength);
+                }
             }
 
             if (bLegs)
             {
-                GetUserBoneLength(kinectManager, KinectInterop.JointType.HipLeft, KinectInterop.JointType.KneeLeft, legScaleFactor, ref leftUpperLegLength);
-                GetUserBoneLength(kinectManager, KinectInterop.JointType.KneeLeft, KinectInterop.JointType.AnkleLeft, legScaleFactor, ref leftLowerLegLength);
-                GetUserBoneLength(kinectManager, KinectInterop.JointType.HipRight, KinectInterop.JointType.KneeRight, legScaleFactor, ref rightUpperLegLength);
-                GetUserBoneLength(kinectManager, KinectInterop.JointType.KneeRight, KinectInterop.JointType.AnkleRight, legScaleFactor, ref rightLowerLegLength);
+                bool gotLeftLegSize = GetUserBoneLength(kinectManager, KinectInterop.JointType.HipLeft, KinectInterop.JointType.KneeLeft, legScaleFactor, ref leftUpperLegLength);
+                gotLeftLegSize &= GetUserBoneLength(kinectManager, KinectInterop.JointType.KneeLeft, KinectInterop.JointType.AnkleLeft, legScaleFactor, ref leftLowerLegLength);
+                bool gotRightLegSize = GetUserBoneLength(kinectManager, KinectInterop.JointType.HipRight, KinectInterop.JointType.KneeRight, legScaleFactor, ref rightUpperLegLength);
+                gotRightLegSize &= GetUserBoneLength(kinectManager, KinectInterop.JointType.KneeRight, KinectInterop.JointType.AnkleRight, legScaleFactor, ref rightLowerLegLength);
 
-                EqualizeBoneLength(ref leftUpperLegLength, ref rightUpperLegLength);
-                EqualizeBoneLength(ref leftLowerLegLength, ref rightLowerLegLength);
+                gotUserLegsSize = gotLeftLegSize | gotRightLegSize;
+                if(gotUserLegsSize)
+                {
+                    EqualizeBoneLength(ref leftUpperLegLength, ref rightUpperLegLength);
+                    EqualizeBoneLength(ref leftLowerLegLength, ref rightLowerLegLength);
+                }
             }
         }
 
@@ -326,7 +372,7 @@ namespace com.rfilkov.components
         public void ScaleAvatar(float fSmooth, bool bInitialScale)
         {
             // scale body
-            if (bodyScaleFactor > 0f)
+            if (bodyScaleFactor > 0f && gotUserBodySize)
             {
                 SetupBodyScale(bodyScaleTransform, modelBodyScale, modelBodyHeight, modelBodyWidth, userBodyHeight, userBodyWidth,
                     fSmooth, ref fScaleBodyHeight, ref fScaleBodyWidth);
@@ -345,7 +391,7 @@ namespace com.rfilkov.components
             }
 
             // scale arms
-            if (/**bInitialScale &&*/ armScaleFactor > 0f)
+            if (/**bInitialScale &&*/ armScaleFactor > 0f && gotUserArmsSize)
             {
                 float fLeftUpperArmLength = !mirroredAvatar ? leftUpperArmLength : rightUpperArmLength;
                 SetupBoneScale(leftShoulderScaleTransform, modelLeftShoulderScale, modelLeftUpperArmLength,
@@ -365,7 +411,7 @@ namespace com.rfilkov.components
             }
 
             // scale legs
-            if (/**bInitialScale &&*/ legScaleFactor > 0)
+            if (/**bInitialScale &&*/ legScaleFactor > 0 && gotUserLegsSize)
             {
                 float fLeftUpperLegLength = !mirroredAvatar ? leftUpperLegLength : rightUpperLegLength;
                 SetupBoneScale(leftHipScaleTransform, modelLeftHipScale, modelLeftUpperLegLength,

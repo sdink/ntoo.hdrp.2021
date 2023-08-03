@@ -56,7 +56,10 @@
     <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Plugins\Editor\AmplitudeEditor.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Addons\AmplitudeSALSA\Editor\AmplitudeSALSAEditor.cs" />
     <Compile Include="Assets\Faceware\Scripts\Editor\LiveClientAdvEditor.cs" />
+    <Compile Include="Assets\Crazy Minnow Studio\Addons\SalsaTextSync\Editor\SalsaTextSyncEditor.cs" />
     <Compile Include="Assets\Faceware\Scripts\Editor\BaseFacewareExpressions.cs" />
     <Compile Include="Assets\DOTDOT\Scripts\Editor\UserPresenceEditor.cs" />
     <Compile Include="Assets\DOTDOT\NTOO\Editor\NtooManagerEditor.cs" />
@@ -64,9 +67,6 @@
     <Compile Include="Assets\Faceware\Scripts\Editor\LiveCharacterSetupEditor.cs" />
     <Compile Include="Assets\Faceware\Scripts\Editor\LiveCharacterSetupFileEditor.cs" />
     <Compile Include="Assets\DOTDOT\NTOO Client\Editor\NtooClientManagerEditor.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Plugins\Editor\AmplitudeEditor.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Addons\SalsaTextSync\Editor\SalsaTextSyncEditor.cs" />
-    <Compile Include="Assets\Crazy Minnow Studio\Amplitude\Addons\AmplitudeSALSA\Editor\AmplitudeSALSAEditor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

@@ -36,6 +36,9 @@ namespace com.rfilkov.components
         [Tooltip("GUI-Text to display information messages.")]
         public UnityEngine.UI.Text infoText;
 
+        [Tooltip("Whether or not to show debug information.")]
+        public bool debugInfo = false;
+
         // whether the pose is matched or not
         private bool bPoseMatched = false;
         // match percent (between 0 and 1)
@@ -51,7 +54,7 @@ namespace com.rfilkov.components
         private AvatarController avatarController = null;
 
         // uncomment to get debug info
-        private StringBuilder sbDebug = null; // new StringBuilder();
+        private StringBuilder sbDebug = null;  // new StringBuilder();
 
 
 
@@ -116,13 +119,21 @@ namespace com.rfilkov.components
         {
             if(avatarModel)
             {
+                // get the initial avatar-model rotation
                 initialAvatarRotation = avatarModel.transform.rotation;
                 avatarController = avatarModel.gameObject.GetComponent<AvatarController>();
             }
 
             if(poseModel)
             {
+                // get the initial pose-model rotation
                 initialPoseRotation = poseModel.transform.rotation;
+            }
+
+            if(debugInfo)
+            {
+                // show debug information
+                sbDebug = new StringBuilder();
             }
         }
 

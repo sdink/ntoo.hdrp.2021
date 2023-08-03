@@ -58,8 +58,8 @@ namespace com.rfilkov.components
                 {
                     planeRectSet = true;
 
-                    planeRect.width = 10f * Mathf.Abs(planeObject.localScale.x);
-                    planeRect.height = 10f * Mathf.Abs(planeObject.localScale.z);
+                    planeRect.width = /**10f * */ Mathf.Abs(planeObject.localScale.x);
+                    planeRect.height = /**10f * */ Mathf.Abs(planeObject.localScale.z);
                     planeRect.x = planeObject.position.x - planeRect.width / 2f;
                     planeRect.y = planeObject.position.y - planeRect.height / 2f;
                 }

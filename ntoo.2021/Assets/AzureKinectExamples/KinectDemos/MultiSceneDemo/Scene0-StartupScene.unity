@@ -466,13 +466,30 @@ MonoBehaviour:
   deviceStreamingMode: 0
   deviceIndex: 0
   recordingFile: 
-  minDistance: 0.5
-  maxDistance: 10
+  minDepthDistance: 0.5
+  maxDepthDistance: 10
   pointCloudResolution: 0
   pointCloudVertexTexture: {fileID: 0}
   pointCloudColorTexture: {fileID: 0}
   pointCloudPlayerList: 
   frameSourceFlags: 0
+  depth2colorCamMat:
+    e00: 1
+    e01: 0
+    e02: 0
+    e03: 0
+    e10: 0
+    e11: 1
+    e12: 0
+    e13: 0
+    e20: 0
+    e21: 0
+    e22: 1
+    e23: 0
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
   sensorRotValueY: 0
   usersFaceBackwards: 0
 --- !u!1 &1557303745
@@ -521,21 +538,41 @@ MonoBehaviour:
   deviceStreamingMode: 1
   deviceIndex: 0
   recordingFile: 
-  minDistance: 0.5
-  maxDistance: 10
+  minDepthDistance: 0.5
+  maxDepthDistance: 10
   pointCloudResolution: 0
   pointCloudVertexTexture: {fileID: 0}
   pointCloudColorTexture: {fileID: 0}
   pointCloudPlayerList: 
   frameSourceFlags: 0
+  depth2colorCamMat:
+    e00: 1
+    e01: 0
+    e02: 0
+    e03: 0
+    e10: 0
+    e11: 1
+    e12: 0
+    e13: 0
+    e20: 0
+    e21: 0
+    e22: 1
+    e23: 0
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
   sensorRotValueY: 0
   colorCameraMode: 2
   depthCameraMode: 2
   cameraFPS: 2
   deviceSyncMode: 0
   subDeviceDelayUsec: 0
+  bodyTemporalSmoothing: 0
   playbackPosSeconds: -1
   loopPlayback: 0
+  bodyTrackingSensorOrientation: 0
+  bodyTrackingProcessingMode: 2
   detectFloorForPoseEstimation: 1
 --- !u!1 &1667601885
 GameObject:
@@ -666,6 +703,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useMultiCamConfig: 0
+  syncMultiCamFrames: 0
+  startDepthSensors: 1
+  dontDestroyAcrossScenes: 1
   getDepthFrames: 1
   getColorFrames: 0
   getInfraredFrames: 0
@@ -681,7 +721,11 @@ MonoBehaviour:
   userDetectionOrder: 0
   ignoreInferredJoints: 0
   ignoreZCoordinates: 0
+  jointPositionSmoothing: 1
+  estimateJointVelocities: 0
+  jointVelocitySmoothing: 2
   boneOrientationConstraints: 1
+  bodySpinFilter: 0
   playerCalibrationPose: 0
   userManager: {fileID: 0}
   gestureManager: {fileID: 0}
@@ -762,13 +806,30 @@ MonoBehaviour:
   deviceStreamingMode: 0
   deviceIndex: 0
   recordingFile: 
-  minDistance: 0.5
-  maxDistance: 10
+  minDepthDistance: 0.5
+  maxDepthDistance: 10
   pointCloudResolution: 0
   pointCloudVertexTexture: {fileID: 0}
   pointCloudColorTexture: {fileID: 0}
   pointCloudPlayerList: 
   frameSourceFlags: 0
+  depth2colorCamMat:
+    e00: 1
+    e01: 0
+    e02: 0
+    e03: 0
+    e10: 0
+    e11: 1
+    e12: 0
+    e13: 0
+    e20: 0
+    e21: 0
+    e22: 1
+    e23: 0
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 1
   sensorRotValueY: 0
   colorCameraMode: 35
   depthCameraMode: 35

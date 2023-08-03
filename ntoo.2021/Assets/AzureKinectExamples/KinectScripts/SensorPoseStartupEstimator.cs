@@ -14,8 +14,11 @@ namespace com.rfilkov.components
         [Tooltip("Depth sensor index - 0 is the 1st one, 1 - the 2nd one, etc.")]
         public int sensorIndex = 0;
 
-        [Tooltip("Duration of the pose estimation time, in seconds.")]
-        public float duration = 10f;
+        [Tooltip("Whether or not to stop the sensor pose estimation after the first successful pose update.")]
+        public bool stopAfterFirstEstimate = false;
+
+        [Tooltip("Maximum duration of the pose estimation time, in seconds.")]
+        public float maxDuration = 3f;
 
 
         // reference to the KM
@@ -27,6 +30,7 @@ namespace com.rfilkov.components
         private bool isEstimating = false;
         private bool isCompleted = false;
         private float startTime = 0f;
+        private ulong startPoseTimestamp = 0;
 
 
         void Start()
@@ -46,7 +50,6 @@ namespace com.rfilkov.components
                         // start pose estimation
                         kinectManager.EnableSensorPoseData(sensorIndex, true);
                         kinectManager.getPoseFrames = KinectManager.PoseUsageType.UpdateTransform;
-                        startTime = Time.time;
                     }
 
                     if(sensorInterface == null)
@@ -57,17 +60,21 @@ namespace com.rfilkov.components
                         sensorPlatform = sensorData != null ? sensorData.sensorIntPlatform : KinectInterop.DepthSensorPlatform.None;
                     }
 
+                    startTime = Time.time;
                     isEstimating = true;
-                    Debug.Log("Pose estimation started. StartTime: " + startTime);
+                    
+                    Debug.Log($"Pose estimation started. StartTime: {startTime}");
                 }
-                else if(duration > 0f && (Time.time - startTime) >= duration)
+                else if((stopAfterFirstEstimate && startPoseTimestamp != 0 && sensorData.lastSensorPoseFrameTime != startPoseTimestamp) ||
+                    (maxDuration > 0f && (Time.time - startTime) >= maxDuration))
                 {
                     // stop pose estimation
                     kinectManager.EnableSensorPoseData(sensorIndex, false);
                     kinectManager.getPoseFrames = KinectManager.PoseUsageType.None;
                     isCompleted = true;
 
-                    Debug.Log("Pose estimation stopped. StopTime: " + Time.time);
+                    string stopFirst = stopAfterFirstEstimate ? " after first update" : string.Empty;
+                    Debug.Log($"Pose estimation stopped{stopFirst}. SensorPos: {sensorData.sensorPosePosition}, SensorRot: {sensorData.sensorPoseRotation.eulerAngles}, ts: {sensorData.lastSensorPoseFrameTime}. StopTime: {Time.time}");
                 }
                 else if(sensorPlatform == KinectInterop.DepthSensorPlatform.Kinect4Azure)
                 {
@@ -92,9 +99,16 @@ namespace com.rfilkov.components
                         k4aInt.StopBodyTracking(sensorData);
                         k4aInt.bodyTrackingSensorOrientation = btOriHint;
                         k4aInt.InitBodyTracking(k4aInt.frameSourceFlags, sensorData, k4aInt.coordMapperCalib, true);
-                        Debug.Log("  k4a body tracker restarted with sensor orientation: " + btOriHint);
+                        Debug.Log($"  k4a body tracker restarted with sensor orientation: {btOriHint}");
                     }
                 }
+
+                // set start time
+                if(startPoseTimestamp == 0 && sensorData != null)
+                {
+                    startPoseTimestamp = sensorData.lastSensorPoseFrameTime;
+                }
+
             }
         }
 

@@ -44,7 +44,10 @@ namespace com.rfilkov.kinect
             AddBoneOrientationConstraint((int)KinectInterop.JointType.SpineChest, CT.LimST, Vector3.up, 5f, 0f);
 
             // Neck
-            AddBoneOrientationConstraint((int)KinectInterop.JointType.Neck, CT.LimST, Vector3.up, 50f, 80f);
+            AddBoneOrientationConstraint((int)KinectInterop.JointType.Neck, CT.LimST, Vector3.up, 10f, 10f);
+
+            // Head
+            AddBoneOrientationConstraint((int)KinectInterop.JointType.Head, CT.LimST, Vector3.up, 50f, 80f);
 
             // ShoulderLeft, ShoulderRight
             AddBoneOrientationConstraint((int)KinectInterop.JointType.ShoulderLeft, CT.LimST, Vector3.left, 180f, 180f);
@@ -92,6 +95,8 @@ namespace com.rfilkov.kinect
                 BoneOrientationConstraint jc = this.jointConstraints[i];
 
                 if (jc.thisJoint == (int)KinectInterop.JointType.Pelvis || bodyData.joint[jc.thisJoint].normalRotation == Quaternion.identity)
+                    continue;
+                if (kinectManager.ignoreZCoordinates && (jc.thisJoint == (int)KinectInterop.JointType.KneeLeft || jc.thisJoint == (int)KinectInterop.JointType.KneeRight))
                     continue;
                 if (bodyData.joint[jc.thisJoint].trackingState == KinectInterop.TrackingState.NotTracked)
                     continue;

@@ -32,6 +32,8 @@ namespace com.rfilkov.components
         public MeshTextureType meshTexture = MeshTextureType.ColorTexture;
         public enum MeshTextureType : int { ColorTexture = 0, InfraredTexture = 1 }
 
+        [Tooltip("If set, the mesh renderer will use this texture for the mesh, instead of the color or IR texture.")]
+        public Texture externalMeshTexture = null;
 
         [Tooltip("Horizontal limit - minimum, in meters.")]
         [Range(-5f, 5f)]
@@ -115,7 +117,8 @@ namespace com.rfilkov.components
             kinectManager = KinectManager.Instance;
             sensorData = (kinectManager != null && kinectManager.IsInitialized()) ? kinectManager.GetSensorData(sensorIndex) : null;
 
-            if (meshTexture == MeshTextureType.InfraredTexture && kinectManager && kinectManager.GetInfraredImageTex(sensorIndex) == null)
+            if (externalMeshTexture == null && meshTexture == MeshTextureType.InfraredTexture && 
+                kinectManager && kinectManager.GetInfraredImageTex(sensorIndex) == null)
             {
                 Debug.LogError("Please set the 'Get Infrared Frames'-setting of KinectManager to 'Infrared texture'.");
             }
@@ -268,7 +271,7 @@ namespace com.rfilkov.components
 
                 //meshShaderMat.SetBuffer("_DepthMap", sensorData.colorDepthBuffer);
 
-                if (meshTexture == MeshTextureType.InfraredTexture)
+                if (externalMeshTexture == null && meshTexture == MeshTextureType.InfraredTexture)
                 {
                     if (sensorData.colorInfraredBuffer == null || sensorData.colorInfraredBuffer.count != bufferLength)
                     {
@@ -457,19 +460,27 @@ namespace com.rfilkov.components
                     KinectInterop.SetComputeBufferData(depthImageBuffer, depthImageCopy, depthBufferLength, sizeof(uint));
                 }
 
-                switch(meshTexture)
+                if (externalMeshTexture != null)
                 {
-                    case MeshTextureType.ColorTexture:
-                        if(colorTexture != null)
-                            Graphics.CopyTexture(colorTexture, colorTextureCopy);
-                        break;
+                    // use the external texture
+                    Graphics.Blit(externalMeshTexture, colorTextureCopy);
+                }
+                else
+                {
+                    switch (meshTexture)
+                    {
+                        case MeshTextureType.ColorTexture:
+                            if (colorTexture != null)
+                                Graphics.CopyTexture(colorTexture, colorTextureCopy);
+                            break;
 
-                    case MeshTextureType.InfraredTexture:
-                        Texture infraredTexture = sensorInt.pointCloudResolution == DepthSensorBase.PointCloudResolution.DepthCameraResolution ? 
-                            sensorData.infraredImageTexture : sensorData.colorInfraredTexture;
-                        if(infraredTexture != null)
-                            Graphics.CopyTexture(infraredTexture, colorTextureCopy);
-                        break;
+                        case MeshTextureType.InfraredTexture:
+                            Texture infraredTexture = sensorInt.pointCloudResolution == DepthSensorBase.PointCloudResolution.DepthCameraResolution ?
+                                sensorData.infraredImageTexture : sensorData.colorInfraredTexture;
+                            if (infraredTexture != null)
+                                Graphics.CopyTexture(infraredTexture, colorTextureCopy);
+                            break;
+                    }
                 }
 
                 if (sourceImageResolution == DepthSensorBase.PointCloudResolution.DepthCameraResolution)
@@ -504,8 +515,8 @@ namespace com.rfilkov.components
                 meshShaderMat.SetVector("_PosMax", new Vector3(xMax, yMax, zMax));
 
                 // mesh bounds
-                Vector3 boundsCenter = new Vector3((xMax - xMin) / 2f, (yMax - yMin) / 2f, (zMax - zMin) / 2f);
-                Vector3 boundsSize = new Vector3((xMax - xMin), (yMax - yMin), (zMax - zMin));
+                Vector3 boundsCenter = new Vector3((xMax - xMin) / 2f, (yMax - yMin) / 2f, (zMax /**- zMin*/) / 2f);
+                Vector3 boundsSize = new Vector3((xMax - xMin), (yMax - yMin), (zMax /**- zMin*/));
                 mesh.bounds = new Bounds(boundsCenter, boundsSize);
 
                 // update lighting parameters

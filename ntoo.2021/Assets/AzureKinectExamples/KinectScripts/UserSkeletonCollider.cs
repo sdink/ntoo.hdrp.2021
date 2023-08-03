@@ -80,11 +80,12 @@ namespace com.rfilkov.components
         {
             if (kinectManager && kinectManager.IsInitialized())
             {
+                int jointsCount = kinectManager.GetJointCount();
+
                 // overlay all joints in the skeleton
                 if (kinectManager.IsUserDetected(playerIndex))
                 {
                     ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
-                    int jointsCount = kinectManager.GetJointCount();
 
                     for (int i = 0; i < jointsCount; i++)
                     {
@@ -180,6 +181,23 @@ namespace com.rfilkov.components
                     }
 
                 }
+                else
+                {
+                    // user not found - hide all colliders
+                    for (int i = 0; i < jointsCount; i++)
+                    {
+                        if (joints != null)
+                        {
+                            joints[i].SetActive(false);
+                        }
+
+                        if (lines[i] != null)
+                        {
+                            lines[i].gameObject.SetActive(false);
+                        }
+                    }
+                }
+
             }
         }
 
@@ -190,7 +208,8 @@ namespace com.rfilkov.components
 
             if (sensorTransform)
             {
-                posJoint = kinectManager.GetSensorJointKinectPosition(sensorIndex, playerIndex, joint, true);
+                int bodyIndex = kinectManager.GetBodyIndexByUserId(userId);
+                posJoint = kinectManager.GetSensorJointKinectPosition(sensorIndex, bodyIndex, joint, true);
 
                 if(referencePose == ReferencePose.ColorCameraPose)
                 {

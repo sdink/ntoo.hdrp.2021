@@ -4,17 +4,28 @@ using UnityEngine.Assertions;
 using WebSocketSharp;
 using UnityEngine.Events;
 using System.Collections;
+using System.IO;
+using System;
 
 namespace DotDot.Core.Network
 {
   public class WebSocketManager : MonoBehaviour
   {
     [System.Serializable]
+    public struct WebSocketManagerConfig
+    {
+      public string hostname;
+      public int port;
+      public float retryConnectionDelay;
+    }
+
+    [System.Serializable]
     public class TextMessageEvent : UnityEvent<string> { }
 
     [System.Serializable]
     public class BinaryMessageEvent : UnityEvent<byte[]> { }
 
+    [Header("Events")]
     [Tooltip("Actions to perform when text message is received")]
     public TextMessageEvent OnTextMessageReceived;
 
@@ -27,6 +38,11 @@ namespace DotDot.Core.Network
     [Tooltip("Actions to perform when network connection is closed")]
     public UnityEvent OnConnectionClosed;
 
+    [Header("Configuration")]
+    [SerializeField, Tooltip("The name of the config file to use for storing and loading settings")]
+    private string configFile = "wsConfig.json";
+
+    [Header("Default Settings")]
     [SerializeField, Tooltip("Hostname to connect to (can be name or ip address)")]
     private string hostname;
 
@@ -37,6 +53,7 @@ namespace DotDot.Core.Network
     private float retryConnectionDelay = 0;
 
 #if UNITY_EDITOR
+    [Header("Editor Settings")]
     [SerializeField, Tooltip("Select this to simulate a connection instead of actually sending and receiving data")]
     private bool simulate;
 #endif
@@ -129,7 +146,7 @@ namespace DotDot.Core.Network
       });
     }
 
-    private void Socket_OnError(object sender, ErrorEventArgs e)
+    private void Socket_OnError(object sender, WebSocketSharp.ErrorEventArgs e)
     {
       Debug.LogError("[Web Socket Manager] Received Socket Error: " + e.Message);
     }
@@ -146,6 +163,10 @@ namespace DotDot.Core.Network
 
       if (_socket == null)
       {
+
+        // load config
+        LoadConfig();
+
         Assert.IsFalse(string.IsNullOrEmpty(hostname), "Hostname must be specified!");
         //Assert.IsTrue(port >= 1000 && port <= 9999, "Port must be in the range 1000 to 9999");
 
@@ -289,7 +310,40 @@ namespace DotDot.Core.Network
         sending = false;
       }
     }
+
+    private void LoadConfig()
+    {
+      string configFilePath = Path.Combine(Application.persistentDataPath, configFile);
+      if (File.Exists(configFilePath))
+      {
+        try
+        {
+          string configJson = File.ReadAllText(configFilePath);
+          WebSocketManagerConfig config = JsonUtility.FromJson<WebSocketManagerConfig>(configJson);
+        }
+        catch (Exception e)
+        {
+          Debug.LogError("[Websocket Manager] Error reading config from file: " + e.Message);
+        }
+      }
+      else
+      {
+        WebSocketManagerConfig config = new WebSocketManagerConfig()
+        {
+          hostname = hostname,
+          port = port,
+          retryConnectionDelay = retryConnectionDelay,
+        };
+        string configJson = JsonUtility.ToJson(config);
+        try
+        {
+          File.WriteAllText(configFilePath, configJson);
+        }
+        catch (Exception e)
+        {
+          Debug.LogError("[Websocket Manager] Error writing config to file: " + e.Message);
+        }
+      }
+    }
   }
 }
-
-

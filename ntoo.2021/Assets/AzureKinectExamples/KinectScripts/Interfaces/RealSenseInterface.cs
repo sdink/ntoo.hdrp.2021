@@ -230,7 +230,7 @@ namespace com.rfilkov.kinect
 
                         // playback from file
                         if (consoleLogMessages)
-                            Debug.Log("Playing back: " + recordingFile);
+                            Debug.Log("  Playing back: " + recordingFile);
                         config.EnableDeviceFromFile(recordingFile, false);
                     }
                     else
@@ -279,18 +279,21 @@ namespace com.rfilkov.kinect
                             config.EnableStream(Stream.Pose, Format.SixDOF);
                         }
 
-                        //// record to file
-                        //if(deviceMode == KinectInterop.DepthSensorMode.CreateRecording && !string.IsNullOrEmpty(deviceFilePath))
-                        //{
-                        //    if (!string.IsNullOrEmpty(deviceFilePath))
-                        //    {
-                        //        config.EnableRecordToFile(deviceFilePath);
-                        //    }
-                        //    else
-                        //    {
-                        //        Debug.LogError("Record selected, but the path to recording file is missing.");
-                        //    }
-                        //}
+                        // record to file
+                        if (deviceStreamingMode == KinectInterop.DeviceStreamingMode.SaveRecording)
+                        {
+                            if (!string.IsNullOrEmpty(recordingFile))
+                            {
+                                if (consoleLogMessages)
+                                    Debug.Log("  Recording to file: " + recordingFile);
+
+                                config.EnableRecordToFile(recordingFile);
+                            }
+                            else
+                            {
+                                Debug.LogError("Record selected, but the path to recording file is missing.");
+                            }
+                        }
                     }
 
                     activeProfile = m_pipeline.Start(config);

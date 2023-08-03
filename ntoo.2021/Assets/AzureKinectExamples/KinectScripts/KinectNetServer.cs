@@ -415,6 +415,10 @@ namespace com.rfilkov.kinect
                     SendControlMessage(ControlMessageType.KeepAlive);
                 }
 
+                // wait all current messages to be sent
+                if (GetMessageCount(false) > 0)
+                    return;
+
                 // color frame
                 if (colorFrameServer != null && colorFrameServer.GetConnCount() > 0)
                 {
@@ -446,6 +450,7 @@ namespace com.rfilkov.kinect
                         if (compressRawFrames)
                         {
                             message.SetCompressor(depthFrameCompressor);
+                            message.CompressData();
                         }
 
                         depthFrameServer.SendMessageToAllConnections(message);
@@ -503,6 +508,7 @@ namespace com.rfilkov.kinect
                         if (compressRawFrames)
                         {
                             message.SetCompressor(bodyIndexFrameCompressor);
+                            message.CompressData();
                         }
 
                         bodyIndexFrameServer.SendMessageToAllConnections(message);
@@ -549,7 +555,7 @@ namespace com.rfilkov.kinect
                     {
                         lastDepth2ColorFrameTime = frameTime;
 
-                        byte[] btFrameData = depth2colorTex2d.EncodeToJPG();
+                        byte[] btFrameData = depth2colorTex2d.EncodeToPNG();
                         //Debug.Log("Depth2ColorFrame length: " + btFrameData.Length);
 
                         NetMessageData message = new NetMessageData(NetMessageType.Depth2Color, FrameEncodeType.Jpeg,
@@ -590,6 +596,7 @@ namespace com.rfilkov.kinect
                         if (compressRawFrames)
                         {
                             message.SetCompressor(color2depthFrameCompressor);
+                            message.CompressData();
                         }
 
                         color2depthFrameServer.SendMessageToAllConnections(message);
@@ -619,7 +626,7 @@ namespace com.rfilkov.kinect
                     {
                         lastColor2InfraredFrameTime = frameTime;
 
-                        byte[] btFrameData = color2infraredTex2d.EncodeToJPG();
+                        byte[] btFrameData = color2infraredTex2d.EncodeToPNG();
                         //Debug.Log("Color2InfraredFrame length: " + btFrameData.Length);
 
                         NetMessageData message = new NetMessageData(NetMessageType.Color2Infrared, FrameEncodeType.Jpeg,
@@ -660,6 +667,7 @@ namespace com.rfilkov.kinect
                         if (compressRawFrames)
                         {
                             message.SetCompressor(color2bodyIndexFrameCompressor);
+                            message.CompressData();
                         }
 
                         color2bodyIndexFrameServer.SendMessageToAllConnections(message);
@@ -742,6 +750,7 @@ namespace com.rfilkov.kinect
             if (compressRawFrames)
             {
                 message.SetCompressor(controlFrameCompressor);
+                message.CompressData();
             }
 
             controlFrameServer.SendMessageToAllConnections(message);
@@ -765,6 +774,7 @@ namespace com.rfilkov.kinect
                 if (compressRawFrames)
                 {
                     message.SetCompressor(controlFrameCompressor);
+                    message.CompressData();
                 }
 
                 controlFrameServer.SendMessageToAllConnections(message);
@@ -789,6 +799,7 @@ namespace com.rfilkov.kinect
                 if (compressRawFrames)
                 {
                     message.SetCompressor(controlFrameCompressor);
+                    message.CompressData();
                 }
 
                 controlFrameServer.SendMessageToAllConnections(message);
@@ -865,6 +876,37 @@ namespace com.rfilkov.kinect
                 numConn += color2bodyIndexFrameServer.GetConnCount();
 
             return numConn;
+        }
+
+        // returns the number of unsent messages in all servers
+        private int GetMessageCount(bool inclCtrlMessages)
+        {
+            int numMessages = 0;
+
+            if (inclCtrlMessages && controlFrameServer != null && controlFrameServer.IsConnected())
+                numMessages += controlFrameServer.GetMessageCount();
+            if (colorFrameServer != null && colorFrameServer.IsConnected())
+                numMessages += colorFrameServer.GetMessageCount();
+            if (depthFrameServer != null && depthFrameServer.IsConnected())
+                numMessages += depthFrameServer.GetMessageCount();
+            if (infraredFrameServer != null && infraredFrameServer.IsConnected())
+                numMessages += infraredFrameServer.GetMessageCount();
+            if (bodyDataFrameServer != null && bodyDataFrameServer.IsConnected())
+                numMessages += bodyDataFrameServer.GetMessageCount();
+            if (bodyIndexFrameServer != null && bodyIndexFrameServer.IsConnected())
+                numMessages += bodyIndexFrameServer.GetMessageCount();
+            if (poseFrameServer != null && poseFrameServer.IsConnected())
+                numMessages += poseFrameServer.GetMessageCount();
+            if (depth2colorFrameServer != null && depth2colorFrameServer.IsConnected())
+                numMessages += depth2colorFrameServer.GetMessageCount();
+            if (color2depthFrameServer != null && color2depthFrameServer.IsConnected())
+                numMessages += color2depthFrameServer.GetMessageCount();
+            if (color2infraredFrameServer != null && color2infraredFrameServer.IsConnected())
+                numMessages += color2infraredFrameServer.GetMessageCount();
+            if (color2bodyIndexFrameServer != null && color2bodyIndexFrameServer.IsConnected())
+                numMessages += color2bodyIndexFrameServer.GetMessageCount();
+
+            return numMessages;
         }
 
 
@@ -953,6 +995,18 @@ namespace com.rfilkov.kinect
             }
 
             return bReady;
+        }
+
+        public int GetMessageCount()
+        {
+            int count = 0;
+
+            foreach (NetConnData conn in connections)
+            {
+                count += conn.messageQueue.Count;
+            }
+
+            return count;
         }
 
         //public void CloseConnection(int connId)
@@ -1155,8 +1209,13 @@ namespace com.rfilkov.kinect
                         byte[] sendBuffer;
                         lock (conn.messageQueue)
                         {
-                            sendBuffer = conn.messageQueue.Dequeue().WrapMessage();
+                            NetMessageData message = conn.messageQueue.Dequeue();
+                            //int messageLen = message.frameData.Length;
+                            sendBuffer = message.WrapMessage();
+                            //if (message.msgType == NetMessageType.Depth)
+                            //    Debug.Log("  msg type: " + message.msgType + " - " + message.encType + ", ts: " + message.timestamp + ", frameLen: " + messageLen + " - " + message.frameData.Length + ", bufLen: " + sendBuffer.Length);
                             conn.readyToSend = false;
+                            //Debug.Log("Sending message " + message.timestamp + " - " + message.msgType + " @ " + System.DateTime.Now.ToString("HH:mm:ss.fff"));
                         }
 
                         conn.stream.BeginWrite(sendBuffer, 0, sendBuffer.Length, new System.AsyncCallback(MessageSentToClient), conn);

@@ -437,7 +437,7 @@ namespace com.rfilkov.components
 
             scaler.foregroundCamera = foregroundCamera;
             //scaler.debugText = debugText;
-            scaler.Update();
+            //scaler.Update();
         }
 
     }

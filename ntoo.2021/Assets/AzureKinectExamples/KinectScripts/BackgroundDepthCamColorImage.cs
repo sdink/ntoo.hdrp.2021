@@ -56,7 +56,7 @@ namespace com.rfilkov.components
             if (sensorData != null)
             {
                 // disable the depth camera aligned color frames 
-                sensorData.sensorInterface.EnableColorCameraDepthFrame(sensorData, false);
+                sensorData.sensorInterface.EnableDepthCameraColorFrame(sensorData, false);
             }
         }
 
@@ -113,6 +113,14 @@ namespace com.rfilkov.components
                         rectImage.sizeDelta = new Vector2(rectWidth, rectHeight);
                         rectImage.anchoredPosition = initialAnchorPos = anchorPos;
                     }
+                }
+            }
+            else
+            {
+                // reset the background texture, if needed
+                if (backgroundImage && backgroundImage.texture != null)
+                {
+                    backgroundImage.texture = null;
                 }
             }
 

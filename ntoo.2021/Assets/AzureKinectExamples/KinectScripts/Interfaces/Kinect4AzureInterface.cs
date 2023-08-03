@@ -11,6 +11,15 @@ namespace com.rfilkov.kinect
     /// </summary>
     public class Kinect4AzureInterface : DepthSensorBase
     {
+        // body tracking sdk's tools folder - used to copy the needed libraries and files.
+        // TODO - please change the path below, if the BT-SDK tools-folder in your case is different 
+        internal const string BODY_TRACKING_TOOLS_FOLDER = "C:/Program Files/Azure Kinect Body Tracking SDK/tools";
+
+        // body tracking model file name - lite or full model
+        internal const string BODY_TRACKING_FULL_MODEL_FILE = "dnn_model_2_0_op11.onnx";
+        internal const string BODY_TRACKING_LITE_MODEL_FILE = "dnn_model_2_0_lite_op11.onnx";
+
+
         [Tooltip("Color camera resolution.")]
         public ColorCameraMode colorCameraMode = ColorCameraMode._1920_x_1080_30Fps;
         public enum ColorCameraMode : int { _1280_x_720_30Fps = 1, _1920_x_1080_30Fps = 2, _2560_x_1440_30Fps = 3, _2048_x_1536_30Fps = 4, _3840_x_2160_30Fps = 5, _4096_x_3072_15Fps = 6 }
@@ -45,6 +54,13 @@ namespace com.rfilkov.kinect
 
         [Tooltip("Sensor orientation hint to the Body Tracking SDK.")]
         public k4abt_sensor_orientation_t bodyTrackingSensorOrientation = k4abt_sensor_orientation_t.K4ABT_SENSOR_ORIENTATION_DEFAULT;
+
+        [Tooltip("Processing mode to be used by the Body Tracking SDK.")]
+        public k4abt_tracker_processing_mode_t bodyTrackingProcessingMode = k4abt_tracker_processing_mode_t.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA;
+
+        [Tooltip("Model type (full or lite), to be used by the Body Tracking SDK.")]
+        private BodyTrackingModelType bodyTrackingModelType = BodyTrackingModelType.FullModel;
+        public enum BodyTrackingModelType : int { FullModel = 0, LiteModel = 1 }
 
         [Tooltip("Whether to try to detect the floor plane, to estimate the sensor position and rotation.")]
         public bool detectFloorForPoseEstimation = true;
@@ -81,8 +97,10 @@ namespace com.rfilkov.kinect
         private long startTimeOffset = 0;
 
         // playback and record
+        public Recording kinectRecording = null;
         public Playback kinectPlayback = null;
         private long playbackStartTime = 0;
+        private long playbackUpdateTime = 0;
 
         // status of the cameras
         private bool isCamerasStarted = false;
@@ -128,9 +146,9 @@ namespace com.rfilkov.kinect
         private Capture bodyOutputCapture = null;
         private object bodyCaptureLock = new object();
 
-        //protected float leftHandFingerAngle = 0f;
-        //protected float rightHandFingerAngle = 0f;
-        //protected ulong lastHandStatesTimestamp = 0;
+        protected float leftHandFingerAngle = 0f;
+        protected float rightHandFingerAngle = 0f;
+        protected ulong lastHandStatesTimestamp = 0;
 
         // coord mapper transformation & BI image
         public Calibration coordMapperCalib;
@@ -157,7 +175,8 @@ namespace com.rfilkov.kinect
             public float bodyTemporalSmoothing = 0f;  // by-default value
             public float playbackPosSeconds;
             public bool loopPlayback;
-            public int bodyTrackingSensorOrientation = 0;  // by-default value
+            public int bodyTrackingSensorOrientation = (int)k4abt_sensor_orientation_t.K4ABT_SENSOR_ORIENTATION_DEFAULT;  // by-default value
+            public int bodyTrackingProcessingMode = (int)k4abt_tracker_processing_mode_t.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA;  // by-default value
             public bool detectFloorForPoseEstimation = true;  // by-default value
         }
 
@@ -193,6 +212,7 @@ namespace com.rfilkov.kinect
             extSettings.playbackPosSeconds = playbackPosSeconds;
             extSettings.loopPlayback = loopPlayback;
             extSettings.bodyTrackingSensorOrientation = (int)bodyTrackingSensorOrientation;
+            extSettings.bodyTrackingProcessingMode = (int)bodyTrackingProcessingMode;
             extSettings.detectFloorForPoseEstimation = detectFloorForPoseEstimation;
 
             return settings;
@@ -218,6 +238,7 @@ namespace com.rfilkov.kinect
             loopPlayback = extSettings.loopPlayback;
 
             bodyTrackingSensorOrientation = (k4abt_sensor_orientation_t)extSettings.bodyTrackingSensorOrientation;
+            bodyTrackingProcessingMode = (k4abt_tracker_processing_mode_t)extSettings.bodyTrackingProcessingMode;
             detectFloorForPoseEstimation = extSettings.detectFloorForPoseEstimation;
         }
 
@@ -288,6 +309,7 @@ namespace com.rfilkov.kinect
 
                 coordMapperCalib = kinectPlayback.playback_calibration;
                 playbackStartTime = 0;
+                playbackUpdateTime = 0;
 
                 // expected master-slave delay & start offset
                 expSensorDelay = (kinectPlayback.playback_config.subordinate_delay_off_master_usec + kinectPlayback.playback_config.depth_delay_off_color_usec) * 10;  // us->ticks
@@ -412,6 +434,22 @@ namespace com.rfilkov.kinect
 
                 // expected master-slave delay
                 expSensorDelay = kinectConfig.SuboridinateDelayOffMaster.Ticks + kinectConfig.DepthDelayOffColor.Ticks;
+
+                // create recording if needed
+                if (deviceStreamingMode == KinectInterop.DeviceStreamingMode.SaveRecording)
+                {
+                    if (!string.IsNullOrEmpty(recordingFile))
+                    {
+                        if (consoleLogMessages)
+                            Debug.Log("  Recording to file: " + recordingFile);
+
+                        kinectRecording = new Recording(recordingFile, kinectSensor, kinectConfig);
+                    }
+                    else
+                    {
+                        Debug.LogError("Save-recording selected, but the path to recording file is missing.");
+                    }
+                }
             }
 
             // reset the frame number
@@ -424,7 +462,7 @@ namespace com.rfilkov.kinect
             sensorData.sensorName = sensorName;
             sensorData.sensorCaps = sensorCaps;
 
-            // flip color & depth image vertically
+            // flip color & depth image horizontally and vertically
             sensorData.colorImageScale = new Vector3(-1f, -1f, 1f);
             sensorData.depthImageScale = new Vector3(-1f, -1f, 1f);
             sensorData.infraredImageScale = new Vector3(-1f, -1f, 1f);
@@ -489,6 +527,16 @@ namespace com.rfilkov.kinect
                 imuTurnRot1 = Quaternion.Euler(0f, 90f, 90f);
                 imuTurnRot2 = Quaternion.Euler(90f, !flipImuRotation ? 90f : -90f, 0f);
                 //lastFlipImuRot = flipImuRotation;
+            }
+
+            // account for the depth sensor tilt (6 deg. down)
+            if ((dwFlags & KinectInterop.FrameSource.TypePose) == 0)
+            {
+                rawPoseRotation = transform.rotation;  // Quaternion.Euler(6f, 0f, 0f) * transform.rotation;  // 
+                SetSensorToWorldMatrix(transform.position, rawPoseRotation, true);
+
+                sensorData.sensorPoseRotation = sensorPoseRotation;
+                //Debug.Log("sensor pos: " + sensorPosePosition + ", rot: " + sensorPoseRotation.eulerAngles);
             }
 
             // calibration data
@@ -595,6 +643,17 @@ namespace com.rfilkov.kinect
                 kinectPlayback = null;
             }
 
+            if(kinectRecording != null)
+            {
+                // close the recording file
+                kinectRecording.CloseRecordingFile();
+                if (consoleLogMessages)
+                    Debug.Log("  Finished recording to file: " + recordingFile);
+
+                kinectRecording.Dispose();
+                kinectRecording = null;
+            }
+
             if(sensorSyncher != null)
             {
                 sensorSyncher.StopSyncher();
@@ -647,9 +706,12 @@ namespace com.rfilkov.kinect
 
         public override void EnablePoseStream(KinectInterop.SensorData sensorData, bool bEnable)
         {
-            base.EnablePoseStream(sensorData, bEnable);
+            if (kinectSensor != null)
+            {
+                base.EnablePoseStream(sensorData, bEnable);
+            }
 
-            if((frameSourceFlags & KinectInterop.FrameSource.TypePose) != 0)
+            if ((frameSourceFlags & KinectInterop.FrameSource.TypePose) != 0)
             {
                 if(kinectSensor != null)
                 {
@@ -747,6 +809,12 @@ namespace com.rfilkov.kinect
 
         public override bool UpdateSensorData(KinectInterop.SensorData sensorData, KinectManager kinectManager, bool isPlayMode)
         {
+            if (kinectPlayback != null)
+            {
+                // playback update time
+                playbackUpdateTime = (long)((double)Time.time * 10000000.0);
+            }
+
             lock (sensorCaptureLock)
             {
                 if (sensorCapture != null)
@@ -822,7 +890,7 @@ namespace com.rfilkov.kinect
             // update the floor detector, if needed
             if (detectFloorForPoseEstimation && floorDetector != null)
             {
-                if(floorDetector.UpdateFloorDetector(sensorData.depthImage, sensorData.lastDepthFrameTime, ref depthFrameLock, minDistance, maxDistance))
+                if(floorDetector.UpdateFloorDetector(sensorData.depthImage, sensorData.lastDepthFrameTime, ref depthFrameLock, minDepthDistance, maxDepthDistance))
                 {
                     lock (poseFrameLock)
                     {
@@ -837,9 +905,11 @@ namespace com.rfilkov.kinect
                         }
 
                         rawPosePosition = vSensorPosition - initialPosePosition;
-                        rawPoseRotation = Quaternion.Euler(-sensorRotOffset) * qSensorRotation;
+                        //rawPoseRotation = Quaternion.Euler(-sensorRotOffset) * qSensorRotation;
+                        rawPoseRotation = qSensorRotation;  // Quaternion.Euler(6f, 0f, 0f) * qSensorRotation;  // the depth camera is tilted 6 degrees down
 
-                        currentPoseTimestamp = floorDetector.GetDepthTimestamp();
+                        rawPoseTimestamp = floorDetector.GetDepthTimestamp();  // currentPoseTimestamp
+                        //Debug.Log($"Sensor pos: {vSensorPosition.ToString("F2")}, rot: {qSensorRotation.eulerAngles.ToString("F1")}, ts: {rawPoseTimestamp}");
                     }
                 }
             }
@@ -1176,12 +1246,14 @@ namespace com.rfilkov.kinect
                     if(playbackStartTime == 0)
                     {
                         // start time
-                        playbackStartTime = DateTime.Now.Ticks;
+                        //playbackStartTime = DateTime.Now.Ticks;
+                        playbackStartTime = playbackUpdateTime;
                     }
 
                     long currentPlayTime = isSensorMaster || syncSensorIndex < 0 || sensorSyncher == null ? 
-                        (playbackPosSeconds < 0f ? (DateTime.Now.Ticks - playbackStartTime) :
+                        (playbackPosSeconds < 0f ? (playbackUpdateTime - playbackStartTime) :  // (DateTime.Now.Ticks - playbackStartTime) :
                         (long)(playbackPosSeconds * 10000000)) : sensorSyncher.GetMasterPlayTime();  // for sub - get master time
+                    //Debug.Log($"curPlayTime: {currentPlayTime}, updateTime: {playbackUpdateTime}, startTime: {playbackStartTime}");
 
                     if (sensorSyncher != null && syncSensorIndex >= 0)
                     {
@@ -1227,7 +1299,8 @@ namespace com.rfilkov.kinect
                             {
                                 if (consoleLogMessages)
                                     Debug.Log("Looping playback...");
-                                playbackStartTime = DateTime.Now.Ticks;
+                                //playbackStartTime = DateTime.Now.Ticks;
+                                playbackStartTime = playbackUpdateTime;
                             }
                         }
 
@@ -1266,8 +1339,16 @@ namespace com.rfilkov.kinect
                         }
 
                         int bufCaptureLen = ci;
+                        int lastCapIndex = bufCaptureLen - 1;
+
                         if (bufCaptureLen > 0)
                         {
+                            if (kinectRecording != null)
+                            {
+                                // save the last capture ti the recording
+                                kinectRecording.WriteCapture(bufCaptures[lastCapIndex]);
+                            }
+
                             if (sensorSyncher != null && syncSensorIndex >= 0)  // check for synched device
                             {
                                 // process all captures
@@ -1283,7 +1364,6 @@ namespace com.rfilkov.kinect
                             else
                             {
                                 // process the last capture only
-                                int lastCapIndex = bufCaptureLen - 1;
                                 for (ci = 0; ci < lastCapIndex; ci++)
                                 {
                                     //Debug.LogWarning("D" + deviceIndex + " Disposing capture. Timestamp: " + bufCapTimes[ci] + ", CapIndex: " + ci);
@@ -1337,10 +1417,10 @@ namespace com.rfilkov.kinect
                     {
                         ImuSample imuSample = kinectSensor.GetImuSample(timeToWait);
 
-                        while(imuSample != null)
+                        while(isImuStarted && imuSample != null)
                         {
                             ProcessImuFrame(imuSample);
-                            imuSample = kinectSensor.GetImuSample(timeToWait);
+                            imuSample = isImuStarted ? kinectSensor.GetImuSample(timeToWait) : null;
                         }
                     }
                 }
@@ -1452,24 +1532,9 @@ namespace com.rfilkov.kinect
 
             lock (sensorCaptureLock)
             {
-                // save the current capture
-                if (sensorCapture != null)
-                {
-                    //long capTimestamp = sensorCapture.Depth != null ? sensorCapture.Depth.DeviceTimestamp.Ticks :
-                    //    sensorCapture.Color != null ? sensorCapture.Color.DeviceTimestamp.Ticks : 0;
-                    //Debug.LogWarning("D" + deviceIndex + " Disposing sensor capture. Timestamp: " + capTimestamp + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
-
-                    sensorCapture.Dispose();
-                    sensorCapture = null;
-                }
-
-                if (capture != null)
-                {
-                    sensorCapture = capture;
-                }
-
                 // depth frame time
                 ulong depthFrameTime = isSyncDepthAndColor && capture.Depth != null ? (ulong)capture.Depth.DeviceTimestamp.Ticks : 0;
+                bool isFrameUpdate = false;
 
                 // depth frame
                 if (capture.Depth != null && (frameSourceFlags & KinectInterop.FrameSource.TypeDepth) != 0 && /**rawDepthImage != null &&*/
@@ -1477,6 +1542,7 @@ namespace com.rfilkov.kinect
                 {
                     //lock (depthFrameLock)
                     {
+                        isFrameUpdate = true;
                         //KinectInterop.CopyBytes(capture.Depth.GetBuffer(), (int)capture.Depth.Size, rawDepthImage, rawDepthImage.Length, sizeof(ushort));
                         rawDepthTimestamp = (ulong)capture.Depth.DeviceTimestamp.Ticks;
                         //Debug.Log("D" + deviceIndex + " RawDepthTimestamp: " + rawDepthTimestamp + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
@@ -1489,6 +1555,7 @@ namespace com.rfilkov.kinect
                 {
                     //lock (colorFrameLock)
                     {
+                        isFrameUpdate = true;
                         //KinectInterop.CopyBytes(capture.Color.GetBuffer(), (int)capture.Color.Size, rawColorImage, rawColorImage.Length, sizeof(byte));
                         rawColorTimestamp = depthFrameTime != 0 ? depthFrameTime : (ulong)capture.Color.DeviceTimestamp.Ticks;
                         //Debug.Log("D" + deviceIndex + " RawColorTimestamp: " + rawColorTimestamp + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
@@ -1501,88 +1568,32 @@ namespace com.rfilkov.kinect
                 {
                     //lock (infraredFrameLock)
                     {
+                        isFrameUpdate = true;
                         //KinectInterop.CopyBytes(capture.IR.GetBuffer(), (int)capture.IR.Size, rawInfraredImage, rawInfraredImage.Length, sizeof(ushort));
                         rawInfraredTimestamp = depthFrameTime != 0 ? depthFrameTime : (ulong)capture.IR.DeviceTimestamp.Ticks;
                         //Debug.Log("D" + deviceIndex + " RawInfraredTimestamp: " + rawInfraredTimestamp + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
                     }
                 }
 
-                // transformation data frames
-                ulong depthFrameTime2 = depthFrameTime != 0 ? depthFrameTime : capture.Depth != null ? (ulong)capture.Depth.DeviceTimestamp.Ticks : 0;
-                ProcessTransformedFrames(sensorData, capture, depthFrameTime2);
+                if (isFrameUpdate)
+                {
+                    if (sensorCapture != null)
+                    {
+                        //long capTimestamp = sensorCapture.Depth != null ? sensorCapture.Depth.DeviceTimestamp.Ticks :
+                        //    sensorCapture.Color != null ? sensorCapture.Color.DeviceTimestamp.Ticks : 0;
+                        //Debug.LogWarning("D" + deviceIndex + " Disposing sensor capture. Timestamp: " + capTimestamp + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
 
-                //if ((pointCloudAlignedColorTex != null || pointCloudDepthBuffer != null || sensorData.colorDepthBuffer != null || 
-                //    sensorData.colorCamDepthImage != null || sensorData.colorInfraredBuffer != null || sensorData.colorCamInfraredImage != null) &&
-                //    capture.Color != null && capture.Depth != null && (!isSyncDepthAndColor || (rawColorTimestamp == rawDepthTimestamp)))
-                //{
-                //    if (coordMapperTransform == null)
-                //    {
-                //        coordMapperTransform = coordMapperCalib.CreateTransformation();
-                //    }
+                        sensorCapture.Dispose();
+                        sensorCapture = null;
+                    }
 
-                //    //ulong depthFrameDeviceTimestamp = (ulong)capture.Depth.DeviceTimestamp.Ticks;
-                //    if (pointCloudAlignedColorTex != null && lastDepthCamColorFrameTime != rawDepthTimestamp)
-                //    {
-                //        if (d2cColorData == null)
-                //        {
-                //            d2cColorData = new Image(ImageFormat.ColorBGRA32, sensorData.depthImageWidth, sensorData.depthImageHeight, sensorData.depthImageWidth * sensorData.colorImageStride);
-                //        }
+                    // save the current capture
+                    sensorCapture = capture;
 
-                //        //lock (depthCamColorFrameLock)
-                //        {
-                //            coordMapperTransform.ColorImageToDepthCamera(capture.Depth, capture.Color, d2cColorData);
-                //            //d2cColorData.CopyTo<byte>(depthCamColorDataFrame, 0, 0, depthCamColorDataFrame.Length);
-                //            lastDepthCamColorFrameTime = rawDepthTimestamp;
-                //            //Debug.Log("D" + deviceIndex + " DepthCamColorFrameTime: " + lastDepthCamColorFrameTime + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
-                //        }
-                //    }
-
-                //    if ((pointCloudDepthBuffer != null || sensorData.colorDepthBuffer != null || sensorData.colorCamDepthImage != null) && 
-                //        lastColorCamDepthFrameTime != rawDepthTimestamp)
-                //    {
-                //        if (c2dDepthData == null)
-                //        {
-                //            c2dDepthData = new Image(ImageFormat.Depth16, sensorData.colorImageWidth, sensorData.colorImageHeight, sensorData.colorImageWidth * sizeof(ushort));
-                //        }
-
-                //        //lock (colorCamDepthFrameLock)
-                //        {
-                //            coordMapperTransform.DepthImageToColorCamera(capture.Depth, c2dDepthData);
-                //            //c2dDepthData.CopyTo<ushort>(colorCamDepthDataFrame, 0, 0, colorCamDepthDataFrame.Length);
-                //            lastColorCamDepthFrameTime = rawDepthTimestamp;
-                //            //Debug.Log("D" + deviceIndex + " ColorCamDepthFrameTime: " + lastColorCamDepthFrameTime + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
-                //        }
-                //    }
-
-                //    if ((sensorData.colorInfraredBuffer != null || sensorData.colorCamInfraredImage != null) && capture.IR != null &&
-                //        lastColorCamInfraredFrameTime != rawDepthTimestamp)
-                //    {
-                //        if (c2IrDepthImage == null)
-                //        {
-                //            c2IrDepthImage = new Image(ImageFormat.Depth16, sensorData.colorImageWidth, sensorData.colorImageHeight, sensorData.colorImageWidth * sizeof(ushort));
-                //        }
-
-                //        if (c2IrCustomImage == null)
-                //        {
-                //            c2IrCustomImage = new Image(ImageFormat.Custom16, capture.IR.WidthPixels, capture.IR.HeightPixels, capture.IR.StrideBytes);
-                //        }
-
-                //        if (c2dInfraredData == null)
-                //        {
-                //            c2dInfraredData = new Image(ImageFormat.Custom16, sensorData.colorImageWidth, sensorData.colorImageHeight, sensorData.colorImageWidth * sizeof(ushort));
-                //        }
-
-                //        //lock (colorCamDepthFrameLock)
-                //        {
-                //            int iIrImageLen = capture.IR.StrideBytes * capture.IR.HeightPixels;
-                //            c2IrCustomImage.CopyBytesFrom(capture.IR.GetBuffer(), iIrImageLen, iIrImageLen);
-
-                //            coordMapperTransform.DepthImageToColorCameraCustom(capture.Depth, c2IrCustomImage, c2IrDepthImage, c2dInfraredData, TransformationInterpolationType.Nearest, 0);
-                //            lastColorCamInfraredFrameTime = rawDepthTimestamp;
-                //            //Debug.Log("D" + deviceIndex + " ColorCamInfraredFrameTime: " + lastColorCamInfraredFrameTime + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
-                //        }
-                //    }
-                //}
+                    // transformation data frames
+                    ulong depthFrameTime2 = depthFrameTime != 0 ? depthFrameTime : capture.Depth != null ? (ulong)capture.Depth.DeviceTimestamp.Ticks : 0;
+                    ProcessTransformedFrames(sensorData, capture, depthFrameTime2);
+                }
             }
 
         }
@@ -1730,6 +1741,7 @@ namespace com.rfilkov.kinect
 
             lastImuSample = curImuSample;
             curImuSample = imuSample;
+            //Debug.Log($"imuTS: {imuSample.AccelerometerTimestamp.Ticks}");
 
             if (!flipImuRotation && lastImuSample == null && Mathf.Abs(imuSample.AccelerometerSample.Y) >= 1f)
             {
@@ -1783,6 +1795,7 @@ namespace com.rfilkov.kinect
 
                     rawPoseTimestamp = (ulong)imuSample.AccelerometerTimestamp.Ticks;
                     //poseFrameNumber = currentFrameNumber;
+                    //Debug.Log($"transRot: {transRotation.eulerAngles}, poseRot: {rawPoseRotation}, ts: {rawPoseTimestamp}");
                 }
             }
 
@@ -1800,27 +1813,27 @@ namespace com.rfilkov.kinect
 
                 int iAccDepth = (int)CalibrationDeviceType.Accel * (int)CalibrationDeviceType.Num + (int)CalibrationDeviceType.Depth;
                 float[] accDepthRot = coordMapperCalib.DeviceExtrinsics[iAccDepth].Rotation;
-                //Debug.Log("accDepthRot: " + accDepthRot[0] + ", " + accDepthRot[1] + ", " + accDepthRot[3] + ", ..., " + accDepthRot[8]);
-                //floorDetector.UpdateImuUpVector(vAccSample, accDepthRot);
 
                 Vector3 Rx = new Vector3(accDepthRot[0], accDepthRot[1], accDepthRot[2]);
                 Vector3 Ry = new Vector3(accDepthRot[3], accDepthRot[4], accDepthRot[5]);
                 Vector3 Rz = new Vector3(accDepthRot[6], accDepthRot[7], accDepthRot[8]);
 
                 Vector3 imuUpVector = new Vector3(Vector3.Dot(Rx, vAccSample), Vector3.Dot(Ry, vAccSample), Vector3.Dot(Rz, vAccSample));
+                //Debug.Log($"accSample: {vAccSample}, upVector: {imuUpVector}");
+
                 floorDetector.UpdateImuUpVector(imuUpVector);
             }
         }
 
 
         // initializes the body-data structures and starts the body tracking
-        private bool InitBodyTracking(KinectInterop.FrameSource dwFlags, KinectInterop.SensorData sensorData, Calibration calibration, bool bCreateTracker)
+        public bool InitBodyTracking(KinectInterop.FrameSource dwFlags, KinectInterop.SensorData sensorData, Calibration calibration, bool bCreateTracker)
         {
             try
             {
                 if ((dwFlags & KinectInterop.FrameSource.TypeDepth) != 0)  // check for depth stream
                 {
-                    string bodyTrackingPath = KinectInterop.BODY_TRACKING_TOOLS_FOLDER;
+                    string bodyTrackingPath = BODY_TRACKING_TOOLS_FOLDER;
                     if (!string.IsNullOrEmpty(bodyTrackingPath) && bodyTrackingPath[bodyTrackingPath.Length - 1] != '/' && bodyTrackingPath[bodyTrackingPath.Length - 1] != '\\')
                     {
                         bodyTrackingPath += "/";
@@ -1837,15 +1850,37 @@ namespace com.rfilkov.kinect
                     }
 
                     // copy the needed libraries
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cublas64_100.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudart64_100.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn64_7.dll", ".");
+                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "cublas64_100.dll", ".");  // v1.0.1
+                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "cudart64_100.dll", ".");
+                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn64_7.dll", ".");
 
-                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "k4abt.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cublas64_11.dll", ".");  // v1.1.1
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cublasLt64_11.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudart64_110.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn_cnn_infer64_8.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn_ops_infer64_8.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cudnn64_8.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "cufft64_10.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "directml.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "myelin64_1.dll", ".", true);  // v1.1.0
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvinfer.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvinfer_plugin.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvrtc64_111_0.dll", ".", true);  // v1.1.0
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvrtc-builtins64_111.dll", ".", true);  // v1.1.0
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvrtc64_112_0.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "nvrtc-builtins64_114.dll", ".");
+
                     KinectInterop.CopyFolderFile(bodyTrackingPath, "onnxruntime.dll", ".");
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "vcomp140.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "onnxruntime_providers_cuda.dll", ".");  // v1.1.1
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "onnxruntime_providers_shared.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "onnxruntime_providers_tensorrt.dll", ".");
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, "vcomp140.dll", ".", true);
 
-                    KinectInterop.CopyFolderFile(bodyTrackingPath, "dnn_model_2_0.onnx", ".");
+                    //KinectInterop.CopyFolderFile(bodyTrackingPath, "dnn_model_2_0.onnx", ".");
+                    string bodyTrackingModelFile = BODY_TRACKING_FULL_MODEL_FILE;
+                    if (bodyTrackingModelType == BodyTrackingModelType.LiteModel)  // v1.1.0
+                        bodyTrackingModelFile = BODY_TRACKING_LITE_MODEL_FILE;
+                    KinectInterop.CopyFolderFile(bodyTrackingPath, bodyTrackingModelFile, ".");
 
                     // init basic variables
                     base.InitBodyTracking(dwFlags, sensorData);
@@ -1857,7 +1892,14 @@ namespace com.rfilkov.kinect
 
                     if (bCreateTracker)
                     {
-                        bodyTracker = new BodyTracking(calibration, bodyTrackingSensorOrientation, k4abt_tracker_processing_mode_t.K4ABT_TRACKER_PROCESSING_MODE_GPU, 0);
+                        k4abt_tracker_configuration_t btConfig = new k4abt_tracker_configuration_t();
+                        btConfig.sensor_orientation = bodyTrackingSensorOrientation;
+                        btConfig.processing_mode = bodyTrackingProcessingMode;  // k4abt_tracker_processing_mode_t.K4ABT_TRACKER_PROCESSING_MODE_GPU_CUDA;
+                        btConfig.gpu_device_id = 0;  // 1st GPU
+                        btConfig.model_path = bodyTrackingModelFile;
+                        //Debug.Log("Loading BT model: " + bodyTrackingModelFile);
+
+                        bodyTracker = new BodyTracking(calibration, btConfig);
                         bodyTracker.SetTemporalSmoothing(bodyTemporalSmoothing);  // 0f
                         //Debug.Log("BodyTemporalSmoothing: " + bodyTemporalSmoothing);
 
@@ -1889,7 +1931,7 @@ namespace com.rfilkov.kinect
 
 
         // stops the body tracker and releases its data
-        protected override void StopBodyTracking(KinectInterop.SensorData sensorData)
+        public override void StopBodyTracking(KinectInterop.SensorData sensorData)
         {
             if (bodyTrackerThread != null)
             {
@@ -2286,9 +2328,8 @@ namespace com.rfilkov.kinect
                         if ((frameSourceFlags & KinectInterop.FrameSource.TypeBody) != 0 && 
                             (getAllSensorFrames || rawBodyTimestamp == sensorData.lastBodyFrameTime))
                         {
+                            ulong bodyTimestamp = depthFrameTime != 0 ? depthFrameTime : btFrameData.btFrameTimestamp;
                             trackedBodiesCount = btFrameData.numberOfBodies;
-                            rawBodyTimestamp = (depthFrameTime != 0 ? depthFrameTime : btFrameData.btFrameTimestamp) + trackedBodiesCount;
-                            //Debug.Log("D" + deviceIndex + " RawBodyTimestamp: " + rawBodyTimestamp + ", BodyCount: " + trackedBodiesCount + ", QueueLen: " + btQueueCount);
 
                             // create the needed slots
                             while (alTrackedBodies.Count < trackedBodiesCount)
@@ -2301,6 +2342,7 @@ namespace com.rfilkov.kinect
                             Quaternion sensorRotInv = GetSensorRotationNotZFlipped(true);
                             float scaleX = sensorData.sensorSpaceScale.x * 0.001f;
                             float scaleY = sensorData.sensorSpaceScale.y * 0.001f;
+                            float compDepthcamDownTan = Mathf.Tan(6f * Mathf.Deg2Rad);
 
                             for (int i = 0; i < trackedBodiesCount; i++)
                             {
@@ -2308,7 +2350,9 @@ namespace com.rfilkov.kinect
 
                                 bodyData.liTrackingID = btFrameData.bodyIds[i];
                                 bodyData.iBodyIndex = i;
+
                                 bodyData.bIsTracked = true;
+                                bodyData.bodyTimestamp = bodyTimestamp;
 
                                 //bodyTracker.GetBodySkeleton(bodyFrameHandle, (uint)i, ref bodySkeletonData);
                                 k4abt_skeleton_t bodySkeleton = btFrameData.bodySkeletons[i];
@@ -2337,8 +2381,17 @@ namespace com.rfilkov.kinect
 
                                         float jPosZ = (bIgnoreZCoordinates && j > 0) ? bodyData.joint[0].kinectPos.z : jointBT.position.Z * 0.001f;
                                         jointData.kinectPos = new Vector3(jointBT.position.X * 0.001f, jointBT.position.Y * 0.001f, jointBT.position.Z * 0.001f);
-                                        jointData.position = sensorToWorld.MultiplyPoint3x4(new Vector3(jointBT.position.X * scaleX, jointBT.position.Y * scaleY, jPosZ));
+                                        Vector3 kinectPos2 = new Vector3(jointBT.position.X * scaleX, jointBT.position.Y * scaleY, jPosZ);
 
+                                        //// compensate kposY for 6 deg down depthcam rotation (otherwise joint position is wrong)
+                                        //float compYPos = compDepthcamDownTan * jointData.kinectPos.z;
+                                        //kinectPos2.y += compYPos;
+                                        jointData.position = sensorToWorld.MultiplyPoint3x4(kinectPos2);
+
+                                        //if (j == 0)
+                                        //{
+                                        //    Debug.Log($"kPos: {jointData.kinectPos.ToString("F2")}, pos: {jointData.position.ToString("F2")}, dY: {compYPos}");
+                                        //}
                                         //if (j == (int)KinectInterop.JointType.WristLeft)
                                         //{
                                         //    Debug.Log(string.Format("{0} - {1:F2}, {2} -> {3}", (KinectInterop.JointType)j, jPosZ, jointBT.confidence_level, jointData.trackingState));
@@ -2358,11 +2411,20 @@ namespace com.rfilkov.kinect
                                     }
                                 }
 
-                                // estimate hand states
-                                CalcBodyHandStates(ref bodyData, rawBodyTimestamp);
-
                                 // estimate additional joints
                                 CalcBodySpecialJoints(ref bodyData);
+
+                                // check for body spins
+                                if (bodySpinFilter != null)
+                                {
+                                    bodySpinFilter.UpdateFilter(ref bodyData, (long)bodyTimestamp, sensorToWorld, sensorData.sensorSpaceScale);
+                                }
+
+                                // filter joint positions
+                                if (jointPositionFilter != null)
+                                {
+                                    jointPositionFilter.UpdateFilter(ref bodyData);
+                                }
 
                                 // calculate bone dirs
                                 KinectInterop.CalcBodyJointDirs(ref bodyData);
@@ -2374,10 +2436,21 @@ namespace com.rfilkov.kinect
                                 bodyData.normalRotation = bodyData.joint[0].normalRotation;
                                 bodyData.mirroredRotation = bodyData.joint[0].mirroredRotation;
 
-                                alTrackedBodies[i] = bodyData;
+                                // estimate hand states
+                                CalcBodyHandStates(ref bodyData, depthFrameTime != 0 ? depthFrameTime : btFrameData.btFrameTimestamp);
 
+                                alTrackedBodies[i] = bodyData;
                                 //Debug.Log("  (T)User ID: " + bodyData.liTrackingID + ", body: " + i + ", bi: " + bodyData.iBodyIndex + ", pos: " + bodyData.joint[0].kinectPos + ", rot: " + bodyData.joint[0].normalRotation.eulerAngles + ", Now: " + DateTime.Now.ToString("HH:mm:ss.fff"));
                             }
+
+                            // clean up user history
+                            if (jointPositionFilter != null)
+                                jointPositionFilter.CleanUpUserHistory();
+                            if(bodySpinFilter != null)
+                                bodySpinFilter.CleanUpUserHistory();
+
+                            rawBodyTimestamp = bodyTimestamp + trackedBodiesCount;
+                            //Debug.Log("D" + deviceIndex + " RawBodyTimestamp: " + rawBodyTimestamp + ", BodyCount: " + trackedBodiesCount + ", QueueLen: " + btQueueCount + ", Time: " + DateTime.Now.ToString("HH.mm.ss.fff"));
                         }
                     }
                 }
@@ -2407,9 +2480,9 @@ namespace com.rfilkov.kinect
         // estimates hand states for the given body
         private void CalcBodyHandStates(ref KinectInterop.BodyData bodyData, ulong bodyTimestamp)
         {
-            //ulong uTimeDelta = bodyTimestamp - lastHandStatesTimestamp;
-            //float fTimeDelta = (float)uTimeDelta / 10000000f;
-            //float fTimeSmooth = 5f * fTimeDelta;
+            ulong uTimeDelta = bodyTimestamp - lastHandStatesTimestamp;
+            float fTimeDelta = (float)uTimeDelta / 10000000f;
+            float fTimeSmooth = 5f * fTimeDelta;
 
             int h = (int)KinectInterop.JointType.WristLeft;
             int f = (int)KinectInterop.JointType.HandtipLeft;
@@ -2419,9 +2492,10 @@ namespace com.rfilkov.kinect
                 bodyData.joint[f].trackingState != KinectInterop.TrackingState.NotTracked)
             {
                 lHandFingerAngle = Quaternion.Angle(bodyData.joint[h].normalRotation, bodyData.joint[f].normalRotation);
-                //leftHandFingerAngle = Mathf.Lerp(leftHandFingerAngle, lHandFingerAngle, fTimeSmooth);
-                //bodyData.leftHandState = (leftHandFingerAngle >= 50f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;
-                bodyData.leftHandState = (lHandFingerAngle >= 50f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;
+
+                lHandFingerAngle = (leftHandFingerAngle + lHandFingerAngle) / 2f;  // Mathf.Lerp(leftHandFingerAngle, lHandFingerAngle, fTimeSmooth);
+                bodyData.leftHandState = (lHandFingerAngle >= 40f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;  // 50f
+                //bodyData.leftHandState = (lHandFingerAngle >= 40f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;  // 50f
             }
             else
             {
@@ -2436,24 +2510,31 @@ namespace com.rfilkov.kinect
                 bodyData.joint[f].trackingState != KinectInterop.TrackingState.NotTracked)
             {
                 rHandFingerAngle = Quaternion.Angle(bodyData.joint[h].normalRotation, bodyData.joint[f].normalRotation);
-                //rightHandFingerAngle = Mathf.Lerp(rightHandFingerAngle, rHandFingerAngle, fTimeSmooth);
-                //bodyData.rightHandState = (rightHandFingerAngle >= 50f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;
-                bodyData.rightHandState = (rHandFingerAngle >= 50f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;
+
+                rHandFingerAngle = (rightHandFingerAngle + rHandFingerAngle) / 2f;  // Mathf.Lerp(rightHandFingerAngle, rHandFingerAngle, fTimeSmooth);
+                bodyData.rightHandState = (rHandFingerAngle >= 40f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open;  // 50f
+                //bodyData.rightHandState = (rHandFingerAngle >= 40f) ? KinectInterop.HandState.Closed : KinectInterop.HandState.Open; // 50f
             }
             else
             {
                 bodyData.rightHandState = KinectInterop.HandState.NotTracked;
             }
 
-            //Debug.Log("LH: " + bodyData.leftHandState + ", RH: " + bodyData.rightHandState + ", LHA: " + lHandFingerAngle + 
-            //    ", RHA: " + rHandFingerAngle + ", Timestamp: " + bodyTimestamp);
-            //lastHandStatesTimestamp = bodyTimestamp;
+            //Debug.Log("LHA: " + (int)lHandFingerAngle + ", RHA: " + (int)rHandFingerAngle +
+            //    ", LH: " + bodyData.leftHandState + ", RH: " + bodyData.rightHandState + ", Timestamp: " + bodyTimestamp);
+
+            if(fTimeSmooth >= 1f)
+            {
+                leftHandFingerAngle = lHandFingerAngle;
+                rightHandFingerAngle = rHandFingerAngle;
+                lastHandStatesTimestamp = bodyTimestamp;
+            }
         }
 
         private static readonly KinectInterop.TrackingState[] BtConf2TrackingState =
         {
-            KinectInterop.TrackingState.Inferred,   // K4ABT_JOINT_CONFIDENCE_NONE
-            KinectInterop.TrackingState.NotTracked, // K4ABT_JOINT_CONFIDENCE_LOW
+            KinectInterop.TrackingState.NotTracked, // K4ABT_JOINT_CONFIDENCE_NONE
+            KinectInterop.TrackingState.Inferred,   // K4ABT_JOINT_CONFIDENCE_LOW
             KinectInterop.TrackingState.Tracked,    // K4ABT_JOINT_CONFIDENCE_MEDIUM
             KinectInterop.TrackingState.HighConf    // K4ABT_JOINT_CONFIDENCE_HIGH
         };
@@ -2516,115 +2597,126 @@ namespace com.rfilkov.kinect
             { (int)KinectInterop.JointType.ThumbRight, (int)KinectInterop.JointType.ElbowRight }
         };
 
-        // calculates all joint orientations for the given body
-        protected override void CalcBodyJointOrients(ref KinectInterop.BodyData bodyData)
-        {
-            if (bodyData.bIsTracked)
-            {
-                for (int j = 0; j < (int)KinectInterop.JointType.Count; j++)
-                {
-                    if (bodyData.joint[j].trackingState != KinectInterop.TrackingState.NotTracked)
-                    {
-                        Quaternion jointOrient = bodyData.joint[j].orientation;
-                        Quaternion jointOrientNormal = jointOrient * _JointTurnCS[j] * _JointBaseOrient[j];
-                        if (bIgnoreZCoordinates)
-                            jointOrientNormal = Quaternion.Euler(0f, 0f, jointOrientNormal.eulerAngles.z);
-                        bodyData.joint[j].normalRotation = jointOrientNormal;
+        //// calculates all joint orientations for the given body
+        //protected override void CalcBodyJointOrients(ref KinectInterop.BodyData bodyData)
+        //{
+        //    base.CalcBodyJointOrients(ref bodyData);
 
-                        Vector3 mirroredAngles = jointOrientNormal.eulerAngles;
-                        mirroredAngles.y = -mirroredAngles.y;
-                        mirroredAngles.z = -mirroredAngles.z;
-                        bodyData.joint[j].mirroredRotation = Quaternion.Euler(mirroredAngles);
-                    }
-                }
-            }
-        }
+        //    if (bodyData.bIsTracked)
+        //    {
+        //        if (bIgnoreZCoordinates)
+        //        {
+        //            //base.CalcBodyJointOrients(ref bodyData);
+        //            return;
+        //        }
 
-        // base orientations
-        private static readonly Quaternion[] _JointBaseOrient =
-        {
-            Quaternion.LookRotation(Vector3.left, Vector3.back),  // Pelvis
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //        ////for (int j = 0; j < (int)KinectInterop.JointType.Count; j++)
+        //        //{
+        //        //    // additionally estimate head orientation (hinted by Garrett Tuer) - moved to DepthSensorBase
+        //        //    int j = (int)KinectInterop.JointType.Head;
 
-            Quaternion.LookRotation(Vector3.down, Vector3.back),  // ClavicleL
-            Quaternion.LookRotation(Vector3.down, Vector3.back),
-            Quaternion.LookRotation(Vector3.down, Vector3.back),
-            Quaternion.LookRotation(Vector3.down, Vector3.back),
-            Quaternion.LookRotation(Vector3.down, Vector3.back),
+        //        //    if (bodyData.joint[j].trackingState != KinectInterop.TrackingState.NotTracked)
+        //        //    {
+        //        //        Quaternion jointOrient = bodyData.joint[j].orientation;
+        //        //        Quaternion jointOrientNormal = jointOrient * _JointTurnCS[j] * _JointBaseOrient[j];
+        //        //        if (bIgnoreZCoordinates)
+        //        //            jointOrientNormal = Quaternion.Euler(0f, 0f, jointOrientNormal.eulerAngles.z);
+        //        //        bodyData.joint[j].normalRotation = jointOrientNormal;
 
-            Quaternion.LookRotation(Vector3.up, Vector3.forward),  // ClavicleR
-            Quaternion.LookRotation(Vector3.up, Vector3.forward),
-            Quaternion.LookRotation(Vector3.up, Vector3.forward),
-            Quaternion.LookRotation(Vector3.up, Vector3.forward),
-            Quaternion.LookRotation(Vector3.up, Vector3.forward),
+        //        //        Vector3 mirroredAngles = jointOrientNormal.eulerAngles;
+        //        //        mirroredAngles.y = -mirroredAngles.y;
+        //        //        mirroredAngles.z = -mirroredAngles.z;
+        //        //        bodyData.joint[j].mirroredRotation = Quaternion.Euler(mirroredAngles);
+        //        //    }
+        //        //}
+        //    }
+        //}
 
-            Quaternion.LookRotation(Vector3.left, Vector3.back),  // HipL
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //// base orientations
+        //private static readonly Quaternion[] _JointBaseOrient =
+        //{
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),  // Pelvis
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
 
-            Quaternion.LookRotation(Vector3.left, Vector3.forward),  // HipR
-            Quaternion.LookRotation(Vector3.left, Vector3.forward),
-            Quaternion.LookRotation(Vector3.left, Vector3.forward),
-            Quaternion.LookRotation(Vector3.left, Vector3.forward),
+        //    Quaternion.LookRotation(Vector3.down, Vector3.back),  // ClavicleL
+        //    Quaternion.LookRotation(Vector3.down, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.down, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.down, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.down, Vector3.back),
 
-            Quaternion.LookRotation(Vector3.left, Vector3.back),  // Nose
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
-            Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.up, Vector3.forward),  // ClavicleR
+        //    Quaternion.LookRotation(Vector3.up, Vector3.forward),
+        //    Quaternion.LookRotation(Vector3.up, Vector3.forward),
+        //    Quaternion.LookRotation(Vector3.up, Vector3.forward),
+        //    Quaternion.LookRotation(Vector3.up, Vector3.forward),
 
-            Quaternion.LookRotation(Vector3.down, Vector3.back),  // FingersL
-            Quaternion.LookRotation(Vector3.down, Vector3.back),
-            Quaternion.LookRotation(Vector3.up, Vector3.forward),  // FingersR
-            Quaternion.LookRotation(Vector3.up, Vector3.forward)
-        };
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),  // HipL
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
 
-        // turn cs rotations
-        private static readonly Quaternion[] _JointTurnCS =
-        {
-            Quaternion.Euler(0f, 90f, 90f),  // Pelvis
-            Quaternion.Euler(0f, 90f, 90f),
-            Quaternion.Euler(0f, 90f, 90f),
-            Quaternion.Euler(0f, 90f, 90f),
-            Quaternion.Euler(0f, 90f, 90f),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.forward),  // HipR
+        //    Quaternion.LookRotation(Vector3.left, Vector3.forward),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.forward),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.forward),
 
-            Quaternion.Euler(180f, 0f, 180f),  // ClavicleL
-            Quaternion.Euler(180f, 0f, 180f),
-            Quaternion.Euler(180f, 0f, 180f),
-            Quaternion.Euler(-90f, 0f, 180f),
-            Quaternion.Euler(-90f, 0f, 180f),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),  // Nose
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.left, Vector3.back),
 
-            Quaternion.Euler(0f, 180f, 0f),  // ClavicleR
-            Quaternion.Euler(0f, 180f, 0f),
-            Quaternion.Euler(0f, 180f, 0f),
-            Quaternion.Euler(-90f, 0f, 180f),
-            Quaternion.Euler(-90f, 0f, 180f),
+        //    Quaternion.LookRotation(Vector3.down, Vector3.back),  // FingersL
+        //    Quaternion.LookRotation(Vector3.down, Vector3.back),
+        //    Quaternion.LookRotation(Vector3.up, Vector3.forward),  // FingersR
+        //    Quaternion.LookRotation(Vector3.up, Vector3.forward)
+        //};
 
-            Quaternion.Euler(0f, 90f, 90f),  // HipL
-            Quaternion.Euler(0f, 90f, 90f),
-            Quaternion.Euler(0f, 90f, 90f),
-            Quaternion.Euler(90f, 0f, 0f),
+        //// turn cs rotations
+        //private static readonly Quaternion[] _JointTurnCS =
+        //{
+        //    Quaternion.Euler(0f, 90f, 90f),  // Pelvis
+        //    Quaternion.Euler(0f, 90f, 90f),
+        //    Quaternion.Euler(0f, 90f, 90f),
+        //    Quaternion.Euler(0f, 90f, 90f),
+        //    Quaternion.Euler(0f, 90f, 90f),
 
-            Quaternion.Euler(0f, 90f, -90f),  // HipR
-            Quaternion.Euler(0f, 90f, -90f),
-            Quaternion.Euler(0f, 90f, -90f),
-            Quaternion.Euler(90f, 0f, 180f),
+        //    Quaternion.Euler(180f, 0f, 180f),  // ClavicleL
+        //    Quaternion.Euler(180f, 0f, 180f),
+        //    Quaternion.Euler(180f, 0f, 180f),
+        //    Quaternion.Euler(-90f, 0f, 180f),
+        //    Quaternion.Euler(-90f, 0f, 180f),
 
-            Quaternion.Euler(0f, 90f, 90f),  // Nose
-            Quaternion.Euler(90f, 0f, 0f),
-            Quaternion.Euler(0f, -90f, -90f),
-            Quaternion.Euler(90f, 0f, 0f),
-            Quaternion.Euler(0f, 90f, 90f),
+        //    Quaternion.Euler(0f, 180f, 0f),  // ClavicleR
+        //    Quaternion.Euler(0f, 180f, 0f),
+        //    Quaternion.Euler(0f, 180f, 0f),
+        //    Quaternion.Euler(-90f, 0f, 180f),
+        //    Quaternion.Euler(-90f, 0f, 180f),
 
-            Quaternion.Euler(-90f, 0f, 180f),  // FingersL
-            Quaternion.Euler(-90f, 0f, 180f),
-            Quaternion.Euler(-90f, 0f, 180f),  // FingersR
-            Quaternion.Euler(-90f, 0f, 180f)
-        };
+        //    Quaternion.Euler(0f, 90f, 90f),  // HipL
+        //    Quaternion.Euler(0f, 90f, 90f),
+        //    Quaternion.Euler(0f, 90f, 90f),
+        //    Quaternion.Euler(90f, 0f, 0f),
+
+        //    Quaternion.Euler(0f, 90f, -90f),  // HipR
+        //    Quaternion.Euler(0f, 90f, -90f),
+        //    Quaternion.Euler(0f, 90f, -90f),
+        //    Quaternion.Euler(90f, 0f, 180f),
+
+        //    Quaternion.Euler(0f, 90f, 90f),  // Nose
+        //    Quaternion.Euler(90f, 0f, 0f),
+        //    Quaternion.Euler(0f, -90f, -90f),
+        //    Quaternion.Euler(90f, 0f, 0f),
+        //    Quaternion.Euler(0f, 90f, 90f),
+
+        //    Quaternion.Euler(-90f, 0f, 180f),  // FingersL
+        //    Quaternion.Euler(-90f, 0f, 180f),
+        //    Quaternion.Euler(-90f, 0f, 180f),  // FingersR
+        //    Quaternion.Euler(-90f, 0f, 180f)
+        //};
 
 
         // gets the given camera intrinsics

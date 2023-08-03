@@ -13,6 +13,9 @@ namespace com.rfilkov.components
         [Tooltip("Depth sensor index - 0 is the 1st one, 1 - the 2nd one, etc.")]
         public int sensorIndex = 0;
 
+        [Tooltip("Index of the player, tracked by this component. -1 means all players, 0 - the 1st player, 1 - the 2nd one, 2 - the 3rd one, etc.")]
+        public int playerIndex = -1;
+
         [Tooltip("RawImage used to display the color camera feed.")]
         public UnityEngine.UI.RawImage backgroundImage;
 
@@ -64,14 +67,8 @@ namespace com.rfilkov.components
                 sensorData.sensorInterface.EnableColorCameraBodyIndexFrame(sensorData, true);
 
                 // create the user texture and needed buffers
-                bodyImageTexture = KinectInterop.CreateRenderTexture(bodyImageTexture, sensorData.colorImageWidth, sensorData.colorImageHeight);
+                //bodyImageTexture = KinectInterop.CreateRenderTexture(bodyImageTexture, sensorData.colorImageWidth, sensorData.colorImageHeight);
                 bodyImageMaterial = new Material(Shader.Find("Kinect/UserHistImageShader"));
-
-                //int bodyIndexBufferLength = sensorData.colorImageWidth * sensorData.colorImageHeight >> 2;
-                //bodyIndexBuffer = KinectInterop.CreateComputeBuffer(bodyIndexBuffer, bodyIndexBufferLength, sizeof(uint));
-
-                //int depthBufferLength = sensorData.colorImageWidth * sensorData.colorImageHeight >> 1;
-                //depthImageBuffer = KinectInterop.CreateComputeBuffer(depthImageBuffer, depthBufferLength, sizeof(uint));
 
                 bodyHistBuffer = KinectInterop.CreateComputeBuffer(bodyHistBuffer, DepthSensorBase.MAX_DEPTH_DISTANCE_MM + 1, sizeof(int));
 
@@ -186,6 +183,14 @@ namespace com.rfilkov.components
                 //    }
                 //}
             }
+            else
+            {
+                // reset the background texture, if needed
+                if (backgroundImage && backgroundImage.texture != null)
+                {
+                    backgroundImage.texture = null;
+                }
+            }
 
             //RectTransform rectTransform = backgroundImage.rectTransform;
             //Debug.Log("pivot: " + rectTransform.pivot + ", anchorPos: " + rectTransform.anchoredPosition + ", \nanchorMin: " + rectTransform.anchorMin + ", anchorMax: " + rectTransform.anchorMax);
@@ -197,6 +202,8 @@ namespace com.rfilkov.components
         {
             if (sensorData == null || sensorData.sensorInterface == null || sensorData.colorCamBodyIndexImage == null || sensorData.colorCamDepthImage == null)
                 return;
+            if (sensorData.colorImageWidth == 0 || sensorData.colorImageHeight == 0 || sensorData.lastColorCamDepthFrameTime == 0 || sensorData.lastColorCamBodyIndexFrameTime == 0)
+                return;
 
             // get body index frame
             if (lastColorCamDepthFrameTime != sensorData.lastColorCamDepthFrameTime || lastColorCamBodyIndexFrameTime != sensorData.lastColorCamBodyIndexFrameTime)
@@ -204,7 +211,7 @@ namespace com.rfilkov.components
                 lastColorCamDepthFrameTime = sensorData.lastColorCamDepthFrameTime;
                 lastColorCamBodyIndexFrameTime = sensorData.lastColorCamBodyIndexFrameTime;
 
-                if(bodyImageTexture.width != sensorData.colorImageWidth || bodyImageTexture.height != sensorData.colorImageHeight)
+                if(bodyImageTexture == null || bodyImageTexture.width != sensorData.colorImageWidth || bodyImageTexture.height != sensorData.colorImageHeight)
                 {
                     bodyImageTexture = KinectInterop.CreateRenderTexture(bodyImageTexture, sensorData.colorImageWidth, sensorData.colorImageHeight);
                 }
@@ -214,8 +221,8 @@ namespace com.rfilkov.components
                 bodyHistTotalPoints = 0;
 
                 // get configured min & max distances 
-                float minDistance = ((DepthSensorBase)sensorData.sensorInterface).minDistance;
-                float maxDistance = ((DepthSensorBase)sensorData.sensorInterface).maxDistance;
+                float minDistance = ((DepthSensorBase)sensorData.sensorInterface).minDepthDistance;
+                float maxDistance = ((DepthSensorBase)sensorData.sensorInterface).maxDepthDistance;
 
                 int depthMinDistance = (int)(minDistance * 1000f);
                 int depthMaxDistance = (int)(maxDistance * 1000f);
@@ -263,8 +270,8 @@ namespace com.rfilkov.components
                     KinectInterop.SetComputeBufferData(bodyHistBuffer, equalBodyBufferData, equalBodyBufferData.Length, sizeof(int));
                 }
 
-                float minDist = kinectManager.minUserDistance != 0f ? kinectManager.minUserDistance : minDistance;
-                float maxDist = kinectManager.maxUserDistance != 0f ? kinectManager.maxUserDistance : maxDistance;
+                float minDist = minDistance;  // kinectManager.minUserDistance != 0f ? kinectManager.minUserDistance : minDistance;
+                float maxDist = maxDistance;  // kinectManager.maxUserDistance != 0f ? kinectManager.maxUserDistance : maxDistance;
 
                 bodyImageMaterial.SetInt("_TexResX", sensorData.colorImageWidth);
                 bodyImageMaterial.SetInt("_TexResY", sensorData.colorImageHeight);
@@ -277,12 +284,25 @@ namespace com.rfilkov.components
                 bodyImageMaterial.SetInt("_TotalPoints", bodyHistTotalPoints);
 
                 Color[] bodyIndexColors = kinectManager.GetBodyIndexColors();
+                if(playerIndex >= 0)
+                {
+                    ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
+                    int bodyIndex = kinectManager.GetBodyIndexByUserId(userId);
+
+                    int numBodyIndices = bodyIndexColors.Length;
+                    Color clrNone = new Color(0f, 0f, 0f, 0f);
+
+                    for (int i = 0; i < numBodyIndices; i++)
+                    {
+                        if (i != bodyIndex)
+                            bodyIndexColors[i] = clrNone;
+                    }
+                }
+
                 bodyImageMaterial.SetColorArray("_BodyIndexColors", bodyIndexColors);
 
                 Graphics.Blit(null, bodyImageTexture, bodyImageMaterial);
             }
-
-
         }
 
     }
