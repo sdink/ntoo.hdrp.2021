@@ -291,6 +291,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  configFile: wsConfig.json
   hostname: ws://localhost
   port: 8080
   retryConnectionDelay: 0
@@ -1023,6 +1024,41 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 583921449074426824}
     m_Modifications:
+    - target: {fileID: 1697538044048410387, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697538044048410387, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697538044048410387, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 5427143355092891791}
+    - target: {fileID: 1697538044048410387, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697538044048410387, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetMicrophone
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697538044048410387, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: MicManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 1697538044048410387, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 2797084005134015825, guid: 8c6005299febd4d4383caeab088eb75d,
         type: 3}
       propertyPath: m_Pivot.x

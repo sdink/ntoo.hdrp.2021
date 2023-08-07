@@ -56,31 +56,36 @@ public class NtooClientManager : MonoBehaviour
   public void StreamAudio(float[] audioBuffer, int channels, int frequency)
   {
     // Get byte[] data from audioClip.
-    byte[] audioBytes = WaveUtility.FloatsToInt16ByteArray(audioBuffer);
+    //byte[] audioBytes = WaveUtility.FloatsToInt16ByteArray(audioBuffer);
+    byte[] wavBytes = WaveUtility.FloatsToWav(audioBuffer, channels, frequency);
+
+#if NTOO_CLIENT_DEBUG
+    WaveUtility.SaveAudioToFile(audioBuffer, (ushort)channels, (uint)frequency, "NtooInputRecording.wav");
+#endif
 
     // Tell server to expect stream.
-    int numChunks = Mathf.Clamp(audioBytes.Length / chunkSize, 1, audioBytes.Length);
+    int numChunks = Mathf.Clamp(wavBytes.Length / chunkSize, 1, wavBytes.Length);
     //Debug.Log("[NTOO Client] Signalling the server to start streaming.");
-    OnSendTextMessage.Invoke($"START:{numChunks}:{frequency}:{channels}");
+    OnSendTextMessage.Invoke($"START:WAV:{numChunks}");
 
     // Chunkify
-    if (useChunks == false || audioBytes.Length < chunkSize)
+    if (useChunks == false || wavBytes.Length < chunkSize)
     {
       // No chunking necessary - send entire audio data.
-      //Debug.Log("[NTOO Client] Sending audio as single chunk");
-      OnSendBinaryData.Invoke(audioBytes);
+      Debug.Log("[NTOO Client] Sending audio as single chunk");
+      OnSendBinaryData.Invoke(wavBytes);
     }
     else
     {
       // Break into {chunkSize} chunks and send consecutively.
       byte[] chunk = new byte[chunkSize];
-      for (int i = 0; i < audioBytes.Length / chunkSize; i++)
+      for (int i = 0; i < wavBytes.Length / chunkSize; i++)
       {
-        Buffer.BlockCopy(audioBytes, i * chunkSize, chunk, 0, chunkSize);
-        //Debug.Log($"[NTOO Client] Sending audio chunk {i}");
+        Buffer.BlockCopy(wavBytes, i * chunkSize, chunk, 0, chunkSize);
+        Debug.Log($"[NTOO Client] Sending audio chunk {i}");
         OnSendBinaryData.Invoke(chunk);
       }
-      //Debug.Log($"Finished sending {audioBytes.Length / chunkSize} chunks.");
+      Debug.Log($"Finished sending {wavBytes.Length / chunkSize} chunks.");
     }
 
     // Tell server to stop expecting chunks and save what it's received.

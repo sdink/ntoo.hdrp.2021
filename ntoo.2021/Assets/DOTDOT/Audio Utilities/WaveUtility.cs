@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Text;
 using System.IO;
 using System;
 
@@ -47,25 +46,21 @@ namespace Ntoo.Wave
     public static byte[] FloatsToInt16ByteArray(float[] data)
     {
       MemoryStream dataStream = new MemoryStream();
-
-      int x = sizeof(Int16);
-
-      Int16 maxValue = Int16.MaxValue;
-
-      for (int i = 0; i < data.Length; i++)
-      {
-        short itemInt16 = Convert.ToInt16(data[i] * maxValue);
-        byte[] itemBytes = BitConverter.GetBytes(itemInt16);
-        dataStream.Write(itemBytes, 0, x);
-      }
-
+      WriteFloatArrayAsBytes(dataStream, data);
       byte[] bytes = dataStream.ToArray();
 
       // Validate converted bytes
-      Debug.AssertFormat(data.Length * x == bytes.Length, $"Unexpected float[] to Int16 to byte[] size: {data.Length * x} == {bytes.Length}");
-
+      Debug.AssertFormat(data.Length * 2 == bytes.Length, $"Unexpected float[] to Int16 to byte[] size: {data.Length * 2} == {bytes.Length}");
       dataStream.Dispose();
+      return bytes;
+    }
 
+    public static byte[] FloatsToWav(float[] data, int channels, int frequency)
+    {
+      MemoryStream dataStream = new MemoryStream();
+      WriteWav(dataStream, data, (ushort)channels, (uint)frequency);
+      byte[] bytes = dataStream.ToArray();
+      dataStream.Dispose();
       return bytes;
     }
 
@@ -113,6 +108,95 @@ namespace Ntoo.Wave
       }
 
       return data;
+    }
+
+    // Function for exporting raw Unity audio float data to a wav file
+    // Sourced from https://stackoverflow.com/questions/50864146/create-a-wav-file-from-unity-audioclip 
+    // Untested with multi-channel
+    public static void SaveAudioToFile(float[] data, ushort channels, uint frequency, string file = "Recording.wav")
+    {
+      var path = Path.Combine(Application.persistentDataPath, file);
+      using (var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
+      {
+        WriteWav(stream, data, channels, frequency);
+      }
+    }
+
+    private static void WriteWav(Stream stream, float[] data, ushort channels, uint frequency)
+    {
+      // The following values are based on http://soundfile.sapp.org/doc/WaveFormat/
+      var bitsPerSample = (ushort)16;
+      var chunkID = "RIFF";
+      var format = "WAVE";
+      var subChunk1ID = "fmt ";
+      var subChunk1Size = (uint)16;
+      var audioFormat = (ushort)1;
+      var numChannels = channels;
+      var sampleRate = frequency;
+      var byteRate = (uint)(sampleRate * channels * bitsPerSample / 8);  // SampleRate * NumChannels * BitsPerSample/8
+      var blockAlign = (ushort)(numChannels * bitsPerSample / 8); // NumChannels * BitsPerSample/8
+      var subChunk2ID = "data";
+      var subChunk2Size = (uint)(data.Length * channels * bitsPerSample / 8); // NumSamples * NumChannels * BitsPerSample/8
+      var chunkSize = (uint)(36 + subChunk2Size); // 36 + SubChunk2Size
+                                                  // Start writing the file.
+      WriteString(stream, chunkID);
+      WriteInteger(stream, chunkSize);
+      WriteString(stream, format);
+      WriteString(stream, subChunk1ID);
+      WriteInteger(stream, subChunk1Size);
+      WriteShort(stream, audioFormat);
+      WriteShort(stream, numChannels);
+      WriteInteger(stream, sampleRate);
+      WriteInteger(stream, byteRate);
+      WriteShort(stream, blockAlign);
+      WriteShort(stream, bitsPerSample);
+      WriteString(stream, subChunk2ID);
+      WriteInteger(stream, subChunk2Size);
+      WriteFloatArrayAsBytes(stream, data);
+    }
+
+    private static void WriteFloatArrayAsBytes(Stream stream, float[] data)
+    {
+      foreach (var sample in data)
+      {
+        // De-normalize the samples to 16 bits.
+        var deNormalizedSample = (short)0;
+        if (sample > 0)
+        {
+          var temp = sample * short.MaxValue;
+          if (temp > short.MaxValue)
+            temp = short.MaxValue;
+          deNormalizedSample = (short)temp;
+        }
+        if (sample < 0)
+        {
+          var temp = sample * (-short.MinValue);
+          if (temp < short.MinValue)
+            temp = short.MinValue;
+          deNormalizedSample = (short)temp;
+        }
+        WriteShort(stream, (ushort)deNormalizedSample);
+      }
+    }
+
+    private static void WriteString(Stream stream, string value)
+    {
+      foreach (var character in value)
+        stream.WriteByte((byte)character);
+    }
+
+    private static void WriteInteger(Stream stream, uint value)
+    {
+      stream.WriteByte((byte)(value & 0xFF));
+      stream.WriteByte((byte)((value >> 8) & 0xFF));
+      stream.WriteByte((byte)((value >> 16) & 0xFF));
+      stream.WriteByte((byte)((value >> 24) & 0xFF));
+    }
+
+    private static void WriteShort(Stream stream, ushort value)
+    {
+      stream.WriteByte((byte)(value & 0xFF));
+      stream.WriteByte((byte)((value >> 8) & 0xFF));
     }
   }
 }
