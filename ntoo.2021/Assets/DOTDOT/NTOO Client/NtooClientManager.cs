@@ -79,13 +79,24 @@ public class NtooClientManager : MonoBehaviour
     {
       // Break into {chunkSize} chunks and send consecutively.
       byte[] chunk = new byte[chunkSize];
-      for (int i = 0; i < wavBytes.Length / chunkSize; i++)
+      int chunkCount = wavBytes.Length / chunkSize;
+      for (int i = 0; i < chunkCount; i++)
       {
         Buffer.BlockCopy(wavBytes, i * chunkSize, chunk, 0, chunkSize);
         Debug.Log($"[NTOO Client] Sending audio chunk {i}");
         OnSendBinaryData.Invoke(chunk);
       }
-      Debug.Log($"Finished sending {wavBytes.Length / chunkSize} chunks.");
+
+      if (wavBytes.Length > chunkCount * chunkSize)
+      {
+        int remainder = wavBytes.Length - chunkCount * chunkSize;
+        byte[] finalChunk = new byte[remainder];
+        Buffer.BlockCopy(wavBytes, chunkCount * chunkSize, finalChunk, 0, remainder);
+        Debug.Log($"[NTOO Client] Sending final audio chunk");
+        OnSendBinaryData.Invoke(finalChunk);
+      }
+
+      Debug.Log($"Finished sending chunks.");
     }
 
     // Tell server to stop expecting chunks and save what it's received.

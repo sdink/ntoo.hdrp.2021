@@ -232,8 +232,13 @@ public class MicManager : MonoBehaviour
   {
     // Set Microphone based on Prefs.
     int _micIndex = PlayerPrefs.GetInt("micDeviceIndex", 0);
+    Debug.Log("[MicManager] Initialising microphone with index " + _micIndex);
     SetMicrophone(_micIndex);
+    OpenMicrophone(fallbackFrequency);
+  }
 
+  private void OpenMicrophone(int fallbackFrequency = 44100)
+  {
     // Poll the device's frequency capabilities.
     int _minFreq, _maxFreq;
     Microphone.GetDeviceCaps(micDeviceName, out _minFreq, out _maxFreq);
@@ -243,8 +248,7 @@ public class MicManager : MonoBehaviour
     // fallback frequency (default: 44100).
     if (_minFreq == 0 && _maxFreq == 0) _maxFreq = fallbackFrequency;
     micDeviceFrequency = _maxFreq;
-
-    Debug.Log($"[MicManager] Initialised ${micDeviceName} with min frequency of {_minFreq} and max frequency of {_maxFreq}.");
+    Debug.Log($"[MicManager] Opened ${micDeviceName} with min frequency of {_minFreq} and max frequency of {_maxFreq}.");
   }
 
   /// <summary>
@@ -558,13 +562,17 @@ public class MicManager : MonoBehaviour
         micSelectedIndex = micIndex;
         micDeviceName = Microphone.devices[micSelectedIndex];
         Debug.Log($"[MicManager] Set active Microphone Device to {micDeviceName}.");
-
+        PlayerPrefs.SetInt("micDeviceIndex", micSelectedIndex);
         if (isInitialised && State != MicState.Idle)
         {
           MicState currentState = State;
           State = MicState.Idle;
-          InitialiseMicrophone();
+          OpenMicrophone();
           State = currentState;
+        }
+        else
+        {
+          OpenMicrophone();
         }
       }
       //else Debug.Log($"[MicManager] ...But couldn't because it is identical to the current index of {micSelectedIndex}.");

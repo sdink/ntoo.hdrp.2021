@@ -275,7 +275,8 @@ namespace DotDot.Core.Network
         return;
       }
 #endif
-      sendQueue.Enqueue(new SocketMessage() { binaryMessage = binaryData });
+      byte[] data = (byte[]) binaryData.Clone();
+      sendQueue.Enqueue(new SocketMessage() { binaryMessage = data });
       if (!sending)
       {
         SendNextMessage(true);
