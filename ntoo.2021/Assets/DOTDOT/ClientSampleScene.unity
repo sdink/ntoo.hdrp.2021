@@ -190,11 +190,6 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3383390721294442807, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3479674100421451179, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -254,6 +249,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5427143355092891791, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
+      propertyPath: config.mic
+      value: Microphone (HD Pro Webcam C920)
       objectReference: {fileID: 0}
     - target: {fileID: 5427143356218680838, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}

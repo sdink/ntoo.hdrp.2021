@@ -5,8 +5,6 @@ using UnityEditor;
 public class NtooManagerEditor : Editor
 {
   private bool init = true;
-  private int selectedMic = -1;
-  private int prevSelectedMic = -1;
   private int selectedGreeting = 0;
   private bool unfolded = true;
   NtooManager targetManager;
@@ -18,9 +16,6 @@ public class NtooManagerEditor : Editor
     if (init)
     {
       init = false;
-      selectedMic = PlayerPrefs.GetInt("micDeviceIndex");
-      // Prevent the Editor from updating the Mic from Prefs on Start, as the MicManager does this for itself:
-      prevSelectedMic = selectedMic; // (see MicManager InitialiseMicrophone)
       targetManager = (NtooManager)target;
     }
 
@@ -29,17 +24,6 @@ public class NtooManagerEditor : Editor
     unfolded = EditorGUILayout.Foldout(unfolded, "NTOO Debug Console");
     if (unfolded)
     {
-      EditorGUILayout.Space();
-
-      // Mic Selector
-      selectedMic = EditorGUILayout.Popup("Select Mic", selectedMic, Microphone.devices);
-      if (selectedMic != prevSelectedMic)
-      {
-        targetManager.UpdateMicrophoneDevice(selectedMic);
-        prevSelectedMic = selectedMic;
-        PlayerPrefs.SetInt("micDeviceIndex", selectedMic);
-      }
-
       EditorGUILayout.Space();
 
       // Proximity Simulation

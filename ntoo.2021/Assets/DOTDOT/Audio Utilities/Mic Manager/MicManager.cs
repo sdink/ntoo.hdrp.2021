@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -9,33 +10,60 @@ public class MicManager : MonoBehaviour
   public enum MicState { Idle, Monitoring, Listening }
 
   [Serializable]
-  public struct MicConfig
+  public class MicConfig
   {
+    [Header("Volume Controls")]
+
+    [Tooltip("Threshold for noise before NTOO starts listening")]
+    [Range(0, 1f)]
     public float threshold;
+
+    [Tooltip("Deadzone between noise threshold on and off")]
+    [Range(0, 0.000004f)]
     public float deadZone;
+
+    [Tooltip("Smoothing factor for threshold detection - lower values increase smoothing and latency.")]
+    [Range(0.001f, 1f)]
     public float levelSmoothing;
-    public int loopDuration;
-    public float silenceDuration;
-    public float maxListeningDuration;
+
+    [Tooltip("Whether to use RMS for level calculations")]
     public bool useRms;
+
+    [Header("Durations")]
+
+    [Tooltip("Duration of main Mic loop, keep this short but longer than latency from smoothing factor")]
+    [Range(0, 5)]
+    public int loopDuration;
+
+    [Tooltip("Duration of silence before NTOO starts talking")]
+    [Range(0, 10)]
+    public float silenceDuration;
+
+    [Tooltip("Duration NTOO's active listening, used for understanding the bulk of the user's intended communication")]
+    [Range(0, 60)]
+    public float maxListeningDuration;
+
+    [Tooltip("Index of the microphone to use")]
+    public string mic;
   }
 
   [Header("Configuration")]
   [SerializeField]
   private string configFile = "MicConfig.json";
 
-  [Header("Volume Controls")]
-  [Tooltip("Threshold for noise before NTOO starts listening")][SerializeField][Range(0, 1f)] private float micVolumeThreshold = 0.0001f;
-  [Tooltip("Deadzone between noise threshold on and off")][SerializeField][Range(0, 0.000004f)] private float micVolumeDeadzone = 0.000002f;
-  [Tooltip("Smoothing factor for threshold detection - lower values increase smoothing and latency.")][SerializeField][Range(0.001f, 1f)] private float micLevelSmoothing = 0.05f;
   [SerializeField]
-  private bool useRms = false;
+  private MicConfig config = new MicConfig
+  {
+    threshold = 0.0001f,
+    deadZone = 0.000002f,
+    levelSmoothing = 0.05f,
+    useRms = false,
+    loopDuration = 1,
+    silenceDuration = 2,
+    maxListeningDuration = 30,
+    mic = null
+  };
 
-  [Header("Durations")]
-  [Tooltip("Duration of main Mic loop, keep this short but longer than latency from smoothing factor")][SerializeField][Range(0, 5)] private int micLoopDuration = 1; // seconds
-  [Tooltip("Duration of silence before NTOO starts talking")][SerializeField][Range(0, 10)] private float silenceMaxDuration = 2; // seconds
-  [Tooltip("Duration NTOO's active listening, used for understanding the bulk of the user's intended communication")][SerializeField][Range(0, 60)] private float activeListeningMaxDuration = 30; // seconds
-  
   private float micVolumePeakAverage = 0;
 
   [SerializeField]
@@ -117,15 +145,23 @@ public class MicManager : MonoBehaviour
     }
   }
 
-  public float MicThreshold { get { return micVolumeThreshold; } }
+  public float MicThreshold 
+  { 
+    get { return config.threshold; } 
+    set
+    {
+      if (value == config.threshold) return;
+      config.threshold = value;
+      SaveConfig();
+    }
+  }
+
+  public string SelectedMic { get { return config.mic; } }
 
   // Non-exposed variables
-  // General
-  private bool isInitialised = false;
 
   // Microphone settings
-  private int micSelectedIndex;
-  private string micDeviceName;
+  private string activeMicName;
   private int micDeviceFrequency;
   private int micLastSamplePos = 0;
   private bool volumeHitThreshold = false;
@@ -139,51 +175,33 @@ public class MicManager : MonoBehaviour
   private float[] preRecordLoop;
   private bool listeningLoopPassedBuffer = false;
 
+  private string configFilePath
+  {
+    get
+    {
+      return Path.Combine(Application.persistentDataPath, configFile);
+    }
+  }
+
   void Start()
   {
-    string configFilePath = Path.Combine(Application.persistentDataPath, configFile);
     if (File.Exists(configFilePath))
     {
       try
       {
         string configJson = File.ReadAllText(configFilePath);
-        MicConfig config = JsonUtility.FromJson<MicConfig>(configJson);
-        micVolumeThreshold = config.threshold;
-        micVolumeDeadzone = config.deadZone;
-        micLevelSmoothing = config.levelSmoothing;
-        useRms = config.useRms;
-        micLoopDuration = config.loopDuration;
-        silenceMaxDuration = config.silenceDuration;
-        activeListeningMaxDuration = config.maxListeningDuration;
+        JsonUtility.FromJsonOverwrite(configJson, config);
       }
       catch (Exception e)
       {
         Debug.LogError("[Mic Manager] Error reading config from file: " + e.Message);
       }
 
-      OnThresholdLevelUpdated.Invoke(micVolumeThreshold);
+      OnThresholdLevelUpdated.Invoke(config.threshold);
     } 
     else
     {
-      MicConfig config = new MicConfig()
-      {
-        threshold = micVolumeThreshold,
-        deadZone = micVolumeDeadzone,
-        levelSmoothing = micLevelSmoothing,
-        useRms = useRms,
-        loopDuration = micLoopDuration,
-        silenceDuration = silenceMaxDuration,
-        maxListeningDuration = activeListeningMaxDuration
-      };
-      string configJson = JsonUtility.ToJson(config);
-      try
-      {
-        File.WriteAllText(configFilePath, configJson);
-      }
-      catch (Exception e)
-      {
-        Debug.LogError("[Mic Manager] Error writing config to file: " + e.Message);
-      }
+      SaveConfig();
     }
 
     // Check if there is at least one microphone connected.
@@ -195,10 +213,22 @@ public class MicManager : MonoBehaviour
     {
       InitialiseMicrophone();
       InitialiseBuffers();
-      isInitialised = true;
     }
 
     OnMicLevelUpdated.Invoke(0); // initialise with 0 mic level for monitors
+  }
+
+  private void SaveConfig()
+  {
+    string configJson = JsonUtility.ToJson(config);
+    try
+    {
+      File.WriteAllText(configFilePath, configJson);
+    }
+    catch (Exception e)
+    {
+      Debug.LogError("[Mic Manager] Error writing config to file: " + e.Message);
+    }
   }
 
   public void SetStateIdle()
@@ -230,25 +260,74 @@ public class MicManager : MonoBehaviour
   /// <param name="fallbackFrequency"></param>
   private void InitialiseMicrophone(int fallbackFrequency = 44100)
   {
-    // Set Microphone based on Prefs.
-    int _micIndex = PlayerPrefs.GetInt("micDeviceIndex", 0);
-    Debug.Log("[MicManager] Initialising microphone with index " + _micIndex);
-    SetMicrophone(_micIndex);
-    OpenMicrophone(fallbackFrequency);
+    if (string.IsNullOrEmpty(config.mic))
+    {
+      config.mic = Microphone.devices[0];
+      SaveConfig();
+    }
+
+    Debug.Log("[MicManager] Initialising microphone " + config.mic);
+    ConfigureMicrophone(fallbackFrequency);
   }
 
-  private void OpenMicrophone(int fallbackFrequency = 44100)
+  /// <summary>
+  /// Select the given microphone device and, if currently recording,
+  /// switch recording to the new device.
+  /// </summary>
+  /// <param name="micIndex"></param>
+  public void SetMicrophone(Int32 micIndex)
   {
+    //Debug.Log($"[MicManager] Attempting to set microphone to index {micIndex}...");
+    if (micIndex > 0 && micIndex < Microphone.devices.Length)
+    {
+      string micDeviceName = Microphone.devices[micIndex];
+      if (config.mic != micDeviceName)
+      {
+        Debug.Log($"[MicManager] Set Microphone Device to {micDeviceName}.");
+        config.mic = micDeviceName;
+        SaveConfig();
+
+        if (!string.IsNullOrEmpty(activeMicName) && State != MicState.Idle)
+        {
+          MicState currentState = State;
+          State = MicState.Idle;
+          ConfigureMicrophone();
+          State = currentState;
+        }
+        else
+        {
+          ConfigureMicrophone();
+        }
+      }
+      //else Debug.Log($"[MicManager] ...But couldn't because it is identical to the current index of {micSelectedIndex}.");
+    }
+    //else Debug.Log($"[MicManager] ...But couldn't because it does not fall within the range of 0 and {Microphone.devices.Length}.");
+  }
+
+  private void ConfigureMicrophone(int fallbackFrequency = 44100)
+  {
+
+    // ensure microphone is valid
+    if (Microphone.devices.Contains(config.mic))
+    {
+      activeMicName = config.mic;
+    }
+    else
+    {
+      Debug.LogWarning("[Mic Manager] Configured device not found - falling back to default");
+      activeMicName = Microphone.devices[0];
+    }
+
     // Poll the device's frequency capabilities.
     int _minFreq, _maxFreq;
-    Microphone.GetDeviceCaps(micDeviceName, out _minFreq, out _maxFreq);
+    Microphone.GetDeviceCaps(activeMicName, out _minFreq, out _maxFreq);
 
     // According to the documentation, if minFreq and maxFreq are zero,
     // the microphone supports any frequency, meaning we can use the
     // fallback frequency (default: 44100).
     if (_minFreq == 0 && _maxFreq == 0) _maxFreq = fallbackFrequency;
     micDeviceFrequency = _maxFreq;
-    Debug.Log($"[MicManager] Opened ${micDeviceName} with min frequency of {_minFreq} and max frequency of {_maxFreq}.");
+    Debug.Log($"[Mic Manager] Using ${activeMicName} with min frequency of {_minFreq} and max frequency of {_maxFreq}.");
   }
 
   /// <summary>
@@ -257,7 +336,7 @@ public class MicManager : MonoBehaviour
   public void InitialiseBuffers()
   {
     // Active Listening Buffer
-    int _activeListeningBufferCapacity = (int)Math.Ceiling(micDeviceFrequency * activeListeningMaxDuration);
+    int _activeListeningBufferCapacity = (int)Math.Ceiling(micDeviceFrequency * config.maxListeningDuration);
     Debug.Log($"[MicManager] Creating new Active Listening Buffer with capacity {_activeListeningBufferCapacity}.");
     activeListeningBuffer = new float[_activeListeningBufferCapacity];
   }
@@ -281,7 +360,7 @@ public class MicManager : MonoBehaviour
         {
           activeListeningBuffer[activeListeningBufferOffset + i] = latestData[i];
         }
-        Debug.LogWarning($"[Mic Manager] Sending audio due to buffer overflow (this can indicate someone was still talking and we cut them off). Listening duration: {Time.time - lastVolumeThresholdChange}. Max Duration: {activeListeningMaxDuration}.");
+        Debug.LogWarning($"[Mic Manager] Sending audio due to buffer overflow (this can indicate someone was still talking and we cut them off). Listening duration: {Time.time - lastVolumeThresholdChange}. Max Duration: {config.maxListeningDuration}.");
         // The buffer is full, send what we have.
         // Note: This error should never occur as we're handling it below in TestInputVolume().
         SendAudio();
@@ -303,7 +382,7 @@ public class MicManager : MonoBehaviour
   private float[] ReadMicrophoneData()
   {
     // Read the number of samples remaining in the microphone's clip.
-    int micSamplePos = Microphone.GetPosition(micDeviceName);
+    int micSamplePos = Microphone.GetPosition(activeMicName);
     int samplesToRead = micSamplePos - micLastSamplePos;
 
     // Skip if we are up to date
@@ -346,7 +425,7 @@ public class MicManager : MonoBehaviour
   {
     if (State == MicState.Idle || input == null) return;
 
-    if (useRms)
+    if (config.useRms)
     {
       // Calculate RMS level
       float sum = 0;
@@ -402,7 +481,7 @@ public class MicManager : MonoBehaviour
         }
 
         float volumeDelta = peakToPeakLevel - micVolumePeakAverage;
-        micVolumePeakAverage += volumeDelta * micLevelSmoothing;
+        micVolumePeakAverage += volumeDelta * config.levelSmoothing;
         previousDelta = delta;
         previousSample = sample;
       }
@@ -413,7 +492,7 @@ public class MicManager : MonoBehaviour
     OnMicLevelUpdated.Invoke(testLevel);
 
     // Test against threshold.
-    if (testLevel > micVolumeThreshold)
+    if (testLevel > config.threshold)
     {
       if (!volumeHitThreshold)
       {
@@ -422,7 +501,7 @@ public class MicManager : MonoBehaviour
         State = MicState.Listening;
       }
     }
-    else if (testLevel < micVolumeThreshold - micVolumeDeadzone)
+    else if (testLevel < config.threshold - config.deadZone)
     {
       if (volumeHitThreshold)
       {
@@ -430,7 +509,7 @@ public class MicManager : MonoBehaviour
         lastVolumeThresholdChange = Time.time;
       }
 
-      if (State == MicState.Listening && Time.time - lastVolumeThresholdChange > silenceMaxDuration)
+      if (State == MicState.Listening && Time.time - lastVolumeThresholdChange > config.silenceDuration)
       {
         // Detected pause - send audio
         Debug.Log($"Detected pause. Thinking...");
@@ -439,7 +518,7 @@ public class MicManager : MonoBehaviour
       }
     }
 
-    if (State == MicState.Listening && Time.time - lastVolumeThresholdChange >= activeListeningMaxDuration)
+    if (State == MicState.Listening && Time.time - lastVolumeThresholdChange >= config.maxListeningDuration)
     {
       // Reached maximum length, send audio
       SendAudio();
@@ -485,8 +564,8 @@ public class MicManager : MonoBehaviour
   /// </summary>
   private bool StartMonitoring()
   {
-    if (!isInitialised) return false;
-    Debug.Log("Starting microphone: " + micDeviceName);
+    if (string.IsNullOrEmpty(activeMicName)) return false;
+    Debug.Log("Starting microphone: " + activeMicName);
     // reset monitoring variables
     volumeHitThreshold = false;
     lastVolumeThresholdChange = Time.time;
@@ -495,7 +574,7 @@ public class MicManager : MonoBehaviour
     micLastSamplePos = 0;
 
     // start microphone
-    micRecording = Microphone.Start(micDeviceName, true, micLoopDuration, micDeviceFrequency);
+    micRecording = Microphone.Start(activeMicName, true, config.loopDuration, micDeviceFrequency);
     return micRecording != null;
   }
 
@@ -504,10 +583,10 @@ public class MicManager : MonoBehaviour
   /// </summary>
   private void StopMonitoring()
   {
-    if (!isInitialised) return;
+    if (string.IsNullOrEmpty(activeMicName)) return;
 
     // Stop the recording.
-    Microphone.End(micDeviceName); // Stop the audio recording
+    Microphone.End(activeMicName); // Stop the audio recording
 
     OnStoppedMonitoring.Invoke();
     OnMicLevelUpdated.Invoke(0); // update monitor with silent mic input
@@ -517,7 +596,7 @@ public class MicManager : MonoBehaviour
   {
     activeListeningBufferOffset = 0;
     // store current contents of clip buffer for appending
-    int micPosition = Microphone.GetPosition(micDeviceName);
+    int micPosition = Microphone.GetPosition(activeMicName);
     Debug.Log($"[Mic Manager] Started listening - micPos: {micPosition}, full buffer: {listeningLoopPassedBuffer}");
     if (listeningLoopPassedBuffer)
     {
@@ -547,39 +626,6 @@ public class MicManager : MonoBehaviour
     preRecordLoop = null;
   }
 
-  /// <summary>
-  /// Select the given microphone device and, if currently recording,
-  /// switch recording to the new device.
-  /// </summary>
-  /// <param name="micIndex"></param>
-  public void SetMicrophone(Int32 micIndex)
-  {
-    //Debug.Log($"[MicManager] Attempting to set microphone to index {micIndex}...");
-    if (micIndex > 0 && micIndex < Microphone.devices.Length)
-    {
-      if (micIndex != micSelectedIndex)
-      {
-        micSelectedIndex = micIndex;
-        micDeviceName = Microphone.devices[micSelectedIndex];
-        Debug.Log($"[MicManager] Set active Microphone Device to {micDeviceName}.");
-        PlayerPrefs.SetInt("micDeviceIndex", micSelectedIndex);
-        if (isInitialised && State != MicState.Idle)
-        {
-          MicState currentState = State;
-          State = MicState.Idle;
-          OpenMicrophone();
-          State = currentState;
-        }
-        else
-        {
-          OpenMicrophone();
-        }
-      }
-      //else Debug.Log($"[MicManager] ...But couldn't because it is identical to the current index of {micSelectedIndex}.");
-    }
-    //else Debug.Log($"[MicManager] ...But couldn't because it does not fall within the range of 0 and {Microphone.devices.Length}.");
-  }
-
   void OnDisable()
   {
     State = MicState.Idle;
@@ -588,6 +634,6 @@ public class MicManager : MonoBehaviour
   void OnDestroy()
   {
     State = MicState.Idle;
-    isInitialised = false;
+    activeMicName = null;
   }
 }

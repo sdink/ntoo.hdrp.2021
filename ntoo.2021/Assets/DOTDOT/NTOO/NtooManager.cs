@@ -25,7 +25,6 @@ public class NtooManager : MonoBehaviour
   [Header("Mic Events")]
   [SerializeField] private MicEvent OnStartListening;
   [SerializeField] private MicEvent OnStopListening;
-  [SerializeField] private MicSetIndexEvent OnSetMicrophoneIndex;
 
   [Header("Configurable")]
   [SerializeField] private string configFile = "NtooConfig.json";
@@ -128,11 +127,6 @@ public class NtooManager : MonoBehaviour
         break;
     }
     state = States.Stopped;
-  }
-
-  public void UpdateMicrophoneDevice(int deviceIndex)
-  {
-    OnSetMicrophoneIndex.Invoke(deviceIndex);
   }
 
   /// <summary>

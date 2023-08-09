@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +19,7 @@ public class MicLevelMonitor : MonoBehaviour
   Image levelIndicatorVisual;
 
   [SerializeField]
-  RectTransform thresholdIndicator;
+  Slider thresholdController;
 
   private void OnEnable()
   {
@@ -37,8 +35,14 @@ public class MicLevelMonitor : MonoBehaviour
   {
     float indicatorPos = level / maxVolume;
     Debug.Log("[Mic Level Monitor] Updating threshold indicator to " + indicatorPos);
-    thresholdIndicator.anchorMin = new Vector2(0, indicatorPos);
-    thresholdIndicator.anchorMax = new Vector2(1, indicatorPos);
+    thresholdController.maxValue = maxVolume;
+    thresholdController.minValue = 0;
+    thresholdController.value = level;
+  }
+
+  public void OnThresholdControllerValueChanged(float value)
+  {
+    micManager.MicThreshold = value;
   }
 
   public void UpdateInputLevel(float level)

@@ -5,6 +5,9 @@ public class MicSelectorBehaviour : MonoBehaviour
 {
     Dropdown m_Dropdown;
 
+    [SerializeField]
+    MicManager micManager;
+
     void Start()   
     {
         m_Dropdown = GetComponent<Dropdown>();
@@ -14,11 +17,10 @@ public class MicSelectorBehaviour : MonoBehaviour
             Dropdown.OptionData optionData = new Dropdown.OptionData();
             optionData.text = device;
             m_Dropdown.options.Add(optionData);
-        }
-        int selectedMic = PlayerPrefs.GetInt("selectedMic", 0);
-        if (selectedMic > 0 && selectedMic < Microphone.devices.Length)
-        {
-            m_Dropdown.value = selectedMic;
+            if (device == micManager.SelectedMic)
+            {
+              m_Dropdown.SetValueWithoutNotify(m_Dropdown.options.Count - 1);
+            }
         }
     }
 }

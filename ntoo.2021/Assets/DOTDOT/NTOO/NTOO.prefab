@@ -438,13 +438,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   configFile: MicConfig.json
-  micVolumeThreshold: 0.05
-  micVolumeDeadzone: 0.000002
-  micLevelSmoothing: 0.05
-  useRms: 1
-  micLoopDuration: 1
-  silenceMaxDuration: 2
-  activeListeningMaxDuration: 30
+  config:
+    threshold: 0.001
+    deadZone: 0.000002
+    levelSmoothing: 0.05
+    useRms: 1
+    loopDuration: 1
+    silenceDuration: 2
+    maxListeningDuration: 30
+    mic: 
   stateAfterSending: 0
   OnReadyToSendAudio:
     m_PersistentCalls:
@@ -704,21 +706,6 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: MicManager, Assembly-CSharp
         m_MethodName: SetStateIdle
         m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnSetMicrophoneIndex:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 5427143355092891791}
-        m_TargetAssemblyTypeName: MicManager, Assembly-CSharp
-        m_MethodName: SetMicrophone
-        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1024,6 +1011,21 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 583921449074426824}
     m_Modifications:
+    - target: {fileID: 1674090803735301687, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1674090803735301687, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1674090803735301687, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1697538044048410387, guid: 8c6005299febd4d4383caeab088eb75d,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
@@ -1174,6 +1176,76 @@ PrefabInstance:
       propertyPath: micManager
       value: 
       objectReference: {fileID: 5427143355092891791}
+    - target: {fileID: 3379147382717340362, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3379147382717340362, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3379147382717340362, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3379147382717340362, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3379147382717340362, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4450455060044239995, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4450455060044239995, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5441137788078580997, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: micManager
+      value: 
+      objectReference: {fileID: 5427143355092891791}
+    - target: {fileID: 5721187720440547306, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5721187720440547306, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5721187720440547306, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5721187720440547306, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5721187720440547306, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7815646635515880877, guid: 8c6005299febd4d4383caeab088eb75d,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8c6005299febd4d4383caeab088eb75d, type: 3}
 --- !u!224 &8941663819366615161 stripped
