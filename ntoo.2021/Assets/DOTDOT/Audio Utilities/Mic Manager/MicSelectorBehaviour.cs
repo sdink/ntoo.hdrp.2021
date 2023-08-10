@@ -8,7 +8,7 @@ public class MicSelectorBehaviour : MonoBehaviour
     [SerializeField]
     MicManager micManager;
 
-    void Start()   
+    void OnEnable()   
     {
         m_Dropdown = GetComponent<Dropdown>();
         m_Dropdown.ClearOptions();
