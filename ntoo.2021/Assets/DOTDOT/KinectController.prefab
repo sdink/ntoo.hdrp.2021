@@ -276,6 +276,7 @@ MonoBehaviour:
   useMultiCamConfig: 0
   syncMultiCamFrames: 0
   startDepthSensors: 1
+  dontDestroyAcrossScenes: 0
   getDepthFrames: 1
   getColorFrames: 0
   getInfraredFrames: 0
@@ -295,10 +296,11 @@ MonoBehaviour:
   estimateJointVelocities: 0
   jointVelocitySmoothing: 2
   boneOrientationConstraints: 1
+  bodySpinFilter: 0
   playerCalibrationPose: 0
   userManager: {fileID: 0}
   gestureManager: {fileID: 0}
-  displayImages: 01010000
+  displayImages: 
   displayImageWidthPercent: 0.2
   statusInfoText: {fileID: 0}
   consoleLogMessages: 1

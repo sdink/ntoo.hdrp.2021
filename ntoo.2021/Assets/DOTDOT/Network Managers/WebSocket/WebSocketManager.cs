@@ -12,10 +12,13 @@ namespace DotDot.Core.Network
   public class WebSocketManager : MonoBehaviour
   {
     [System.Serializable]
-    public struct WebSocketManagerConfig
+    public class WebSocketManagerConfig
     {
+      [Tooltip("Hostname to connect to (can be name or ip address)")]
       public string hostname;
+      [Tooltip("Port number to connect to")]
       public int port;
+      [Tooltip("How long to wait before retrying connection after close (0 = do not retry)")]
       public float retryConnectionDelay;
     }
 
@@ -43,14 +46,13 @@ namespace DotDot.Core.Network
     private string configFile = "wsConfig.json";
 
     [Header("Default Settings")]
-    [SerializeField, Tooltip("Hostname to connect to (can be name or ip address)")]
-    private string hostname;
-
-    [SerializeField, Tooltip("Port number to connect to")]
-    private int port;
-
-    [SerializeField, Tooltip("How long to wait before retrying connection after close (0 = do not retry)")]
-    private float retryConnectionDelay = 0;
+    [SerializeField]
+    WebSocketManagerConfig config = new WebSocketManagerConfig
+    {
+      hostname = "localhost",
+      port = 8080,
+      retryConnectionDelay = 0
+    };
 
 #if UNITY_EDITOR
     [Header("Editor Settings")]
@@ -137,11 +139,11 @@ namespace DotDot.Core.Network
     private void Socket_OnClose(object sender, CloseEventArgs e)
     {
       Debug.Log("[Web Socket Manager] Web Socket Closed (Reason:  " + e.Reason + ")");
-      portEvents.Enqueue(() => { 
+      portEvents.Enqueue(() => {
         OnConnectionClosed.Invoke();
-        if (retryConnectionDelay > 0)
+        if (config.retryConnectionDelay > 0)
         {
-          StartCoroutine(RetryConnection(retryConnectionDelay));
+          StartCoroutine(RetryConnection(config.retryConnectionDelay));
         }
       });
     }
@@ -167,15 +169,15 @@ namespace DotDot.Core.Network
         // load config
         LoadConfig();
 
-        Assert.IsFalse(string.IsNullOrEmpty(hostname), "Hostname must be specified!");
+        Assert.IsFalse(string.IsNullOrEmpty(config.hostname), "Hostname must be specified!");
         //Assert.IsTrue(port >= 1000 && port <= 9999, "Port must be in the range 1000 to 9999");
 
-        if (!hostname.StartsWith("ws"))
+        if (!config.hostname.StartsWith("ws"))
         {
           Debug.LogWarning("[Web Socket Manager] Supplied hostname is missing a format specifier, adding ws (which assumes an unencrypted connection)");
-          hostname = "ws://" + hostname;
+          config.hostname = "ws://" + config.hostname;
         }
-        string host = hostname + (port > 0 ? ":" + port : "");
+        string host = config.hostname + (config.port > 0 ? ":" + config.port : "");
         Debug.Log("[Web Socket Manager] Creating socket for host: " + host);
         try
         {
@@ -275,7 +277,7 @@ namespace DotDot.Core.Network
         return;
       }
 #endif
-      byte[] data = (byte[]) binaryData.Clone();
+      byte[] data = (byte[])binaryData.Clone();
       sendQueue.Enqueue(new SocketMessage() { binaryMessage = data });
       if (!sending)
       {
@@ -320,7 +322,7 @@ namespace DotDot.Core.Network
         try
         {
           string configJson = File.ReadAllText(configFilePath);
-          WebSocketManagerConfig config = JsonUtility.FromJson<WebSocketManagerConfig>(configJson);
+          JsonUtility.FromJsonOverwrite(configJson, config);
         }
         catch (Exception e)
         {
@@ -329,12 +331,6 @@ namespace DotDot.Core.Network
       }
       else
       {
-        WebSocketManagerConfig config = new WebSocketManagerConfig()
-        {
-          hostname = hostname,
-          port = port,
-          retryConnectionDelay = retryConnectionDelay,
-        };
         string configJson = JsonUtility.ToJson(config);
         try
         {
