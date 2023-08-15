@@ -1,5 +1,4 @@
 using com.rfilkov.kinect;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -13,6 +12,8 @@ public class PresenceDetector : MonoBehaviour
     public UnityEvent OnNoUsersPresent;
 
     private bool userPresent = false;
+
+    private HashSet<ulong> presentUsers = new HashSet<ulong>();
 
     // Start is called before the first frame update
     void Start()
@@ -30,8 +31,9 @@ public class PresenceDetector : MonoBehaviour
         kinectManager.userManager.OnUserRemoved.AddListener(HandleUserLost);
     }
 
-    private void HandleUserDetected(ulong id, int users)
+    private void HandleUserDetected(ulong id, int userIndex)
     {
+        presentUsers.Add(id);
         if (!userPresent)
         {
             userPresent = true;
@@ -39,9 +41,10 @@ public class PresenceDetector : MonoBehaviour
         }
     }
 
-    private void HandleUserLost(ulong id, int users)
+    private void HandleUserLost(ulong id, int userIndex)
     {
-        if (users == 0)
+        presentUsers.Remove(id);
+        if (presentUsers.Count == 0)
         {
             userPresent = false;
             OnNoUsersPresent.Invoke();
