@@ -26974,6 +26974,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   emotionGroups:
+  - category: neutral
+    keyCode: 47
+    emotions:
+    - animationName: frown-H
+      keyCode: 104
+    - animationName: alert-O
+      keyCode: 111
+    - animationName: erlene-surprise-P
+      keyCode: 112
+    - animationName: sade-shock-A
+      keyCode: 97
+    - animationName: surprise-D
+      keyCode: 100
   - category: negative
     keyCode: 44
     emotions:
@@ -27007,19 +27020,6 @@ MonoBehaviour:
       keyCode: 101
     - animationName: sadness-R
       keyCode: 114
-  - category: neutral
-    keyCode: 47
-    emotions:
-    - animationName: frown-H
-      keyCode: 104
-    - animationName: alert-O
-      keyCode: 111
-    - animationName: erlene-surprise-P
-      keyCode: 112
-    - animationName: sade-shock-A
-      keyCode: 97
-    - animationName: surprise-D
-      keyCode: 100
   - category: positive
     keyCode: 46
     emotions:

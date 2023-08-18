@@ -44,7 +44,7 @@ public class NtooClientManager : MonoBehaviour
     }
     else if (message.StartsWith("Sentiment:"))
     {
-      OnReceivedSentiment.Invoke(message.Substring(9));
+      OnReceivedSentiment.Invoke(message.Substring(10));
     }
   }
 
