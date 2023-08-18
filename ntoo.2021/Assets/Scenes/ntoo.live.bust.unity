@@ -183,7 +183,6 @@ GameObject:
   - component: {fileID: 218163437}
   - component: {fileID: 218163436}
   - component: {fileID: 218163439}
-  - component: {fileID: 218163435}
   m_Layer: 0
   m_Name: portrait camera
   m_TagString: MainCamera
@@ -191,18 +190,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &218163435
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 218163434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 406ebc0de4f885b4ab2260c3298c9b6c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!81 &218163436
 AudioListener:
   m_ObjectHideFlags: 0
@@ -713,11 +700,31 @@ PrefabInstance:
     - target: {fileID: 8312805265911251768, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
       propertyPath: inspStateFoldoutSettings
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8312805265911251768, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
       propertyPath: inspStateFoldoutProcessing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8312805265911251770, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8312805265911251770, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: lookTarget
+      value: 
+      objectReference: {fileID: 1263933915}
+    - target: {fileID: 8312805265911251770, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: inspStateFoldoutHeads
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8312805265911251770, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: inspStateFoldoutAnimBones
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -2043,6 +2050,12 @@ PrefabInstance:
 --- !u!82 &1263933914 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 5427143356783740922, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+    type: 3}
+  m_PrefabInstance: {fileID: 1263933913}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1263933915 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8751830499230655483, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
     type: 3}
   m_PrefabInstance: {fileID: 1263933913}
   m_PrefabAsset: {fileID: 0}

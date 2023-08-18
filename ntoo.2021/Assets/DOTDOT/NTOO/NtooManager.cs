@@ -16,6 +16,7 @@ public class NtooManager : MonoBehaviour
   public class NtooManagerConfig
   {
     public Greeting[] greetings;
+    public float heightOffset;
   }
 
   [Serializable] private class ClientEventText : UnityEvent<string> { }
@@ -113,6 +114,8 @@ public class NtooManager : MonoBehaviour
         Debug.LogError("[NTOO Manager] Error writing config to file: " + e.Message);
       }
     }
+
+    transform.localPosition = new Vector3(0, config.heightOffset, 0);
   }
 
   public void BeginNtooRoutine()

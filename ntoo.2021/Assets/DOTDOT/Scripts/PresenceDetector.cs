@@ -1,5 +1,6 @@
 using com.rfilkov.kinect;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -15,6 +16,18 @@ public class PresenceDetector : MonoBehaviour
 
     private HashSet<ulong> presentUsers = new HashSet<ulong>();
 
+    [Header("Head Tracking")]
+    [SerializeField]
+    [Tooltip("Optional transform to update for head tracking of present user")]
+    private Transform headTrackingTarget;
+
+    [SerializeField]
+    [Tooltip("Triggered when optional head tracking target is valid")]
+    private UnityEvent<bool> onHeadTrackingActive;
+
+    private ulong userId;
+    private Vector3 neutralEyeTarget;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,6 +42,11 @@ public class PresenceDetector : MonoBehaviour
 
         kinectManager.userManager.OnUserAdded.AddListener(HandleUserDetected);
         kinectManager.userManager.OnUserRemoved.AddListener(HandleUserLost);
+
+        if (headTrackingTarget != null)
+        {
+            neutralEyeTarget = headTrackingTarget.localPosition;
+        }
     }
 
     private void HandleUserDetected(ulong id, int userIndex)
@@ -37,6 +55,7 @@ public class PresenceDetector : MonoBehaviour
         if (!userPresent)
         {
             userPresent = true;
+            userId = id;
             OnUserPresent.Invoke();
         }
     }
@@ -48,6 +67,33 @@ public class PresenceDetector : MonoBehaviour
         {
             userPresent = false;
             OnNoUsersPresent.Invoke();
+            if (headTrackingTarget != null)
+            {
+                onHeadTrackingActive.Invoke(false);
+                headTrackingTarget.localPosition = neutralEyeTarget;
+            }
+        }
+        else
+        {
+            userId = presentUsers.First();
+        }
+    }
+
+    private void Update()
+    {
+        if (userPresent && headTrackingTarget != null)
+        {
+            if (kinectManager.GetJointTrackingState(userId, KinectInterop.JointType.Head) == KinectInterop.TrackingState.Tracked)
+            {
+                var pos = kinectManager.GetJointPosition(userId, KinectInterop.JointType.Head);
+                headTrackingTarget.localPosition = new Vector3(-pos.x, pos.y, pos.z); // invert x-axis to remove mirroring
+                onHeadTrackingActive.Invoke(true);
+            }
+            else
+            {
+                onHeadTrackingActive.Invoke(false);
+                headTrackingTarget.localPosition = neutralEyeTarget;
+            }
         }
     }
 }
