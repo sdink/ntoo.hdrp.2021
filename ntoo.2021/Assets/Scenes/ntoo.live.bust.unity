@@ -700,11 +700,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: ntoobust07
       objectReference: {fileID: 0}
-    - target: {fileID: 8312805265911251764, guid: 9da037726b2d1b046a9eb593e010f20c,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8312805265911251768, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
       propertyPath: audioSrc
@@ -1468,11 +1463,6 @@ PrefabInstance:
       propertyPath: hostname
       value: ws://192.168.0.147
       objectReference: {fileID: 0}
-    - target: {fileID: 4386625364744117685, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
-        type: 3}
-      propertyPath: config.hostname
-      value: ws://192.168.0.147
-      objectReference: {fileID: 0}
     - target: {fileID: 4449220088419116832, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -1641,12 +1631,17 @@ PrefabInstance:
     - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
       propertyPath: OnStartSpeaking.m_PersistentCalls.m_Calls.Array.size
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
       propertyPath: OnStopListening.m_PersistentCalls.m_Calls.Array.size
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
+      propertyPath: OnTriggerSentiment.m_PersistentCalls.m_Calls.Array.size
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
@@ -1680,6 +1675,11 @@ PrefabInstance:
       objectReference: {fileID: 468280031}
     - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
+      propertyPath: OnTriggerSentiment.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
       propertyPath: OnStartSpeaking.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
       value: 2
       objectReference: {fileID: 0}
@@ -1693,6 +1693,11 @@ PrefabInstance:
       propertyPath: OnStopListening.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
+      propertyPath: OnTriggerSentiment.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 683885935}
     - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
       propertyPath: OnStartSpeaking.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
@@ -1710,6 +1715,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
+      propertyPath: OnTriggerSentiment.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
+      propertyPath: OnTriggerSentiment.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: TriggerEmotionCategory
+      objectReference: {fileID: 0}
+    - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
       propertyPath: OnStartSpeaking.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
       value: SetAnimatorBool, Assembly-CSharp
       objectReference: {fileID: 0}
@@ -1722,6 +1737,11 @@ PrefabInstance:
         type: 3}
       propertyPath: OnStopListening.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
       value: SetAnimatorBool, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
+      propertyPath: OnTriggerSentiment.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: EmotionTriggerController, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
@@ -1741,6 +1761,11 @@ PrefabInstance:
     - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
       propertyPath: OnStopListening.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 5427143356218680889, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
+      propertyPath: OnTriggerSentiment.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 5619795779257096991, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,

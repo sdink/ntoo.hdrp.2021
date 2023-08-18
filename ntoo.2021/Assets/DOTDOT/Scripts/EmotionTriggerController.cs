@@ -43,20 +43,29 @@ public class EmotionTriggerController : MonoBehaviour
             {
                 animations[i] = emotionGroup.emotions[i].animationName;
             }
-            emotionGroupLookup.Add(emotionGroup.category, animations);
+            emotionGroupLookup.Add(emotionGroup.category.ToLower(), animations);
         }
     }
 
-    public void TriggerEmotion(string category)
+    public void TriggerEmotionCategory(string category)
     {
-        if(emotionGroupLookup.TryGetValue(category, out var emotions))
+        if(emotionGroupLookup.TryGetValue(category.ToLower(), out var emotions))
         {
             TriggerEmotionFromGroup(category, emotions);
         }
         else
         {
-            Debug.LogWarning($"[Emotion Trigger Controller] Emotion category {category} not found");
+            Debug.LogWarning($"[Emotion Trigger Controller] Emotion category {category} not found - trying fallback");
+            if (emotionGroups.Length > 0)
+            {
+                TriggerEmotionFromGroup(emotionGroups[0].category, emotionGroups[0].emotions);
+            }
         }
+    }
+
+    public void TriggerEmotion(string emotion)
+    {
+        animator.CrossFadeInFixedTime(emotion, 0.5f);
     }
 
     private void Update()
@@ -76,7 +85,7 @@ public class EmotionTriggerController : MonoBehaviour
                 {
                     if (Input.GetKeyUp(emotion.keyCode))
                     {
-                        animator.CrossFadeInFixedTime(emotion.animationName, 0.5f);
+                        TriggerEmotion(emotion.animationName);
                         foundEmotion = true;
                         break;
                     }
@@ -95,7 +104,7 @@ public class EmotionTriggerController : MonoBehaviour
             return;
         }
         int index = Random.Range(0, emotions.Length);
-        animator.CrossFadeInFixedTime(emotions[index], 0.5f);
+        TriggerEmotion(emotions[index]);
     }
 
     private void TriggerEmotionFromGroup(string category, EmotionTriggerEntry[] emotions)
@@ -106,6 +115,6 @@ public class EmotionTriggerController : MonoBehaviour
             return;
         }
         int index = Random.Range(0, emotions.Length);
-        animator.CrossFadeInFixedTime(emotions[index].animationName, 0.5f);
+        TriggerEmotion(emotions[index].animationName);
     }
 }

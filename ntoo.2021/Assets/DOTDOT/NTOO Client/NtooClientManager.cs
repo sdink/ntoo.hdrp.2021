@@ -10,6 +10,7 @@ public class NtooClientManager : MonoBehaviour
   [Serializable] public class SpeakerEvent : UnityEvent<AudioClip> { }
   [Header("Speaker Events")]
   [SerializeField] public SpeakerEvent OnReceivedAudioClip;
+  [SerializeField] public UnityEvent<string> OnReceivedSentiment;
   public UnityEvent OnReceivedEmptyClip;
 
   [Serializable] private class NetworkEventText : UnityEvent<string> { }
@@ -40,6 +41,10 @@ public class NtooClientManager : MonoBehaviour
     {
       Debug.Log("[Ntoo Client Manager] Triggering empty clip received");
       OnReceivedEmptyClip.Invoke();
+    }
+    else if (message.StartsWith("Sentiment:"))
+    {
+      OnReceivedSentiment.Invoke(message.Substring(9));
     }
   }
 

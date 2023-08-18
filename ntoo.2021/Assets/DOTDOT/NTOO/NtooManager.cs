@@ -5,10 +5,17 @@ using UnityEngine.Events;
 
 public class NtooManager : MonoBehaviour
 {
+    [Serializable]
+    public struct Greeting
+    {
+        public string message;
+        public string sentiment;
+    }
+
   [Serializable]
-  public struct NtooManagerConfig
+  public class NtooManagerConfig
   {
-    public string[] greetings;
+    public Greeting[] greetings;
   }
 
   [Serializable] private class ClientEventText : UnityEvent<string> { }
@@ -20,6 +27,8 @@ public class NtooManager : MonoBehaviour
   [Header("Client Events")]
   [SerializeField] private ClientEventText OnTriggerConversation;
   [SerializeField] private ClientEventAudio OnStartSpeaking;
+  [SerializeField] private UnityEvent<string> OnTriggerSentiment;
+  [SerializeField] private UnityEvent<string> OnTriggerEmotion;
   [Header("Speaker Events")]
   [SerializeField] private SpeakerEvent OnStopSpeaking;
   [Header("Mic Events")]
@@ -28,13 +37,13 @@ public class NtooManager : MonoBehaviour
 
   [Header("Configurable")]
   [SerializeField] private string configFile = "NtooConfig.json";
-  [SerializeField] private string[] greetings;
+  [SerializeField] private NtooManagerConfig config;
 
-  public string[] Greetings
+  public Greeting[] Greetings
   {
     get
     {
-      return greetings;
+      return config.greetings;
     }
   }
 
@@ -73,6 +82,8 @@ public class NtooManager : MonoBehaviour
     }
   }
 
+  public string Sentiment { get; set; } = "Neutral";
+
   private States state = States.Stopped;
 
   private void Start()
@@ -83,8 +94,7 @@ public class NtooManager : MonoBehaviour
       try
       {
         string configJson = File.ReadAllText(configFilePath);
-        NtooManagerConfig config = JsonUtility.FromJson<NtooManagerConfig>(configJson);
-        greetings = config.greetings;
+        JsonUtility.FromJsonOverwrite(configJson, config);
       }
       catch (Exception e)
       {
@@ -93,10 +103,6 @@ public class NtooManager : MonoBehaviour
     }
     else
     {
-      NtooManagerConfig config = new NtooManagerConfig()
-      {
-        greetings = greetings,
-      };
       string configJson = JsonUtility.ToJson(config);
       try
       {
@@ -134,7 +140,7 @@ public class NtooManager : MonoBehaviour
   /// </summary>
   public void TriggerConversationLoop()
   {
-    int _index = (int)(UnityEngine.Random.value * greetings.Length);
+    int _index = (int)(UnityEngine.Random.value * Greetings.Length);
     TriggerConversationLoop(_index);
   }
 
@@ -149,8 +155,9 @@ public class NtooManager : MonoBehaviour
       Debug.Log("Warning: Attempting to trigger a new conversation loop while one is already in progress!");
       return;
     }
-    string _randomResponse = greetings[index];
-    OnTriggerConversation.Invoke(_randomResponse);
+    Greeting _randomResponse = Greetings[index];
+    Sentiment = _randomResponse.sentiment;
+    OnTriggerConversation.Invoke(_randomResponse.message);
   }
 
   public void EnterSpeakingState(AudioClip audioToSpeak)
@@ -160,6 +167,15 @@ public class NtooManager : MonoBehaviour
       Debug.Log("Warning: Attempting to enter speaking state while already speaking.");
       return;
     }
+    if (Sentiment.StartsWith("E:"))
+    {
+        OnTriggerEmotion.Invoke(Sentiment.Substring(2));
+    }
+    else
+    {
+        OnTriggerSentiment.Invoke(Sentiment);
+    }
+    
     OnStartSpeaking.Invoke(audioToSpeak);
     state = States.Speaking;
   }

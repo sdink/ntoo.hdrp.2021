@@ -44,7 +44,12 @@ public class NtooManagerEditor : Editor
 
       // Trigger Greeting
       GUILayout.Label("Trigger Greeting");
-      selectedGreeting = EditorGUILayout.Popup("Select Message", selectedGreeting, targetManager.Greetings);
+      string[] greetingMessages = new string[targetManager.Greetings.Length];
+      for (int i = 0; i < greetingMessages.Length; i++)
+      {
+        greetingMessages[i] = targetManager.Greetings[i].message;
+      }
+      selectedGreeting = EditorGUILayout.Popup("Select Message", selectedGreeting, greetingMessages);
       if (GUILayout.Button("Send"))
       {
         targetManager.TriggerConversationLoop(selectedGreeting);
