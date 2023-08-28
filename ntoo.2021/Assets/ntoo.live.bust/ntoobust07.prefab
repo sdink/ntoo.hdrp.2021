@@ -26975,68 +26975,94 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   emotionGroups:
   - category: neutral
-    keyCode: 47
+    keyCode: 92
     emotions:
-    - animationName: frown-H
-      keyCode: 104
-    - animationName: alert-O
-      keyCode: 111
-    - animationName: erlene-surprise-P
-      keyCode: 112
-    - animationName: sade-shock-A
-      keyCode: 97
-    - animationName: surprise-D
-      keyCode: 100
-  - category: negative
-    keyCode: 44
-    emotions:
-    - animationName: anger-1
-      keyCode: 49
-    - animationName: lip-smack-2
-      keyCode: 50
-    - animationName: sly-F
-      keyCode: 102
-    - animationName: stern-3
+    - animationName: alert
       keyCode: 51
-    - animationName: disdain-4
-      keyCode: 52
-    - animationName: sade-disgust-6
-      keyCode: 54
-    - animationName: sarcastic-G
-      keyCode: 103
-    - animationName: scoff-7
-      keyCode: 55
-    - animationName: anxiety-8
-      keyCode: 56
-    - animationName: concern-9
-      keyCode: 57
-    - animationName: fear-0
-      keyCode: 48
-    - animationName: grief-Q
-      keyCode: 113
-    - animationName: melancholy-W
-      keyCode: 119
-    - animationName: sade-sad-E
+    - animationName: alert2
       keyCode: 101
-    - animationName: sadness-R
+    - animationName: alert3
+      keyCode: 100
+    - animationName: erlene-surprise
+      keyCode: 99
+    - animationName: sade-shock
+      keyCode: 52
+    - animationName: surprise
       keyCode: 114
-  - category: positive
-    keyCode: 46
+    - animationName: thinking-eyebrowRaise
+      keyCode: 49
+    - animationName: thinking-faceScrunch
+      keyCode: 113
+    - animationName: thinking-headDown
+      keyCode: 97
+    - animationName: thinking-headDown2
+      keyCode: 122
+    - animationName: thinking-headNod
+      keyCode: 50
+    - animationName: thinking-headShake
+      keyCode: 119
+    - animationName: thinking-headShake2
+      keyCode: 115
+    - animationName: half-smile
+      keyCode: 53
+    - animationName: lip-smack
+      keyCode: 102
+  - category: negative
+    keyCode: 45
     emotions:
-    - animationName: half-smile-J
-      keyCode: 106
-    - animationName: smile-K
-      keyCode: 107
-    - animationName: erlene-smile-T
-      keyCode: 116
-    - animationName: giggle-L
-      keyCode: 108
-    - animationName: laughter-Y
-      keyCode: 121
-    - animationName: sade-laughter-U
+    - animationName: anger
+      keyCode: 55
+    - animationName: lip-smack
+      keyCode: 102
+    - animationName: sly
       keyCode: 117
-    - animationName: satisfaction-I
+    - animationName: stern
+      keyCode: 106
+    - animationName: disdain
+      keyCode: 109
+    - animationName: sade-disgust
+      keyCode: 56
+    - animationName: sarcastic
       keyCode: 105
+    - animationName: scoff
+      keyCode: 107
+    - animationName: anxiety
+      keyCode: 44
+    - animationName: concern
+      keyCode: 57
+    - animationName: fear
+      keyCode: 111
+    - animationName: grief
+      keyCode: 108
+    - animationName: melancholy
+      keyCode: 46
+    - animationName: sade-sad
+      keyCode: 48
+    - animationName: sadness
+      keyCode: 112
+    - animationName: frown
+      keyCode: 59
+  - category: positive
+    keyCode: 61
+    emotions:
+    - animationName: half-smile
+      keyCode: 53
+    - animationName: smile
+      keyCode: 116
+    - animationName: erlene-smile
+      keyCode: 103
+    - animationName: giggle
+      keyCode: 98
+    - animationName: laughter
+      keyCode: 54
+    - animationName: sade-laughter
+      keyCode: 121
+    - animationName: satisfaction
+      keyCode: 104
+    - animationName: concern
+      keyCode: 57
+    - animationName: sly
+      keyCode: 117
   enableKeyTriggers: 1
 --- !u!114 &5797101534956174342
 MonoBehaviour:
