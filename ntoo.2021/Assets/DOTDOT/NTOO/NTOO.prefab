@@ -152,36 +152,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 185.2629, y: 117.0526}
   m_Pivot: {x: 0, y: 0}
---- !u!1 &4375803933934047796
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8751830499230655483}
-  m_Layer: 0
-  m_Name: ActiveUserHead
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8751830499230655483
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4375803933934047796}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.6, z: 2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 5427143356218680838}
-  m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5309960988079347810
 GameObject:
   m_ObjectHideFlags: 0
@@ -339,7 +309,7 @@ MonoBehaviour:
   config:
     hostname: localhost
     port: 8080
-    retryConnectionDelay: 0
+    retryConnectionDelay: 1
   simulate: 0
 --- !u!1 &5427143355092891788
 GameObject:
@@ -697,7 +667,6 @@ Transform:
   - {fileID: 5427143356783740925}
   - {fileID: 7180249535409379314}
   - {fileID: 583921449074426824}
-  - {fileID: 8751830499230655483}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -935,10 +904,12 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  headTrackingTarget: {fileID: 8751830499230655483}
+  headTrackingTarget: {fileID: 0}
   onHeadTrackingActive:
     m_PersistentCalls:
       m_Calls: []
+  lingerPeriod: 1.5
+  eyeMoveLag: 0.4
 --- !u!114 &4359640714615402602
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1025,7 +996,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 24300002, guid: f4fede8ecdce824dfa2a60792e520e19,
     type: 2}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -2070,12 +2041,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f3bc1b31a64240546a729604cecd2ddc, type: 3}
---- !u!224 &8076160700540971966 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1863336309159411581, guid: f3bc1b31a64240546a729604cecd2ddc,
-    type: 3}
-  m_PrefabInstance: {fileID: 7624506062652986563}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &3843305164931480270 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6672512144209374733, guid: f3bc1b31a64240546a729604cecd2ddc,
@@ -2088,6 +2053,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!224 &8076160700540971966 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1863336309159411581, guid: f3bc1b31a64240546a729604cecd2ddc,
+    type: 3}
+  m_PrefabInstance: {fileID: 7624506062652986563}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8788170534777678583
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -25,8 +25,19 @@ public class PresenceDetector : MonoBehaviour
     [Tooltip("Triggered when optional head tracking target is valid")]
     private UnityEvent<bool> onHeadTrackingActive;
 
+    [SerializeField]
+    [Tooltip("How long eyes should linger when losing tracking of a user before shifting to next user")]
+    private float lingerPeriod = 1.5f;
+
+    [SerializeField]
+    [Tooltip("Time in seconds it should take for eye to move from one position to the next. Higher values result in smoother eye movements that trail behind users")]
+    private float eyeMoveLag = 0.5f;
+
     private ulong userId;
     private Vector3 neutralEyeTarget;
+    private Vector3 eyeTarget;
+
+    float linger = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -46,6 +57,7 @@ public class PresenceDetector : MonoBehaviour
         if (headTrackingTarget != null)
         {
             neutralEyeTarget = headTrackingTarget.localPosition;
+            eyeTarget = headTrackingTarget.localPosition;
         }
     }
 
@@ -65,35 +77,48 @@ public class PresenceDetector : MonoBehaviour
         presentUsers.Remove(id);
         if (presentUsers.Count == 0)
         {
+            linger = eyeMoveLag;
             userPresent = false;
             OnNoUsersPresent.Invoke();
             if (headTrackingTarget != null)
             {
                 onHeadTrackingActive.Invoke(false);
-                headTrackingTarget.localPosition = neutralEyeTarget;
+                eyeTarget = neutralEyeTarget;
             }
         }
-        else
+        else if (userId == id)
         {
             userId = presentUsers.First();
+            linger = eyeMoveLag;
         }
     }
 
     private void Update()
     {
-        if (userPresent && headTrackingTarget != null)
+        if (headTrackingTarget != null)
         {
-            if (kinectManager.GetJointTrackingState(userId, KinectInterop.JointType.Head) == KinectInterop.TrackingState.Tracked)
+
+            if (linger > 0)
+            {
+                linger -= Time.deltaTime;
+            }
+            else if (!userPresent)
+            {
+                eyeTarget = neutralEyeTarget;
+            }
+            else if (kinectManager.GetJointTrackingState(userId, KinectInterop.JointType.Head) == KinectInterop.TrackingState.Tracked)
             {
                 var pos = kinectManager.GetJointPosition(userId, KinectInterop.JointType.Head);
-                headTrackingTarget.localPosition = new Vector3(-pos.x, pos.y, pos.z); // invert x-axis to remove mirroring
+                eyeTarget = new Vector3(-pos.x, pos.y, pos.z); // invert x-axis to remove mirroring
                 onHeadTrackingActive.Invoke(true);
             }
             else
             {
                 onHeadTrackingActive.Invoke(false);
-                headTrackingTarget.localPosition = neutralEyeTarget;
+                eyeTarget = neutralEyeTarget;
             }
+
+            headTrackingTarget.localPosition = Vector3.Lerp(headTrackingTarget.localPosition, eyeTarget, Time.deltaTime / eyeMoveLag);
         }
     }
 }
