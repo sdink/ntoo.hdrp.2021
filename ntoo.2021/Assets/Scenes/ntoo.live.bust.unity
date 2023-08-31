@@ -717,6 +717,176 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.size
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[4].keyCode
+      value: 56
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[5].keyCode
+      value: 105
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[6].keyCode
+      value: 107
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[7].keyCode
+      value: 44
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[8].keyCode
+      value: 57
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[9].keyCode
+      value: 111
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[3].keyCode
+      value: 104
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[4].keyCode
+      value: 57
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[5].keyCode
+      value: 117
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[6].keyCode
+      value: 117
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[7].keyCode
+      value: 117
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[10].keyCode
+      value: 46
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[11].keyCode
+      value: 48
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[12].keyCode
+      value: 112
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[13].keyCode
+      value: 59
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[14].keyCode
+      value: 59
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[4].animationName
+      value: sade-disgust
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[5].animationName
+      value: sarcastic
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[6].animationName
+      value: scoff
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[7].animationName
+      value: anxiety
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[8].animationName
+      value: concern
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[9].animationName
+      value: fear
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[3].animationName
+      value: satisfaction
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[4].animationName
+      value: concern
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[5].animationName
+      value: sly
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[6].animationName
+      value: sly
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[2].emotions.Array.data[7].animationName
+      value: sly
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[10].animationName
+      value: melancholy
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[11].animationName
+      value: sade-sad
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[12].animationName
+      value: sadness
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[13].animationName
+      value: frown
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[1].emotions.Array.data[14].animationName
+      value: frown
+      objectReference: {fileID: 0}
     - target: {fileID: 8312805265911251764, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
       propertyPath: m_Name
