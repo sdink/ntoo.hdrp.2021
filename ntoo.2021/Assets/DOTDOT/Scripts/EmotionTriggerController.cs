@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -65,7 +64,7 @@ public class EmotionTriggerController : MonoBehaviour
 
     public void TriggerEmotion(string emotion)
     {
-        animator.CrossFadeInFixedTime(emotion, 0.5f);
+        animator.CrossFadeInFixedTime(emotion, 0.75f);
     }
 
     private void Update()

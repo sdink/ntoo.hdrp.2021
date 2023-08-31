@@ -436,8 +436,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eadc82a4ca32fff4393bc7957eaa87f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_parameterName: idleanim1
-  m_stateIDArray: 0000000001000000020000000300000004000000
+  targetParameter: idleanim1
+  probabilities: 02000000020000000100000002000000
 --- !u!1109 &-7741968362676838273
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -587,8 +587,8 @@ AnimatorStateMachine:
   m_StateMachineBehaviours:
   - {fileID: -7745190042694775088}
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
-  m_EntryPosition: {x: 70, y: 200, z: 0}
-  m_ExitPosition: {x: 850, y: 210, z: 0}
+  m_EntryPosition: {x: 260, y: 220, z: 0}
+  m_ExitPosition: {x: 750, y: 220, z: 0}
   m_ParentStateMachinePosition: {x: 50, y: -60, z: 0}
   m_DefaultState: {fileID: -6257180766393083976}
 --- !u!1101 &-7243022241451353809
@@ -937,8 +937,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eadc82a4ca32fff4393bc7957eaa87f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_parameterName: idleanim1
-  m_stateIDArray: 01000000020000000300000004000000050000000600000007000000
+  targetParameter: idleanim1
+  probabilities: 0100000001000000010000000100000001000000
 --- !u!1109 &-5817072253460943364
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -1294,7 +1294,7 @@ AnimatorTransition:
   m_Conditions:
   - m_ConditionMode: 6
     m_ConditionEvent: idleanim1
-    m_EventTreshold: 4
+    m_EventTreshold: 3
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -8985315705979294950}
   m_Solo: 0
@@ -2741,7 +2741,7 @@ AnimatorTransition:
   m_Conditions:
   - m_ConditionMode: 6
     m_ConditionEvent: idleanim1
-    m_EventTreshold: 1
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -6257180766393083976}
   m_Solo: 0
@@ -3467,7 +3467,7 @@ AnimatorTransition:
   m_Conditions:
   - m_ConditionMode: 6
     m_ConditionEvent: idleanim1
-    m_EventTreshold: 2
+    m_EventTreshold: 1
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 2519603711503297249}
   m_Solo: 0
@@ -3731,7 +3731,7 @@ AnimatorTransition:
   m_Conditions:
   - m_ConditionMode: 6
     m_ConditionEvent: idleanim1
-    m_EventTreshold: 3
+    m_EventTreshold: 2
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 3590835748220143808}
   m_Solo: 0

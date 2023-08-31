@@ -109,7 +109,7 @@ public class PresenceDetector : MonoBehaviour
             else if (kinectManager.GetJointTrackingState(userId, KinectInterop.JointType.Head) == KinectInterop.TrackingState.Tracked)
             {
                 var pos = kinectManager.GetJointPosition(userId, KinectInterop.JointType.Head);
-                eyeTarget = new Vector3(-pos.x, pos.y, pos.z); // invert x-axis to remove mirroring
+                eyeTarget = new Vector3(-0.5f * pos.x, pos.y, pos.z); // invert x-axis to remove mirroring and scale to correct for overlook
                 onHeadTrackingActive.Invoke(true);
             }
             else
