@@ -437,7 +437,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetParameter: idleanim1
-  probabilities: 02000000020000000100000002000000
+  probabilities: 04000000040000000100000004000000
 --- !u!1109 &-7741968362676838273
 AnimatorTransition:
   m_ObjectHideFlags: 1

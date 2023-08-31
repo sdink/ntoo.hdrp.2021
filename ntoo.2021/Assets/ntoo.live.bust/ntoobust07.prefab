@@ -9178,6 +9178,7 @@ GameObject:
   - component: {fileID: 9104366107711097337}
   - component: {fileID: 5549993432806704576}
   - component: {fileID: 5797101534956174342}
+  - component: {fileID: 5961722483884473177}
   m_Layer: 10
   m_Name: Genesis8Female
   m_TagString: Untagged
@@ -9369,6 +9370,616 @@ MonoBehaviour:
   ClipToWriteTo: {fileID: 7400000, guid: 38ba1ffff6ee0904bb0569e6ec437a98, type: 2}
   Recording: 0
   KeyframeOnNewData: 0
+--- !u!114 &5961722483884473177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5797101534956174439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 974247159, guid: 21fe281538940584e84b6d5eedb3525e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inspStateFoldoutReferences: 1
+  inspStateFoldoutHeads: 0
+  inspStateFoldoutHeadProps: 1
+  inspStateFoldoutAnimBones: 0
+  inspStateFoldoutEyes: 0
+  inspStateFoldoutEyeProps: 1
+  inspStateFoldoutEyelids: 0
+  inspStateFoldoutEyelidBlinkProps: 1
+  inspStateFoldoutEyelidTrackProps: 1
+  drawEyeBoneCaptureControls: 0
+  drawBlinkBoneCaptureControls: 0
+  drawTrackBoneCaputreControls: 0
+  headIsRoot: 0
+  configReadyHead: 1
+  configReadyEye: 1
+  configReadyBlink: 1
+  configReadyTrack: 1
+  characterRoot: {fileID: 4973765644126646567}
+  queueProcessor: {fileID: 8312805265911251769}
+  lookTarget: {fileID: 2497965790764855802}
+  useAffinity: 1
+  affinityPercentage: 1
+  hasAffinity: 1
+  affinityTimerRange: {x: 2, y: 5}
+  updateDelay: 0.07
+  useSpriteFlipping: 0
+  flipType: 0
+  flipScale: {fileID: 0}
+  flipSprite: {fileID: 0}
+  parentRandTargets: 0
+  showSceneGizmos: 1
+  warnOnNullRefs: 1
+  flipState: 0
+  animCancel: []
+  headEnabled: 0
+  headTemplate: 1
+  head2DProcessing: 0
+  headTargetOffset: {x: 0, y: 0.058, z: 0}
+  headClamp: {x: 45, y: 160, z: 45}
+  headFacingCamera: 0
+  headRandom: 0
+  headRandomFov: {x: 5, y: 45, z: 22.5}
+  headRandFovHalf: {x: 0, y: 0, z: 0}
+  headRandTimerRange: {x: 5, y: 10}
+  headRandTimer: 0
+  headUseDistExtents: 0
+  headRandDistRange: {x: 1, y: 1}
+  updateHeadFwdCenterRefs: 1
+  headTargetRadius: 0.01
+  headBones: []
+  headRefsFwd: []
+  headRefsFix: []
+  headRefCenter: {fileID: 0}
+  newHeadDirs: []
+  headTarget: {fileID: 0}
+  headTarget2D: {x: 0, y: 0, z: 0}
+  heads:
+  - expData:
+      name: head
+      components:
+      - name: head
+        controlType: 1
+        lipsyncControlType: 0
+        emoteControlType: 0
+        eyesControlType: 1
+        durationDelay: 0
+        durationOn: 0.75
+        durationHold: 0
+        durationOff: 0
+        isSmoothDisable: 1
+        isPersistent: 1
+        expressionType: 2
+        easing: 4
+        expressionHandler: 0
+        isAnimatorControlled: 1
+        useOffset: 0
+        useOffsetFollow: 1
+        inspFoldout: 1
+        enabled: 1
+        isBonePreviewUpdated: 0
+        frac: 1
+        directionType: 0
+      controllerVars:
+      - bone: {fileID: 5652918250954453510}
+        baseTform:
+          pos: {x: -0, y: 0.032799985, z: 0.0198}
+          rot: {x: 0, y: -0, z: -0, w: 1}
+          scale: {x: 1, y: 1, z: 1}
+        startTform:
+          pos: {x: -0, y: 0.032799985, z: 0.0198}
+          rot: {x: 0, y: -0, z: -0, w: 1}
+          scale: {x: 1, y: 1, z: 1}
+        endTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 1}
+          scale: {x: 0, y: 0, z: 0}
+        fracPos: 0
+        fracRot: 1
+        fracScl: 1
+        inspIsSetStart: 1
+        inspIsSetEnd: 0
+        umaUepProxy: {fileID: 0}
+        uepAmount: 0
+        smr: {fileID: 0}
+        blendIndex: 0
+        minShape: 0
+        maxShape: 1
+        eyeGizmo: {fileID: 0}
+        animator: {fileID: 0}
+        isTriggerParameterBiDirectional: 0
+        eventIdentityName: 
+        onState: 2
+        display2dImage: 0
+        isRestNull: 0
+        spriteRenderer: {fileID: 0}
+        sprites: []
+        uguiRenderer: {fileID: 0}
+        textureRenderer: {fileID: 0}
+        materialIndex: 0
+        backupTextures: []
+        textures: []
+        materialRenderer: {fileID: 0}
+        materials: []
+      inspFoldout: 0
+      previewDisplayMode: 0
+      collectionExpand: 0
+    gizmo: {fileID: 0}
+    referenceIdx: 0
+  headTarget2DDot: 0
+  eyeEnabled: 1
+  eyeTemplate: 1
+  sectorCount: 3
+  prevSectorCount: 0
+  eyeControlType: 1
+  forwardSectorRadius: 1
+  eye2DProcessing: 0
+  eye2DDepth: 1
+  eyePosPercentX: 0
+  eyePosPercentY: 0
+  useEyeShapes: 0
+  useEyeSectors: 0
+  eyeClamp: {x: 15, y: 25, z: 0}
+  eyeRandom: 0
+  eyeRandomFov: {x: 2.5, y: 5, z: 10}
+  eyeRandTrackFov: {x: 0.1, y: 0.05}
+  eyeRandTrackFovAffinity: {x: 0.2, y: 0.1}
+  eyeRandTimerRange: {x: 0.25, y: 1}
+  eyeRandTimer: 0
+  eyeUseDistExtents: 0
+  eyeRandDistRange: {x: 1, y: 1}
+  eyeTargetRadius: 0.01
+  eyeBones: []
+  eyeRefsFwd: []
+  eyeRefsFix: []
+  eyeRefCenter: {fileID: 0}
+  newEyeDirs: []
+  eyeTarget: {fileID: 0}
+  eyeTarget2D: {x: 0, y: 0, z: 0}
+  eyes:
+  - expData:
+      name: eye 0
+      components:
+      - name: eye 0
+        controlType: 1
+        lipsyncControlType: 0
+        emoteControlType: 0
+        eyesControlType: 1
+        durationDelay: 0
+        durationOn: 0.1
+        durationHold: 0
+        durationOff: 0
+        isSmoothDisable: 1
+        isPersistent: 1
+        expressionType: 3
+        easing: 4
+        expressionHandler: 0
+        isAnimatorControlled: 1
+        useOffset: 0
+        useOffsetFollow: 1
+        inspFoldout: 1
+        enabled: 1
+        isBonePreviewUpdated: 0
+        frac: 1
+        directionType: 0
+      controllerVars:
+      - bone: {fileID: 6278404032908895610}
+        baseTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: -0, y: -0, z: -0, w: 1}
+          scale: {x: 1, y: 1, z: 1}
+        startTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: -0, y: -0, z: -0, w: 1}
+          scale: {x: 1, y: 1, z: 1}
+        endTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 1}
+          scale: {x: 0, y: 0, z: 0}
+        fracPos: 0
+        fracRot: 1
+        fracScl: 1
+        inspIsSetStart: 1
+        inspIsSetEnd: 0
+        umaUepProxy: {fileID: 0}
+        uepAmount: 0
+        smr: {fileID: 0}
+        blendIndex: 0
+        minShape: 0
+        maxShape: 1
+        eyeGizmo: {fileID: 0}
+        animator: {fileID: 0}
+        isTriggerParameterBiDirectional: 0
+        eventIdentityName: 
+        onState: 2
+        display2dImage: 0
+        isRestNull: 0
+        spriteRenderer: {fileID: 0}
+        sprites: []
+        uguiRenderer: {fileID: 0}
+        textureRenderer: {fileID: 0}
+        materialIndex: 0
+        backupTextures: []
+        textures: []
+        materialRenderer: {fileID: 0}
+        materials: []
+      inspFoldout: 1
+      previewDisplayMode: 0
+      collectionExpand: 0
+    gizmo: {fileID: 0}
+    referenceIdx: 0
+  - expData:
+      name: eye 1
+      components:
+      - name: eye 0
+        controlType: 1
+        lipsyncControlType: 0
+        emoteControlType: 0
+        eyesControlType: 1
+        durationDelay: 0
+        durationOn: 0.1
+        durationHold: 0
+        durationOff: 0
+        isSmoothDisable: 1
+        isPersistent: 1
+        expressionType: 3
+        easing: 4
+        expressionHandler: 0
+        isAnimatorControlled: 1
+        useOffset: 0
+        useOffsetFollow: 1
+        inspFoldout: 1
+        enabled: 1
+        isBonePreviewUpdated: 0
+        frac: 1
+        directionType: 0
+      controllerVars:
+      - bone: {fileID: 385497799693760871}
+        baseTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: -0, y: -0, z: -0, w: 1}
+          scale: {x: 1, y: 1, z: 1}
+        startTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: -0, y: -0, z: -0, w: 1}
+          scale: {x: 1, y: 1, z: 1}
+        endTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 1}
+          scale: {x: 0, y: 0, z: 0}
+        fracPos: 0
+        fracRot: 1
+        fracScl: 1
+        inspIsSetStart: 1
+        inspIsSetEnd: 0
+        umaUepProxy: {fileID: 0}
+        uepAmount: 0
+        smr: {fileID: 0}
+        blendIndex: 0
+        minShape: 0
+        maxShape: 1
+        eyeGizmo: {fileID: 0}
+        animator: {fileID: 0}
+        isTriggerParameterBiDirectional: 0
+        eventIdentityName: 
+        onState: 2
+        display2dImage: 0
+        isRestNull: 0
+        spriteRenderer: {fileID: 0}
+        sprites: []
+        uguiRenderer: {fileID: 0}
+        textureRenderer: {fileID: 0}
+        materialIndex: 0
+        backupTextures: []
+        textures: []
+        materialRenderer: {fileID: 0}
+        materials: []
+      inspFoldout: 1
+      previewDisplayMode: 0
+      collectionExpand: 0
+    gizmo: {fileID: 0}
+    referenceIdx: 0
+  eyeExpIndex: 0
+  eyeExpNames:
+  - eye 0
+  - eye 1
+  eyeExpRend: {fileID: 1927627393625696718}
+  eyeExpRendItemCount: 2
+  eyeExpRendIsNullOrSmr: 1
+  blinkEnabled: 0
+  eyelidTemplate: 3
+  eyelidSelection: 0
+  eyelidControlType: 0
+  eyelid2DProcessing: 0
+  blinkOn: 0
+  blinkHold: 0
+  blinkOff: 0
+  blinkRandom: 1
+  blinkRandTimerRange: {x: 1, y: 5}
+  blinkRandTimer: 0
+  eyelidPercentEyes: 1
+  trackPercent: 0
+  blinklids:
+  - expData:
+      name: eyelid 0
+      components:
+      - name: eyelid 0
+        controlType: 0
+        lipsyncControlType: 0
+        emoteControlType: 0
+        eyesControlType: 0
+        durationDelay: 0
+        durationOn: 0.1
+        durationHold: 0
+        durationOff: 0.1
+        isSmoothDisable: 1
+        isPersistent: 0
+        expressionType: 4
+        easing: 4
+        expressionHandler: 1
+        isAnimatorControlled: 0
+        useOffset: 0
+        useOffsetFollow: 1
+        inspFoldout: 1
+        enabled: 1
+        isBonePreviewUpdated: 0
+        frac: 1
+        directionType: 2
+      - name: eyelid 1
+        controlType: 0
+        lipsyncControlType: 0
+        emoteControlType: 0
+        eyesControlType: 0
+        durationDelay: 0
+        durationOn: 0.1
+        durationHold: 0
+        durationOff: 0.1
+        isSmoothDisable: 1
+        isPersistent: 0
+        expressionType: 4
+        easing: 4
+        expressionHandler: 1
+        isAnimatorControlled: 0
+        useOffset: 0
+        useOffsetFollow: 1
+        inspFoldout: 1
+        enabled: 1
+        isBonePreviewUpdated: 0
+        frac: 1
+        directionType: 8
+      controllerVars:
+      - bone: {fileID: 0}
+        baseTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        startTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        endTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        fracPos: 1
+        fracRot: 0
+        fracScl: 0
+        inspIsSetStart: 0
+        inspIsSetEnd: 0
+        umaUepProxy: {fileID: 0}
+        uepAmount: 0
+        smr: {fileID: 1927627393625696718}
+        blendIndex: 95
+        minShape: 0
+        maxShape: 1
+        eyeGizmo: {fileID: 0}
+        animator: {fileID: 0}
+        isTriggerParameterBiDirectional: 0
+        eventIdentityName: 
+        onState: 2
+        display2dImage: 0
+        isRestNull: 0
+        spriteRenderer: {fileID: 0}
+        sprites: []
+        uguiRenderer: {fileID: 0}
+        textureRenderer: {fileID: 0}
+        materialIndex: 0
+        backupTextures: []
+        textures: []
+        materialRenderer: {fileID: 0}
+        materials: []
+      - bone: {fileID: 0}
+        baseTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        startTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        endTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        fracPos: 1
+        fracRot: 0
+        fracScl: 0
+        inspIsSetStart: 0
+        inspIsSetEnd: 0
+        umaUepProxy: {fileID: 0}
+        uepAmount: 0
+        smr: {fileID: 1927627393625696718}
+        blendIndex: 96
+        minShape: 0
+        maxShape: 1
+        eyeGizmo: {fileID: 0}
+        animator: {fileID: 0}
+        isTriggerParameterBiDirectional: 0
+        eventIdentityName: 
+        onState: 2
+        display2dImage: 0
+        isRestNull: 0
+        spriteRenderer: {fileID: 0}
+        sprites: []
+        uguiRenderer: {fileID: 0}
+        textureRenderer: {fileID: 0}
+        materialIndex: 0
+        backupTextures: []
+        textures: []
+        materialRenderer: {fileID: 0}
+        materials: []
+      inspFoldout: 1
+      previewDisplayMode: 0
+      collectionExpand: 0
+    gizmo: {fileID: 0}
+    referenceIdx: 0
+  - expData:
+      name: eyelid 1
+      components:
+      - name: eyelid 0
+        controlType: 0
+        lipsyncControlType: 0
+        emoteControlType: 0
+        eyesControlType: 0
+        durationDelay: 0
+        durationOn: 0.1
+        durationHold: 0
+        durationOff: 0.1
+        isSmoothDisable: 1
+        isPersistent: 0
+        expressionType: 4
+        easing: 4
+        expressionHandler: 1
+        isAnimatorControlled: 1
+        useOffset: 0
+        useOffsetFollow: 1
+        inspFoldout: 1
+        enabled: 1
+        isBonePreviewUpdated: 0
+        frac: 1
+        directionType: 1
+      - name: eyelid 1
+        controlType: 0
+        lipsyncControlType: 0
+        emoteControlType: 0
+        eyesControlType: 0
+        durationDelay: 0
+        durationOn: 0.1
+        durationHold: 0
+        durationOff: 0.1
+        isSmoothDisable: 1
+        isPersistent: 0
+        expressionType: 4
+        easing: 4
+        expressionHandler: 1
+        isAnimatorControlled: 1
+        useOffset: 0
+        useOffsetFollow: 1
+        inspFoldout: 1
+        enabled: 1
+        isBonePreviewUpdated: 0
+        frac: 1
+        directionType: 3
+      controllerVars:
+      - bone: {fileID: 0}
+        baseTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        startTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        endTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        fracPos: 1
+        fracRot: 0
+        fracScl: 0
+        inspIsSetStart: 0
+        inspIsSetEnd: 0
+        umaUepProxy: {fileID: 0}
+        uepAmount: 0
+        smr: {fileID: 6503635885489313521}
+        blendIndex: 96
+        minShape: 0
+        maxShape: 1
+        eyeGizmo: {fileID: 0}
+        animator: {fileID: 0}
+        isTriggerParameterBiDirectional: 0
+        eventIdentityName: 
+        onState: 2
+        display2dImage: 0
+        isRestNull: 0
+        spriteRenderer: {fileID: 0}
+        sprites: []
+        uguiRenderer: {fileID: 0}
+        textureRenderer: {fileID: 0}
+        materialIndex: 0
+        backupTextures: []
+        textures: []
+        materialRenderer: {fileID: 0}
+        materials: []
+      - bone: {fileID: 0}
+        baseTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        startTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        endTform:
+          pos: {x: 0, y: 0, z: 0}
+          rot: {x: 0, y: 0, z: 0, w: 0}
+          scale: {x: 0, y: 0, z: 0}
+        fracPos: 1
+        fracRot: 0
+        fracScl: 0
+        inspIsSetStart: 0
+        inspIsSetEnd: 0
+        umaUepProxy: {fileID: 0}
+        uepAmount: 0
+        smr: {fileID: 6503635885489313521}
+        blendIndex: 95
+        minShape: 0
+        maxShape: 1
+        eyeGizmo: {fileID: 0}
+        animator: {fileID: 0}
+        isTriggerParameterBiDirectional: 0
+        eventIdentityName: 
+        onState: 2
+        display2dImage: 0
+        isRestNull: 0
+        spriteRenderer: {fileID: 0}
+        sprites: []
+        uguiRenderer: {fileID: 0}
+        textureRenderer: {fileID: 0}
+        materialIndex: 0
+        backupTextures: []
+        textures: []
+        materialRenderer: {fileID: 0}
+        materials: []
+      inspFoldout: 1
+      previewDisplayMode: 0
+      collectionExpand: 0
+    gizmo: {fileID: 0}
+    referenceIdx: 0
+  eyelidExpIndex: 0
+  eyelidExpNames:
+  - eyelid 0
+  - eyelid 1
+  eyelidExpRend: {fileID: 6503635885489313521}
+  eyelidExpRendItemCount: 1
+  eyelidExpRendIsNullOrSmr: 1
+  trackEnabled: 1
+  trackBones: []
+  tracklids: []
 --- !u!1 &5828125681497736907
 GameObject:
   m_ObjectHideFlags: 0
@@ -13479,7 +14090,6 @@ GameObject:
   - component: {fileID: 4973765644126646567}
   - component: {fileID: 8312805265911251769}
   - component: {fileID: 8312805265911251768}
-  - component: {fileID: 8312805265911251770}
   m_Layer: 10
   m_Name: ntoobust07
   m_TagString: Untagged
@@ -14780,616 +15390,6 @@ MonoBehaviour:
   inspDetailedTimingAdjustments: 0
   doEditorConfigPreview: 0
   inspGoOriginalName: ntoobust07
---- !u!114 &8312805265911251770
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8312805265911251764}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 974247159, guid: 21fe281538940584e84b6d5eedb3525e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inspStateFoldoutReferences: 1
-  inspStateFoldoutHeads: 0
-  inspStateFoldoutHeadProps: 1
-  inspStateFoldoutAnimBones: 0
-  inspStateFoldoutEyes: 0
-  inspStateFoldoutEyeProps: 1
-  inspStateFoldoutEyelids: 0
-  inspStateFoldoutEyelidBlinkProps: 1
-  inspStateFoldoutEyelidTrackProps: 1
-  drawEyeBoneCaptureControls: 0
-  drawBlinkBoneCaptureControls: 0
-  drawTrackBoneCaputreControls: 0
-  headIsRoot: 0
-  configReadyHead: 1
-  configReadyEye: 1
-  configReadyBlink: 1
-  configReadyTrack: 1
-  characterRoot: {fileID: 4973765644126646567}
-  queueProcessor: {fileID: 8312805265911251769}
-  lookTarget: {fileID: 2497965790764855802}
-  useAffinity: 1
-  affinityPercentage: 1
-  hasAffinity: 1
-  affinityTimerRange: {x: 2, y: 5}
-  updateDelay: 0.07
-  useSpriteFlipping: 0
-  flipType: 0
-  flipScale: {fileID: 0}
-  flipSprite: {fileID: 0}
-  parentRandTargets: 0
-  showSceneGizmos: 1
-  warnOnNullRefs: 1
-  flipState: 0
-  animCancel: []
-  headEnabled: 0
-  headTemplate: 1
-  head2DProcessing: 0
-  headTargetOffset: {x: 0, y: 0.058, z: 0}
-  headClamp: {x: 45, y: 160, z: 45}
-  headFacingCamera: 0
-  headRandom: 0
-  headRandomFov: {x: 5, y: 45, z: 22.5}
-  headRandFovHalf: {x: 0, y: 0, z: 0}
-  headRandTimerRange: {x: 5, y: 10}
-  headRandTimer: 0
-  headUseDistExtents: 0
-  headRandDistRange: {x: 1, y: 1}
-  updateHeadFwdCenterRefs: 1
-  headTargetRadius: 0.01
-  headBones: []
-  headRefsFwd: []
-  headRefsFix: []
-  headRefCenter: {fileID: 0}
-  newHeadDirs: []
-  headTarget: {fileID: 0}
-  headTarget2D: {x: 0, y: 0, z: 0}
-  heads:
-  - expData:
-      name: head
-      components:
-      - name: head
-        controlType: 1
-        lipsyncControlType: 0
-        emoteControlType: 0
-        eyesControlType: 1
-        durationDelay: 0
-        durationOn: 0.75
-        durationHold: 0
-        durationOff: 0
-        isSmoothDisable: 1
-        isPersistent: 1
-        expressionType: 2
-        easing: 4
-        expressionHandler: 0
-        isAnimatorControlled: 1
-        useOffset: 0
-        useOffsetFollow: 1
-        inspFoldout: 1
-        enabled: 1
-        isBonePreviewUpdated: 0
-        frac: 1
-        directionType: 0
-      controllerVars:
-      - bone: {fileID: 5652918250954453510}
-        baseTform:
-          pos: {x: -0, y: 0.032799985, z: 0.0198}
-          rot: {x: 0, y: -0, z: -0, w: 1}
-          scale: {x: 1, y: 1, z: 1}
-        startTform:
-          pos: {x: -0, y: 0.032799985, z: 0.0198}
-          rot: {x: 0, y: -0, z: -0, w: 1}
-          scale: {x: 1, y: 1, z: 1}
-        endTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 1}
-          scale: {x: 0, y: 0, z: 0}
-        fracPos: 0
-        fracRot: 1
-        fracScl: 1
-        inspIsSetStart: 1
-        inspIsSetEnd: 0
-        umaUepProxy: {fileID: 0}
-        uepAmount: 0
-        smr: {fileID: 0}
-        blendIndex: 0
-        minShape: 0
-        maxShape: 1
-        eyeGizmo: {fileID: 0}
-        animator: {fileID: 0}
-        isTriggerParameterBiDirectional: 0
-        eventIdentityName: 
-        onState: 2
-        display2dImage: 0
-        isRestNull: 0
-        spriteRenderer: {fileID: 0}
-        sprites: []
-        uguiRenderer: {fileID: 0}
-        textureRenderer: {fileID: 0}
-        materialIndex: 0
-        backupTextures: []
-        textures: []
-        materialRenderer: {fileID: 0}
-        materials: []
-      inspFoldout: 0
-      previewDisplayMode: 0
-      collectionExpand: 0
-    gizmo: {fileID: 0}
-    referenceIdx: 0
-  headTarget2DDot: 0
-  eyeEnabled: 1
-  eyeTemplate: 1
-  sectorCount: 3
-  prevSectorCount: 0
-  eyeControlType: 1
-  forwardSectorRadius: 1
-  eye2DProcessing: 0
-  eye2DDepth: 1
-  eyePosPercentX: 0
-  eyePosPercentY: 0
-  useEyeShapes: 0
-  useEyeSectors: 0
-  eyeClamp: {x: 15, y: 25, z: 0}
-  eyeRandom: 0
-  eyeRandomFov: {x: 2.5, y: 5, z: 10}
-  eyeRandTrackFov: {x: 0.1, y: 0.05}
-  eyeRandTrackFovAffinity: {x: 0.2, y: 0.1}
-  eyeRandTimerRange: {x: 0.25, y: 1}
-  eyeRandTimer: 0
-  eyeUseDistExtents: 0
-  eyeRandDistRange: {x: 1, y: 1}
-  eyeTargetRadius: 0.01
-  eyeBones: []
-  eyeRefsFwd: []
-  eyeRefsFix: []
-  eyeRefCenter: {fileID: 0}
-  newEyeDirs: []
-  eyeTarget: {fileID: 0}
-  eyeTarget2D: {x: 0, y: 0, z: 0}
-  eyes:
-  - expData:
-      name: eye 0
-      components:
-      - name: eye 0
-        controlType: 1
-        lipsyncControlType: 0
-        emoteControlType: 0
-        eyesControlType: 1
-        durationDelay: 0
-        durationOn: 0.1
-        durationHold: 0
-        durationOff: 0
-        isSmoothDisable: 1
-        isPersistent: 1
-        expressionType: 3
-        easing: 4
-        expressionHandler: 0
-        isAnimatorControlled: 1
-        useOffset: 0
-        useOffsetFollow: 1
-        inspFoldout: 1
-        enabled: 1
-        isBonePreviewUpdated: 0
-        frac: 1
-        directionType: 0
-      controllerVars:
-      - bone: {fileID: 6278404032908895610}
-        baseTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: -0, y: -0, z: -0, w: 1}
-          scale: {x: 1, y: 1, z: 1}
-        startTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: -0, y: -0, z: -0, w: 1}
-          scale: {x: 1, y: 1, z: 1}
-        endTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 1}
-          scale: {x: 0, y: 0, z: 0}
-        fracPos: 0
-        fracRot: 1
-        fracScl: 1
-        inspIsSetStart: 1
-        inspIsSetEnd: 0
-        umaUepProxy: {fileID: 0}
-        uepAmount: 0
-        smr: {fileID: 0}
-        blendIndex: 0
-        minShape: 0
-        maxShape: 1
-        eyeGizmo: {fileID: 0}
-        animator: {fileID: 0}
-        isTriggerParameterBiDirectional: 0
-        eventIdentityName: 
-        onState: 2
-        display2dImage: 0
-        isRestNull: 0
-        spriteRenderer: {fileID: 0}
-        sprites: []
-        uguiRenderer: {fileID: 0}
-        textureRenderer: {fileID: 0}
-        materialIndex: 0
-        backupTextures: []
-        textures: []
-        materialRenderer: {fileID: 0}
-        materials: []
-      inspFoldout: 1
-      previewDisplayMode: 0
-      collectionExpand: 0
-    gizmo: {fileID: 0}
-    referenceIdx: 0
-  - expData:
-      name: eye 1
-      components:
-      - name: eye 0
-        controlType: 1
-        lipsyncControlType: 0
-        emoteControlType: 0
-        eyesControlType: 1
-        durationDelay: 0
-        durationOn: 0.1
-        durationHold: 0
-        durationOff: 0
-        isSmoothDisable: 1
-        isPersistent: 1
-        expressionType: 3
-        easing: 4
-        expressionHandler: 0
-        isAnimatorControlled: 1
-        useOffset: 0
-        useOffsetFollow: 1
-        inspFoldout: 1
-        enabled: 1
-        isBonePreviewUpdated: 0
-        frac: 1
-        directionType: 0
-      controllerVars:
-      - bone: {fileID: 385497799693760871}
-        baseTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: -0, y: -0, z: -0, w: 1}
-          scale: {x: 1, y: 1, z: 1}
-        startTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: -0, y: -0, z: -0, w: 1}
-          scale: {x: 1, y: 1, z: 1}
-        endTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 1}
-          scale: {x: 0, y: 0, z: 0}
-        fracPos: 0
-        fracRot: 1
-        fracScl: 1
-        inspIsSetStart: 1
-        inspIsSetEnd: 0
-        umaUepProxy: {fileID: 0}
-        uepAmount: 0
-        smr: {fileID: 0}
-        blendIndex: 0
-        minShape: 0
-        maxShape: 1
-        eyeGizmo: {fileID: 0}
-        animator: {fileID: 0}
-        isTriggerParameterBiDirectional: 0
-        eventIdentityName: 
-        onState: 2
-        display2dImage: 0
-        isRestNull: 0
-        spriteRenderer: {fileID: 0}
-        sprites: []
-        uguiRenderer: {fileID: 0}
-        textureRenderer: {fileID: 0}
-        materialIndex: 0
-        backupTextures: []
-        textures: []
-        materialRenderer: {fileID: 0}
-        materials: []
-      inspFoldout: 1
-      previewDisplayMode: 0
-      collectionExpand: 0
-    gizmo: {fileID: 0}
-    referenceIdx: 0
-  eyeExpIndex: 0
-  eyeExpNames:
-  - eye 0
-  - eye 1
-  eyeExpRend: {fileID: 1927627393625696718}
-  eyeExpRendItemCount: 2
-  eyeExpRendIsNullOrSmr: 1
-  blinkEnabled: 0
-  eyelidTemplate: 3
-  eyelidSelection: 0
-  eyelidControlType: 0
-  eyelid2DProcessing: 0
-  blinkOn: 0
-  blinkHold: 0
-  blinkOff: 0
-  blinkRandom: 1
-  blinkRandTimerRange: {x: 1, y: 5}
-  blinkRandTimer: 0
-  eyelidPercentEyes: 1
-  trackPercent: 0
-  blinklids:
-  - expData:
-      name: eyelid 0
-      components:
-      - name: eyelid 0
-        controlType: 0
-        lipsyncControlType: 0
-        emoteControlType: 0
-        eyesControlType: 0
-        durationDelay: 0
-        durationOn: 0.1
-        durationHold: 0
-        durationOff: 0.1
-        isSmoothDisable: 1
-        isPersistent: 0
-        expressionType: 4
-        easing: 4
-        expressionHandler: 1
-        isAnimatorControlled: 0
-        useOffset: 0
-        useOffsetFollow: 1
-        inspFoldout: 1
-        enabled: 1
-        isBonePreviewUpdated: 0
-        frac: 1
-        directionType: 2
-      - name: eyelid 1
-        controlType: 0
-        lipsyncControlType: 0
-        emoteControlType: 0
-        eyesControlType: 0
-        durationDelay: 0
-        durationOn: 0.1
-        durationHold: 0
-        durationOff: 0.1
-        isSmoothDisable: 1
-        isPersistent: 0
-        expressionType: 4
-        easing: 4
-        expressionHandler: 1
-        isAnimatorControlled: 0
-        useOffset: 0
-        useOffsetFollow: 1
-        inspFoldout: 1
-        enabled: 1
-        isBonePreviewUpdated: 0
-        frac: 1
-        directionType: 8
-      controllerVars:
-      - bone: {fileID: 0}
-        baseTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        startTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        endTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        fracPos: 1
-        fracRot: 0
-        fracScl: 0
-        inspIsSetStart: 0
-        inspIsSetEnd: 0
-        umaUepProxy: {fileID: 0}
-        uepAmount: 0
-        smr: {fileID: 1927627393625696718}
-        blendIndex: 95
-        minShape: 0
-        maxShape: 1
-        eyeGizmo: {fileID: 0}
-        animator: {fileID: 0}
-        isTriggerParameterBiDirectional: 0
-        eventIdentityName: 
-        onState: 2
-        display2dImage: 0
-        isRestNull: 0
-        spriteRenderer: {fileID: 0}
-        sprites: []
-        uguiRenderer: {fileID: 0}
-        textureRenderer: {fileID: 0}
-        materialIndex: 0
-        backupTextures: []
-        textures: []
-        materialRenderer: {fileID: 0}
-        materials: []
-      - bone: {fileID: 0}
-        baseTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        startTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        endTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        fracPos: 1
-        fracRot: 0
-        fracScl: 0
-        inspIsSetStart: 0
-        inspIsSetEnd: 0
-        umaUepProxy: {fileID: 0}
-        uepAmount: 0
-        smr: {fileID: 1927627393625696718}
-        blendIndex: 96
-        minShape: 0
-        maxShape: 1
-        eyeGizmo: {fileID: 0}
-        animator: {fileID: 0}
-        isTriggerParameterBiDirectional: 0
-        eventIdentityName: 
-        onState: 2
-        display2dImage: 0
-        isRestNull: 0
-        spriteRenderer: {fileID: 0}
-        sprites: []
-        uguiRenderer: {fileID: 0}
-        textureRenderer: {fileID: 0}
-        materialIndex: 0
-        backupTextures: []
-        textures: []
-        materialRenderer: {fileID: 0}
-        materials: []
-      inspFoldout: 1
-      previewDisplayMode: 0
-      collectionExpand: 0
-    gizmo: {fileID: 0}
-    referenceIdx: 0
-  - expData:
-      name: eyelid 1
-      components:
-      - name: eyelid 0
-        controlType: 0
-        lipsyncControlType: 0
-        emoteControlType: 0
-        eyesControlType: 0
-        durationDelay: 0
-        durationOn: 0.1
-        durationHold: 0
-        durationOff: 0.1
-        isSmoothDisable: 1
-        isPersistent: 0
-        expressionType: 4
-        easing: 4
-        expressionHandler: 1
-        isAnimatorControlled: 1
-        useOffset: 0
-        useOffsetFollow: 1
-        inspFoldout: 1
-        enabled: 1
-        isBonePreviewUpdated: 0
-        frac: 1
-        directionType: 1
-      - name: eyelid 1
-        controlType: 0
-        lipsyncControlType: 0
-        emoteControlType: 0
-        eyesControlType: 0
-        durationDelay: 0
-        durationOn: 0.1
-        durationHold: 0
-        durationOff: 0.1
-        isSmoothDisable: 1
-        isPersistent: 0
-        expressionType: 4
-        easing: 4
-        expressionHandler: 1
-        isAnimatorControlled: 1
-        useOffset: 0
-        useOffsetFollow: 1
-        inspFoldout: 1
-        enabled: 1
-        isBonePreviewUpdated: 0
-        frac: 1
-        directionType: 3
-      controllerVars:
-      - bone: {fileID: 0}
-        baseTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        startTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        endTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        fracPos: 1
-        fracRot: 0
-        fracScl: 0
-        inspIsSetStart: 0
-        inspIsSetEnd: 0
-        umaUepProxy: {fileID: 0}
-        uepAmount: 0
-        smr: {fileID: 6503635885489313521}
-        blendIndex: 96
-        minShape: 0
-        maxShape: 1
-        eyeGizmo: {fileID: 0}
-        animator: {fileID: 0}
-        isTriggerParameterBiDirectional: 0
-        eventIdentityName: 
-        onState: 2
-        display2dImage: 0
-        isRestNull: 0
-        spriteRenderer: {fileID: 0}
-        sprites: []
-        uguiRenderer: {fileID: 0}
-        textureRenderer: {fileID: 0}
-        materialIndex: 0
-        backupTextures: []
-        textures: []
-        materialRenderer: {fileID: 0}
-        materials: []
-      - bone: {fileID: 0}
-        baseTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        startTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        endTform:
-          pos: {x: 0, y: 0, z: 0}
-          rot: {x: 0, y: 0, z: 0, w: 0}
-          scale: {x: 0, y: 0, z: 0}
-        fracPos: 1
-        fracRot: 0
-        fracScl: 0
-        inspIsSetStart: 0
-        inspIsSetEnd: 0
-        umaUepProxy: {fileID: 0}
-        uepAmount: 0
-        smr: {fileID: 6503635885489313521}
-        blendIndex: 95
-        minShape: 0
-        maxShape: 1
-        eyeGizmo: {fileID: 0}
-        animator: {fileID: 0}
-        isTriggerParameterBiDirectional: 0
-        eventIdentityName: 
-        onState: 2
-        display2dImage: 0
-        isRestNull: 0
-        spriteRenderer: {fileID: 0}
-        sprites: []
-        uguiRenderer: {fileID: 0}
-        textureRenderer: {fileID: 0}
-        materialIndex: 0
-        backupTextures: []
-        textures: []
-        materialRenderer: {fileID: 0}
-        materials: []
-      inspFoldout: 1
-      previewDisplayMode: 0
-      collectionExpand: 0
-    gizmo: {fileID: 0}
-    referenceIdx: 0
-  eyelidExpIndex: 0
-  eyelidExpNames:
-  - eyelid 0
-  - eyelid 1
-  eyelidExpRend: {fileID: 6503635885489313521}
-  eyelidExpRendItemCount: 1
-  eyelidExpRendIsNullOrSmr: 1
-  trackEnabled: 1
-  trackBones: []
-  tracklids: []
 --- !u!1 &8313119515341247351
 GameObject:
   m_ObjectHideFlags: 0
