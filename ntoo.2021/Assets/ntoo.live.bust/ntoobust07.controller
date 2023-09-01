@@ -437,7 +437,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetParameter: idleanim1
-  probabilities: 04000000040000000100000004000000
+  probabilities: 010000000100000001000000
 --- !u!1109 &-7741968362676838273
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -572,10 +572,10 @@ AnimatorStateMachine:
     m_Position: {x: 490, y: 180, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 3590835748220143808}
-    m_Position: {x: 490, y: 270, z: 0}
+    m_Position: {x: 490, y: 350, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8985315705979294950}
-    m_Position: {x: 490, y: 350, z: 0}
+    m_Position: {x: 490, y: 270, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions:
@@ -1294,7 +1294,7 @@ AnimatorTransition:
   m_Conditions:
   - m_ConditionMode: 6
     m_ConditionEvent: idleanim1
-    m_EventTreshold: 3
+    m_EventTreshold: 2
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -8985315705979294950}
   m_Solo: 0
@@ -3731,7 +3731,7 @@ AnimatorTransition:
   m_Conditions:
   - m_ConditionMode: 6
     m_ConditionEvent: idleanim1
-    m_EventTreshold: 2
+    m_EventTreshold: 3
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 3590835748220143808}
   m_Solo: 0
