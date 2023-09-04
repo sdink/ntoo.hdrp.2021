@@ -717,6 +717,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4995060293705529755, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -0.012358741
+      objectReference: {fileID: 0}
+    - target: {fileID: 4995060293705529755, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0.005557946
+      objectReference: {fileID: 0}
+    - target: {fileID: 4995060293705529755, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -0.015078102
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.size
+      value: 14
+      objectReference: {fileID: 0}
     - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
       propertyPath: emotionGroups.Array.data[1].emotions.Array.size
@@ -726,6 +746,16 @@ PrefabInstance:
         type: 3}
       propertyPath: emotionGroups.Array.data[2].emotions.Array.size
       value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[8].keyCode
+      value: 122
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[9].keyCode
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
@@ -784,6 +814,26 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[10].keyCode
+      value: 119
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[11].keyCode
+      value: 115
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[12].keyCode
+      value: 53
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[13].keyCode
+      value: 102
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
       propertyPath: emotionGroups.Array.data[1].emotions.Array.data[10].keyCode
       value: 46
       objectReference: {fileID: 0}
@@ -806,6 +856,16 @@ PrefabInstance:
         type: 3}
       propertyPath: emotionGroups.Array.data[1].emotions.Array.data[14].keyCode
       value: 59
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[8].animationName
+      value: thinking-headDown2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[9].animationName
+      value: thinking-headNod
       objectReference: {fileID: 0}
     - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
@@ -864,6 +924,26 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[10].animationName
+      value: thinking-headShake
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[11].animationName
+      value: thinking-headShake2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[12].animationName
+      value: half-smile
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
+      propertyPath: emotionGroups.Array.data[0].emotions.Array.data[13].animationName
+      value: lip-smack
+      objectReference: {fileID: 0}
+    - target: {fileID: 5549993432806704576, guid: 9da037726b2d1b046a9eb593e010f20c,
+        type: 3}
       propertyPath: emotionGroups.Array.data[1].emotions.Array.data[10].animationName
       value: melancholy
       objectReference: {fileID: 0}
@@ -890,17 +970,17 @@ PrefabInstance:
     - target: {fileID: 5652918250954453510, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0.9009178
+      value: -0.012358741
       objectReference: {fileID: 0}
     - target: {fileID: 5652918250954453510, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0.04475552
+      value: 0.005557946
       objectReference: {fileID: 0}
     - target: {fileID: 5652918250954453510, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: -0.07404873
+      value: -0.015078102
       objectReference: {fileID: 0}
     - target: {fileID: 8312805265911251764, guid: 9da037726b2d1b046a9eb593e010f20c,
         type: 3}
