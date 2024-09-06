@@ -53,22 +53,21 @@
     <UnityVersion>2020.3.41f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Standard Assets\Editor\Water\Water4\SpecularLightingEditor.cs" />
     <Compile Include="Assets\Standard Assets\Editor\Water\Water4\GerstnerDisplaceEditor.cs" />
-    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Editor\OneClicks\OneClickDazEditor.cs" />
     <Compile Include="Assets\Standard Assets\Editor\CrossPlatformInput\CrossPlatformInputInitialize.cs" />
-    <Compile Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Editor\OneClicks\OneClickBoxHeadEditor.cs" />
+    <Compile Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Editor\OneClicks\OneClickBoxHeadEditor.cs" />
     <Compile Include="Assets\Standard Assets\Editor\Water\Water4\PlanarReflectionEditor.cs" />
     <Compile Include="Assets\Standard Assets\Editor\Water\Water4\WaterBaseEditor.cs" />
     <Compile Include="Assets\Standard Assets\Editor\Water\Water4\WaterEditorUtility.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Editor\readme.txt" />
-    <None Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Editor\version.txt" />
-    <None Include="Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Editor\SALSA-LipSync-Editor.dll" />
+    <None Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Editor\readme.txt" />
+    <None Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Editor\version.txt" />
+    <None Include="Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Editor\SALSA-LipSync-Editor.dll" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -299,41 +298,29 @@
     <Reference Include="UnityEditor.Graphs">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\Managed\UnityEditor.Graphs.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEditor.Android.Extensions">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\PlaybackEngines\AndroidPlayer\UnityEditor.Android.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEditor.WindowsStandalone.Extensions">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\PlaybackEngines\WindowsStandaloneSupport\UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="SyntaxTree.VisualStudio.Unity.Bridge">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio Tools for Unity\16.0\Editor\SyntaxTree.VisualStudio.Unity.Bridge.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Plastic.Newtonsoft.Json">
       <HintPath>Library\PackageCache\com.unity.collab-proxy@1.17.2\Lib\Editor\PlasticSCM\Unity.Plastic.Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Intel.RealSense">
-      <HintPath>Assets\AzureKinectExamples\SDK\RealSenseSDK2.0\Plugins\Intel.RealSense.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Azure.Kinect.Sensor">
-      <HintPath>Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\Microsoft.Azure.Kinect.Sensor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Plastic.Antlr3.Runtime">
       <HintPath>Library\PackageCache\com.unity.collab-proxy@1.17.2\Lib\Editor\PlasticSCM\Unity.Plastic.Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="SALSA-LipSync">
-      <HintPath>Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\SALSA-LipSync.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="LZ4Sharp">
-      <HintPath>Assets\AzureKinectExamples\KinectScripts\LZ4Sharp\LZ4Sharp.dll</HintPath>
+      <HintPath>Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Plugins\SALSA-LipSync.dll</HintPath>
     </Reference>
     <Reference Include="log4netPlastic">
       <HintPath>Library\PackageCache\com.unity.collab-proxy@1.17.2\Lib\Editor\PlasticSCM\log4netPlastic.dll</HintPath>
-    </Reference>
-    <Reference Include="SALSA-LipSync-Editor">
-      <HintPath>Assets\plugins\Crazy Minnow Studio\SALSA LipSync\Editor\SALSA-LipSync-Editor.dll</HintPath>
-    </Reference>
-    <Reference Include="Kinect2UnityWrapper">
-      <HintPath>Assets\AzureKinectExamples\SDK\KinectSDK2.0\Plugins\Kinect2UnityWrapper.dll</HintPath>
-    </Reference>
-    <Reference Include="websocket-sharp">
-      <HintPath>Assets\Packages\WebSocketSharp.1.0.3-rc11\lib\websocket-sharp.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>Library\PackageCache\com.unity.render-pipelines.core@10.10.0\Editor\ShaderGenerator\ICSharpCode.NRefactory.dll</HintPath>
@@ -341,8 +328,32 @@
     <Reference Include="unityplastic">
       <HintPath>Library\PackageCache\com.unity.collab-proxy@1.17.2\Lib\Editor\PlasticSCM\unityplastic.dll</HintPath>
     </Reference>
+    <Reference Include="Intel.RealSense">
+      <HintPath>Assets\AzureKinectExamples\SDK\RealSenseSDK2.0\Plugins\Intel.RealSense.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Azure.Kinect.Sensor">
+      <HintPath>Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\Microsoft.Azure.Kinect.Sensor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>Assets\AzureKinectExamples\SDK\Kinect4AzureSDK\Plugins\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="LZ4Sharp">
+      <HintPath>Assets\AzureKinectExamples\KinectScripts\LZ4Sharp\LZ4Sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Kinect2UnityWrapper">
+      <HintPath>Assets\AzureKinectExamples\SDK\KinectSDK2.0\Plugins\Kinect2UnityWrapper.dll</HintPath>
+    </Reference>
+    <Reference Include="SALSA-LipSync-Editor">
+      <HintPath>Assets\Plugins\Crazy Minnow Studio\SALSA LipSync\Editor\SALSA-LipSync-Editor.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>Library\PackageCache\com.unity.ext.nunit@1.0.6\net35\unity-custom\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor.iOS.Extensions.Common">
+      <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.Common.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.41f1\Editor\Data\MonoBleedingEdge\lib\mono\4.7.1-api\mscorlib.dll</HintPath>

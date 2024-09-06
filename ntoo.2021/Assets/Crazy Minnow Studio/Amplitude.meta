@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:ntoo.2021/Assets/Crazy Minnow Studio/Amplitude.meta
 guid: daccd7be061656f4cadb24fa3d818077
+========
+guid: 650e8c34b3f59d44f9ad921d4e435ad8
+>>>>>>>> 6014c5148a425f916d271bbda49156a597cfbe7e:ntoo.2021/Assets/plugins/Crazy Minnow Studio/Crazy Minnow Studio/Addons.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

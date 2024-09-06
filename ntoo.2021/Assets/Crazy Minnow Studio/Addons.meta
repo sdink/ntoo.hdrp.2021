@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:ntoo.2021/Assets/Crazy Minnow Studio/Addons.meta
 guid: 6d5ee4ba372152b48b6fb34ef6029ddf
+========
+guid: da2a5e7cad27bfb4fbf951d9bf0d4588
+>>>>>>>> 6014c5148a425f916d271bbda49156a597cfbe7e:ntoo.2021/Assets/plugins/Crazy Minnow Studio/Crazy Minnow Studio.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
