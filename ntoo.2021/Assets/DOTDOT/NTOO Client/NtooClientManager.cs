@@ -11,6 +11,7 @@ public class NtooClientManager : MonoBehaviour
   [Header("Speaker Events")]
   [SerializeField] public SpeakerEvent OnReceivedAudioClip;
   [SerializeField] public UnityEvent<string> OnReceivedSentiment;
+  [SerializeField] public UnityEvent<string> OnReceivedResponseText;
   public UnityEvent OnReceivedEmptyClip;
 
   [Serializable] private class NetworkEventText : UnityEvent<string> { }
@@ -45,6 +46,10 @@ public class NtooClientManager : MonoBehaviour
     else if (message.StartsWith("Sentiment:"))
     {
       OnReceivedSentiment.Invoke(message.Substring(10));
+    }
+    else if (message.StartsWith("Response:"))
+    {
+      OnReceivedResponseText.Invoke(message.Substring(9));
     }
   }
 
