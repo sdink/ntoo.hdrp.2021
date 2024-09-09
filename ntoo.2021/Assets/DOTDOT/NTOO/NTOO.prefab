@@ -850,13 +850,13 @@ MonoBehaviour:
   OnReceivedResponseText:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2562440594196133576}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 1
+      - m_Target: {fileID: 2509766287052244132}
+        m_TargetAssemblyTypeName: CaptionController, Assembly-CSharp
+        m_MethodName: UpdateCaption
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 

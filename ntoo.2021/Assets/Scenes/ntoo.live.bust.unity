@@ -1611,6 +1611,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2509766287052244132, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
+        type: 3}
+      propertyPath: audioPlayback
+      value: 
+      objectReference: {fileID: 1536701777}
     - target: {fileID: 2741948893168373682, guid: 9d65ef50413b6e98b8f9eef0ad922eeb,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -2431,6 +2436,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &1536701777 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 2886764664346885501, guid: 9da037726b2d1b046a9eb593e010f20c,
+    type: 3}
+  m_PrefabInstance: {fileID: 468280030}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1634153207
 GameObject:
   m_ObjectHideFlags: 0
